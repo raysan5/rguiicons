@@ -1,0 +1,39 @@
+#
+# rgl text file (v2.0) - raygui layout text file generated using rGuiLayout
+#
+# Total number of controls:     22
+# Ref. window:    r <x> <y> <width> <height>
+# Anchor info:    a <id> <name> <posx> <posy> <enabled>
+# Control info:   c <id> <type> <name> <rectangle> <anchor_id> <text>
+#
+r 0 0 -1 -1
+a 000 anchorMain 0 0 0
+a 001 anchor01 0 0 0
+a 002 anchor02 0 0 0
+a 003 anchor03 0 0 0
+a 004 anchor04 0 0 0
+a 005 anchor05 0 0 0
+a 006 anchor06 0 0 0
+a 007 anchor07 0 0 0
+c 000 3 Panel021 50 50 320 45 0 
+c 001 5 Button000 60 60 25 25 0 o
+c 002 5 Button001 90 60 25 25 0 o
+c 003 5 Button002 150 60 25 25 0 o
+c 004 5 Button003 180 60 25 25 0 o
+c 005 5 Button004 210 60 25 25 0 o
+c 006 4 Label006 60 105 140 25 0 Choose rIcon for Edit:
+c 007 11 ComboBox007 235 105 125 25 0 ONE;TWO;THREE
+c 008 24 MessageBox008 50 135 320 180 0 SAMPLE TEXT
+c 009 14 TextmultiBox009 65 325 225 30 0 SAMPLE TEXT
+c 010 5 Button010 295 325 30 30 0 o
+c 011 24 MessageBox011 65 365 260 260 0 SAMPLE TEXT
+c 012 5 Button012 335 365 25 25 0 o
+c 013 5 Button013 335 395 25 25 0 o
+c 014 5 Button014 335 450 25 25 0 o
+c 015 5 Button015 335 480 25 25 0 o
+c 016 5 Button016 335 540 25 25 0 o
+c 017 5 Button017 335 570 25 25 0 o
+c 018 5 Button018 335 60 25 25 0 o
+c 019 5 Button019 305 60 25 25 0 o
+c 020 20 StatusBar020 50 640 320 25 0 SAMPLE TEXT
+c 021 5 Button021 335 600 25 25 0 o
