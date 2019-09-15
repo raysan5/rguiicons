@@ -7,17 +7,21 @@
 *   #define VERSION_ONE
 *       Enable PRO features for the tool. Usually command-line and export options related.
 *
+*   #define CUSTOM_MODAL_DIALOGS
+*       Use custom raygui generated modal dialogs instead of native OS ones
+*       NOTE: Avoids including tinyfiledialogs depencency library
+*
 *   DEPENDENCIES:
-*       raylib 2.2              - Windowing/input management and drawing.
-*       raygui 2.1              - IMGUI controls (based on raylib).
-*       tinyfiledialogs 3.3.7   - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs.
+*       raylib 2.6-dev          - Windowing/input management and drawing.
+*       raygui 2.6              - Immediate-mode GUI controls.
+*       tinyfiledialogs 3.3.9   - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs.
 *
 *   COMPILATION (Windows - MinGW):
-*       gcc -o rtooltemplate.exe rtooltemplate.c external/tinyfiledialogs.c -s rtooltemplate.rc.data -Iexternal /
+*       gcc -o rguiicons.exe rguiicons.c external/tinyfiledialogs.c -s rguiicons.rc.data -Iexternal /
 *           -lraylib -lopengl32 -lgdi32 -lcomdlg32 -lole32 -std=c99 -Wall
 *
 *   COMPILATION (Linux - GCC):
-*       gcc -o rtooltemplate rtooltemplate.c external/tinyfiledialogs.c -s -Iexternal -no-pie -D_DEFAULT_SOURCE /
+*       gcc -o rguiicons rguiicons.c external/tinyfiledialogs.c -s -Iexternal -no-pie -D_DEFAULT_SOURCE /
 *           -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 *
 *   DEVELOPERS:
@@ -25,7 +29,7 @@
 *
 *   LICENSE: Propietary License
 *
-*   Copyright (c) 2018 raylib technologies (@raylibtech). All Rights Reserved.
+*   Copyright (c) 2019 raylib technologies (@raylibtech). All Rights Reserved.
 *
 *   Unauthorized copying of this file, via any medium is strictly prohibited
 *   This project is proprietary and confidential unless the owner allows
@@ -510,7 +514,7 @@ static void ShowCommandLineInfo(void)
     printf("//////////////////////////////////////////////////////////////////////////////////\n\n");
 
     printf("USAGE:\n\n");
-    printf("    > rtooltemplate [--help] --input <filename.ext> [--output <filename.ext>]\n");
+    printf("    > rguiicons [--help] --input <filename.ext> [--output <filename.ext>]\n");
     printf("                    [--format <value>]\n");
 
     printf("\nOPTIONS:\n\n");
@@ -528,11 +532,11 @@ static void ShowCommandLineInfo(void)
     printf("                                      NOTE: If not specified, defaults to: 44100, 16, 1\n\n");
 
     printf("\nEXAMPLES:\n\n");
-    printf("    > rtooltemplate --input sound.rfx --output jump.wav\n");
+    printf("    > rguiicons --input sound.rfx --output jump.wav\n");
     printf("        Process <sound.rfx> to generate <sound.wav> at 44100 Hz, 32 bit, Mono\n\n");
-    printf("    > rtooltemplate --input sound.rfx --output jump.wav --format 22050 16 2\n");
+    printf("    > rguiicons --input sound.rfx --output jump.wav --format 22050 16 2\n");
     printf("        Process <sound.rfx> to generate <jump.wav> at 22050 Hz, 16 bit, Stereo\n\n");
-    printf("    > rtooltemplate --input sound.rfx --play\n");
+    printf("    > rguiicons --input sound.rfx --play\n");
     printf("        Plays <sound.rfx>, wave data is generated internally but not saved\n\n");
 }
 
