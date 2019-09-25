@@ -1,0 +1,38 @@
+#
+# rgl layout text file (v2.1) - raygui layout file generated using rGuiLayout
+#
+# Number of controls:     20
+#
+# Ref. window:    r <x> <y> <width> <height>
+# Anchor info:    a <id> <name> <posx> <posy> <enabled>
+# Control info:   c <id> <type> <name> <rectangle> <anchor_id> <text>
+#
+r 0 0 -1 -1
+a 000 anchorMain 0 0 0
+a 001 anchor01 50 50 1
+a 002 anchor02 0 0 0
+a 003 anchor03 0 0 0
+a 004 anchor04 0 0 0
+a 005 anchor05 0 0 0
+a 006 anchor06 0 0 0
+a 007 anchor07 0 0 0
+c 000 3 mainPanel 0 0 640 45 1 
+c 001 5 btnLoad 10 10 25 25 1 #01#
+c 002 5 btnSave 40 10 25 25 1 #02#
+c 003 5 btnExport 70 10 25 25 1 #07#
+c 004 5 btnCopy 115 10 25 25 1 #16#
+c 005 5 btnCut 145 10 25 25 1 #17#
+c 006 5 btnPaste 175 10 25 25 1 #18#
+c 007 5 btnAbout 260 10 75 25 1 #191#ABOUT
+c 008 4 lblChooseIcon 15 45 140 25 1 Choose rIcon for Edit:
+c 009 24 dummy01 15 65 320 320 1 rIcons File
+c 010 11 fileType 15 400 160 25 1 rIcons FIle (.rgi);rIcons Image (.png);rIcons Code (.h)
+c 011 5 btnExport 185 400 150 25 1 #07#Export rIcons
+c 012 4 lblIconNameId 365 45 126 25 1 rIcon Name ID:
+c 013 13 iconNameId 365 65 260 25 1 SAMPLE TEXT
+c 014 18 zoom 410 110 180 10 1 ZOOM:
+c 015 24 dummy02 365 130 260 260 1 rIcon Edit
+c 016 5 btnSaveIcon 440 400 100 25 1 #012#Save Image
+c 017 5 btnClearIcon 545 400 80 25 1 #079#Clear
+c 018 20 statusFile 0 435 350 25 1 TOTAL FILE ICONS: 0/0
+c 019 20 statusSelected 350 435 290 25 1 SELECTED: 0/0 - NAME_ID
