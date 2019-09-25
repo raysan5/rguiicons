@@ -103,6 +103,8 @@ const char *toolName = "rGuiIcons";
 const char *toolVersion = "1.0";
 const char *toolDescription = "A simple and easy-to-use raygui icons editor";
 
+static bool saveChangesRequired = false;    // Flag to notice save changes are required
+
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
