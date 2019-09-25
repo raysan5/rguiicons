@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rGuiIcons v1.0 - A simple and easy-to-use minimalist icons creator
+*   rGuiIcons v1.0 - A simple and easy-to-use raygui icons editor
 *
 *   CONFIGURATION:
 *
@@ -40,6 +40,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
+#define RAYGUI_SUPPORT_RICONS
 #include "external/raygui.h"            // Required for: IMGUI controls
 
 #undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
@@ -47,7 +48,8 @@
 #define GUI_WINDOW_ABOUT_IMPLEMENTATION
 #include "gui_window_about.h"           // GUI: About window
 
-#include "external/tinyfiledialogs.h"   // Required for: Native open/save file dialogs
+#define GUI_FILE_DIALOGS_IMPLEMENTATION
+#include "gui_file_dialogs.h"           // GUI: File Dialog
 
 #include <stdio.h>                      // Required for: fopen(), fclose(), fread()...
 #include <stdlib.h>                     // Required for: malloc(), free()
@@ -76,46 +78,29 @@ bool __stdcall FreeConsole(void);       // Close console from code (kernel32.lib
 #define BIT_CHECK(a,b) ((a) & (1<<(b)))
 
 #define MAX_ICONS_X     16
-#define MAX_ICONS_Y     13
-#define RICON_SIZE      16
+#define MAX_ICONS_Y     16
+#define ICON_SIZE       16
 #define ICONS_PADDING    2
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
 
-// Icon generation parameters
-typedef struct rIcon {
-    int size;                   // Icon size (squared)
-    int borderSize;             // Icon border size, usually size/16
-    Color color;                // Icon base color
-    
-    char text[4];               // Icon text, max 4 characters, usually 3: rXX
-    int textSize;               // Icon text height
-    Rectangle textRec;          // Icon text position and size
-
-    bool useTextPixels;         // Use icon text as pixels instead of text
-    Color *textPixels;          // In case text is not enough... useful for 32x32, 24x24, 16x16
-} rIcon;
-
-typedef struct ToolData {
-    int id;
-} ToolData;
-
-// One image entry for ico
-typedef struct {
-    int size;                   // Icon size (squared)
-    int valid;                  // Icon valid image generated/loaded
-    Image image;                // Icon image
-    //Texture texture;            // Icon texture
-} IconPackEntry;
+// rIcon data
+// NOTE: Image format should be GRAYSCALE
+typedef struct IconData {
+    Image image;
+    Color *pixels;
+    Texture2D texture;
+    unsigned char nameId[64];
+} IconData;
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
-const char *toolName = "rToolName";
+const char *toolName = "rGuiIcons";
 const char *toolVersion = "1.0";
-const char *toolDescription = "A simple and easy-to-use <what tool does>";
+const char *toolDescription = "A simple and easy-to-use raygui icons editor";
 
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
@@ -126,11 +111,19 @@ static void ProcessCommandLine(int argc, char *argv[]);     // Process command l
 #endif
 
 // Load/Save/Export data functions
+static IconData *LoadIconData(const char *fileName);        // Load raylib icons data (.rgi)
+
+
+// Auxiliar functions
+
+
+static IconData *LoadIconsList(Image image, int iconSize, int iconPadding, unsigned int *count);
 
 static unsigned char *ImageToBits(Image image);
 static Image ImageFromBits(unsigned char *bytes, int width, int height, Color color);
-static Image GetIconsImage(unsigned int *values, int iconsCount, int iconsPerLine);
-static void GenIconsHeaderFromImage(Image image, const char *headerFileName);
+
+static Image LoadIconsImage(unsigned int *values, int iconsCount, int iconsPerLine);
+static void ExportIconsAsCode(Image image, const char *headerFileName);
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -143,7 +136,8 @@ int main(int argc, char *argv[])
 #if defined(COMMAND_LINE_ONLY)
     ProcessCommandLine(argc, argv);
 #else
-    char inFileName[256] = { 0 };       // Input file name (required in case of drag & drop over executable)
+    char inFileName[512] = { 0 };       // Input file name (required in case of drag & drop over executable)
+    char outFileName[512] = { 0 };      // Output file name (required for file save/export)
 
     // Command-line usage mode
     //--------------------------------------------------------------------------------------
@@ -168,7 +162,7 @@ int main(int argc, char *argv[])
 #endif      // VERSION_ONE
     }
     
-#if (defined(VERSION_ONE) && !defined(DEBUG) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
+#if (!defined(DEBUG) && defined(VERSION_ONE) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
     // WARNING (Windows): If program is compiled as Window application (instead of console),
     // no console is available to show output info... solution is compiling a console application
     // and closing console (FreeConsole()) when changing to GUI interface
@@ -178,63 +172,58 @@ int main(int argc, char *argv[])
     // GUI usage mode - Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = 640;
-    const int screenHeight = 320;
+    const int screenHeight = 460;
 
     InitWindow(screenWidth, screenHeight, FormatText("%s v%s - %s", toolName, toolVersion, toolDescription));
     SetExitKey(0);
-
-    // Background noise texture generation
-    Image imNoise = GenImageWhiteNoise(128, 128, 0.1f);
-    ImageColorTint(&imNoise, GRAY);
-    Texture2D texNoise = LoadTextureFromImage(imNoise);
 
     // General pourpose variables
     Vector2 mousePoint = { 0.0f, 0.0f };
     int framesCounter = 0;
 
     // Create a RenderTexture2D to be used for render to texture
-    RenderTexture2D target = LoadRenderTexture(512, 512);
+    RenderTexture2D target = LoadRenderTexture(screenWidth, screenHeight);
     SetTextureFilter(target.texture, FILTER_POINT);
     
-    // Initialize rTool icons for drawing
-    rIcon rToolPack[8] = { 0 };
-
-    for (int i = 0; i < 8; i++)
-    {
-        rToolPack[i].size = 16*i;
-        rToolPack[i].borderSize = (int)ceil((float)rToolPack[i].size/16.0f);
-        strcpy(rToolPack[i].text, "rIP\0");
-        rToolPack[i].textSize = 50/(i + 1);         // TODO: Find a working formula > 50, 30, 20, 20, 10, 10, 10, 6?
-        rToolPack[i].textRec.width = MeasureText(rToolPack[i].text, rToolPack[i].textSize);
-        rToolPack[i].textRec.height = rToolPack[i].textSize;
-        rToolPack[i].textRec.x = rToolPack[i].size - 2*rToolPack[i].borderSize - rToolPack[i].textRec.width;
-        rToolPack[i].textRec.y = rToolPack[i].size - 2*rToolPack[i].borderSize - rToolPack[i].textRec.height;
-        //rToolPack[i].proVersion = false;
-        rToolPack[i].color = DARKGRAY;
-
-        // Color array to fill
-        rToolPack[i].textPixels = (Color *)malloc(rToolPack[i].size*rToolPack[i].size*sizeof(Color));
-        for (int p = 0; p < rToolPack[i].size*rToolPack[i].size; p++) rToolPack[i].textPixels[p] = BLANK;
-    }
-
-    bool iconEditMode = true;      // Icon pixel edition mode
-    int iconEditText = 0;           // 0 - Move/Scale text, 1 - Text pixels edit mode
     float iconEditScale = 1.0f;     // Icon edit mode scale
     float iconEditOffset = 0.0f;    // Icon edit offset inside box, allow icon movement
 
     Vector2 cell = { -1, -1 };      // Grid cell mouse position
-
-    //RenderTexture2D iconTarget = LoadRenderTexture(256, 256);     // To draw icon and retrieve it?
-    //SetTextureFilter(iconTarget.texture, FILTER_POINT);
-
-    //Image icon = GetTextureData(iconTarget.texture);
-    //UpdateTexture(iconTarget.texture, const void *pixels);
+    int scaledSize = 1.0f;
+    float scaleFactor = 1.0f;
     
-    Vector2 anchor01 = { 10, 10 };
+    // GUI: Full
+    //-----------------------------------------------------------------------------------
+    Vector2 anchor01 = { 0, 0 };
+    
+    bool btnLoadPressed = false;
+    bool btnSavePressed = false;
+    bool btnExportPressed = false;
+    bool btnCopyPressed = false;
+    bool btnCutPressed = false;
+    bool btnPastePressed = false;
+    bool btnAboutPressed = false;
+    
+    int fileTypeActive = 0;
+    bool iconNameIdEditMode = false;
+    char iconNameIdText[128] = "";
+    
+    float zoomValue = 0.0f;
+    
+    bool btnSaveIconPressed = false;
+    bool btnClearIconPressed = false;
+    //-----------------------------------------------------------------------------------
 
     // GUI: About Window
     //-----------------------------------------------------------------------------------
     GuiWindowAboutState windowAboutState = InitGuiWindowAbout();
+    //-----------------------------------------------------------------------------------
+    
+    // GUI: Custom file dialogs
+    //-----------------------------------------------------------------------------------
+    bool showLoadFileDialog = false;
+    bool showSaveFileDialog = false;
+    bool showExportFileDialog = false;
     //-----------------------------------------------------------------------------------
     
     // GUI: Exit Window
@@ -280,9 +269,9 @@ int main(int argc, char *argv[])
 
         // Keyboard shortcuts
         //------------------------------------------------------------------------------------
-        //if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) DialogSaveToolData();       // Show dialog: save tool data (.ex1)
-        //if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) DialogLoadToolData();       // Show dialog: load tool data (.ex1)
-        //if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) DialogExportToolData(data); // Show dialog: export tool data (.ex1)
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) showLoadFileDialog = true;      // Show dialog: load icons data (.png)
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) showSaveFileDialog = true;      // Show dialog: save icons data (.png)
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) showExportFileDialog = true;    // Show dialog: export icons data (.h)
 
         if (IsKeyPressed(KEY_F1)) windowAboutState.windowAboutActive = !windowAboutState.windowAboutActive;
         //----------------------------------------------------------------------------------
@@ -302,183 +291,115 @@ int main(int argc, char *argv[])
 
         if (IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_ENTER)) ToggleFullscreen();
         
-        if (IsKeyPressed(KEY_SPACE)) iconEditMode = !iconEditMode;
+        iconEditScale += (float)GetMouseWheelMove()/10.0f;
+        if (iconEditScale < 0.2f) iconEditScale = 0.2f;
 
-        if (iconEditMode)
-        {
-            // Choose text edit mode, edit text or edit pixels
-            if (IsKeyPressed(KEY_E)) iconEditText = !iconEditText;
-            
-            iconEditScale += (float)GetMouseWheelMove()/10.0f;
-            if (iconEditScale < 0.2f) iconEditScale = 0.2f;
+        //...
 
-            // Edit selected rTool icon text position and size
-            if (IsKeyPressed(KEY_RIGHT)) rToolPack[2].textRec.x++;
-            else if (IsKeyPressed(KEY_LEFT)) rToolPack[2].textRec.x--;
-            else if (IsKeyPressed(KEY_UP)) rToolPack[2].textRec.y--;
-            else if (IsKeyPressed(KEY_DOWN)) rToolPack[2].textRec.y++;
-
-            if (IsKeyDown(KEY_LEFT_CONTROL))
-            {
-                if (IsKeyPressed(KEY_UP)) rToolPack[2].textSize++;
-                else if (IsKeyPressed(KEY_DOWN)) rToolPack[2].textSize--;
-            }
-
-            if (iconEditText == 1)
-            {
-                // Pixels edit mode
-                if ((cell.x >= 0) && (cell.y >= 0))
-                {
-                    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-                    {
-                        rToolPack[3 - 1].textPixels[(int)cell.x + (int)cell.y*rToolPack[3 - 1].size] = rToolPack[3 - 1].color;
-                    }
-                    else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON))
-                    {
-                        rToolPack[3 - 1].textPixels[(int)cell.x + (int)cell.y*rToolPack[3 - 1].size] = BLANK;
-                    }
-
-                    // TODO: Update icon texture...
-                    // ISSUE: We are not drawing textures now, icon is just draw with basic shapes!
-                    //if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) UpdateTexture(texIcon, rToolPack[3 - 1].textPixels);
-                }
-            }
-        }
         //----------------------------------------------------------------------------------
 
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
-            ClearBackground(LIGHTGRAY);     // Clear default framebuffer
-
-            // Draw background noise details
-            for (int y = 0; y < (GetScreenHeight()/texNoise.height) + 1; y++)
-                for (int x = 0; x < (GetScreenWidth()/texNoise.width) + 1; x++)
-                    DrawTexture(texNoise, texNoise.width*x, texNoise.height*y, Fade(WHITE, 0.06f));
-
-            // Draw background vignette to focus in loaded image
-            DrawRectangleGradientV(0, 0, GetScreenWidth(), 200, Fade(BLACK, 0.3f), BLANK);
-            DrawRectangleGradientV(0, GetScreenHeight() - 200, GetScreenWidth(), 200, BLANK, Fade(BLACK, 0.3f));
+            ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
             // Draw texture to render target
             BeginTextureMode(target);
 
                 ClearBackground(BLANK);     // Clear render target
-
-                // Draw checked board for alpha images
-                /*
-                for (int y = 0; y < image.height/texChecked.height + 1; y++)
-                    for (int x = 0; x < image.width/texChecked.width + 1; x++)
-                        DrawTextureEx(texChecked, (Vector2){ texChecked.width*x, texChecked.height*y }, 0.0f, 1.0f, Fade(WHITE, 0.5f));
-                */
                 
-                //GuiToggleGroup()
-
-                if (iconEditMode)
+                // GUI: Main toolbar
+                //----------------------------------------------------------------------------------
+                GuiPanel((Rectangle){ anchor01.x + 0, anchor01.y + 0, 640, 45 });
+                
+                if (GuiButton((Rectangle){ anchor01.x + 10, anchor01.y + 10, 25, 25 }, "#01#")) showLoadFileDialog = true;
+                if (GuiButton((Rectangle){ anchor01.x + 40, anchor01.y + 10, 25, 25 }, "#02#")) showSaveFileDialog = true;
+                if (GuiButton((Rectangle){ anchor01.x + 70, anchor01.y + 10, 25, 25 }, "#07#")) showExportFileDialog = true;
+                
+                if (GuiButton((Rectangle){ anchor01.x + 115, anchor01.y + 10, 25, 25 }, "#16#"))
                 {
-                    if (3 == 0)
-                    {
-                        // NOTE: On custom rTool icon edit mode, we don't need all icons drawn...
-                    }
-                    else if (3 > 0)
-                    {
-                        if (iconEditText == 0)       // Edit text position
-                        {
-                            // Draw rTool generated icon
-                            DrawRectangle(anchor01.x + 135 + 128 - rToolPack[3 - 1].size/2,
-                                          anchor01.y + 10 + 128 - rToolPack[3 - 1].size/2,
-                                          rToolPack[3 - 1].size, rToolPack[3 - 1].size, RAYWHITE);
-                            DrawRectangleLinesEx((Rectangle){ anchor01.x + 135 + 128 - rToolPack[3 - 1].size/2,
-                                                              anchor01.y + 10 + 128 - rToolPack[3 - 1].size/2,
-                                                              rToolPack[3 - 1].size, rToolPack[3 - 1].size },
-                                                 rToolPack[3 - 1].borderSize, rToolPack[3 - 1].color);
-                            DrawText(rToolPack[3 - 1].text,
-                                     anchor01.x + 135 + 128 - rToolPack[3 - 1].size/2 + rToolPack[3 - 1].textRec.x,
-                                     anchor01.y + 10 + 128 - rToolPack[3 - 1].size/2 + rToolPack[3 - 1].textRec.y,
-                                     rToolPack[3 - 1].textSize, rToolPack[3 - 1].color);
-                        }
-                        else if (iconEditText == 1)     // Edit text pixels painting
-                        {
-                            int size = rToolPack[3 - 1].size;
-                            float scaleFactor = 1.0f;
-
-                            switch (size)
-                            {
-                                case 16:
-                                case 24:
-                                case 32: scaleFactor = 8.0f; break;
-                                case 48: scaleFactor = 5.0f; break;
-                                case 64: scaleFactor = 4.0f; break;
-                                case 96: 
-                                case 128: scaleFactor = 2.0f; break;
-                                case 256: break;
-                                default: break;
-                            }
-                            
-                            float scaledSize = size*scaleFactor;
-                            
-                            // TODO: Use render target to apply iconEditScale
-                            
-                            BeginScissorMode(anchor01.x + 135, anchor01.y + 10, 256, 256);
-
-                            // Draw icon scaled for painting
-                            DrawRectangle(anchor01.x + 135 + 128 - scaledSize/2, anchor01.y + 10 + 128 - scaledSize/2, scaledSize, scaledSize, RAYWHITE);
-                            DrawRectangleLinesEx((Rectangle){ anchor01.x + 135 + 128 - scaledSize/2, anchor01.y + 10 + 128 - scaledSize/2, scaledSize, scaledSize },
-                                                 rToolPack[3 - 1].borderSize*scaleFactor, rToolPack[3 - 1].color);
-
-                            DrawText(rToolPack[3 - 1].text,
-                                 anchor01.x + 135 + 128 - scaledSize/2 + rToolPack[3 - 1].textRec.x*scaleFactor,
-                                 anchor01.y + 10 + 128 - scaledSize/2 + rToolPack[3 - 1].textRec.y*scaleFactor,
-                                 rToolPack[3 - 1].textSize*10, Fade(rToolPack[3 - 1].color, 0.4f));
-
-                            // Draw grid (returns selected cell)
-                            cell = GuiGrid((Rectangle){ anchor01.x + 135 + 128 - scaledSize/2, anchor01.y + 10 + 128 - scaledSize/2, scaledSize, scaledSize }, scaleFactor, 1);
-
-                            // Draw selected cell lines
-                            if ((cell.x >= 0) && (cell.y >= 0)) DrawRectangleLinesEx((Rectangle){ anchor01.x + 135 + 128 - scaledSize/2 + cell.x*scaleFactor, 
-                                                                                                  anchor01.y + 10 + 128 - scaledSize/2 + cell.y*scaleFactor, 
-                                                                                                  scaleFactor, scaleFactor }, 1, RED);
-
-                            // Draw pixel rectangles
-                            for (int y = 0; y < size; y++)
-                            {
-                                for (int x = 0; x < size; x++)
-                                {
-                                    DrawRectangleRec((Rectangle){ anchor01.x + 135 + 128 - scaledSize/2 + x*scaleFactor,
-                                                                  anchor01.y + 10 + 128 - scaledSize/2 + y*scaleFactor, 
-                                                                  scaleFactor, scaleFactor }, rToolPack[3 - 1].textPixels[y*size + x]);
-                                }
-                            }
-                            
-                            EndScissorMode();
-                        }
-
-                        DrawText(FormatText("%i", rToolPack[3 - 1].textSize), GetScreenWidth() - 50, 35, 10, RED);
-                    }
+                    // TODO: Copy selected icon --> int iconToCopy = id;
                 }
+                
+                if (GuiButton((Rectangle){ anchor01.x + 145, anchor01.y + 10, 25, 25 }, "#17#"))
+                {
+                    // TODO: Cut selected icon --> int iconToCopy = id; ClearIcon(id);
+                }
+                
+                if (GuiButton((Rectangle){ anchor01.x + 175, anchor01.y + 10, 25, 25 }, "#18#"))
+                {
+                    // TODO: ClearIcon(); Paste iconToCopy
+                }
+                
+                if (GuiButton((Rectangle){ anchor01.x + 260, anchor01.y + 10, 75, 25 }, "#191#ABOUT")) windowAboutState.windowAboutActive = true;
+                //----------------------------------------------------------------------------------
+                
+                // GUI: Work area
+                //----------------------------------------------------------------------------------
+                GuiLabel((Rectangle){ anchor01.x + 15, anchor01.y + 45, 140, 25 }, "Choose rIcon for Edit:");
+                
+                // TODO: Draw ricons image (all of them)
+                GuiDummyRec((Rectangle){ anchor01.x + 15, anchor01.y + 65, 320, 320 }, "rIcons File");
+                
+                fileTypeActive = GuiComboBox((Rectangle){ anchor01.x + 15, anchor01.y + 400, 160, 25 }, "rIcons FIle (.rgi);rIcons Image (.png);rIcons Code (.h)", fileTypeActive);
+                btnExportPressed = GuiButton((Rectangle){ anchor01.x + 185, anchor01.y + 400, 150, 25 }, "#07#Export rIcons"); 
+                
+                GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "rIcon Name ID:");
+                if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 65, 260, 25 }, iconNameIdText, 128, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
+                
+                zoomValue = GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 110, 180, 10 }, "ZOOM:", TextFormat("x%i", (int)zoomValue*4), zoomValue, 1, 4);
+                zoomValue = (float)((int)zoomValue);
+                
+                // TODO: Draw selected icon at selected scale (x2, x4, x6)
+                for (int i = 0; i < ICON_SIZE*ICON_SIZE; i++)
+                {
+                    DrawRectangle(anchor01.x + 365 + (i%ICON_SIZE)*ICON_SIZE, anchor01.y + 130 + (i/ICON_SIZE)*ICON_SIZE, ICON_SIZE, ICON_SIZE, RED);
+                }
+               
+                // Draw grid (returns selected cell)
+                cell = GuiGrid((Rectangle){ anchor01.x + 365, anchor01.y + 130, 256, 256 }, 16, 1);
+
+                // Draw selected cell lines
+                if ((cell.x >= 0) && (cell.y >= 0))
+                {
+                    DrawRectangleLinesEx((Rectangle){ anchor01.x + 135 + 128 - scaledSize/2 + cell.x*scaleFactor, 
+                                                      anchor01.y + 10 + 128 - scaledSize/2 + cell.y*scaleFactor, 
+                                                      scaleFactor, scaleFactor }, 1, RED);
+                }
+                
+                btnSaveIconPressed = GuiButton((Rectangle){ anchor01.x + 440, anchor01.y + 400, 100, 25 }, "#012#Save Image"); 
+                btnClearIconPressed = GuiButton((Rectangle){ anchor01.x + 545, anchor01.y + 400, 80, 25 }, "#079#Clear"); 
+                //----------------------------------------------------------------------------------
+
+                // Draw status info
+                GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 435, 350, 25 }, "TOTAL FILE ICONS: 0/0");
+                GuiStatusBar((Rectangle){ anchor01.x + 350, anchor01.y + 435, 290, 25 }, "SELECTED: 0/0 - NAME_ID");
+
+
+                // GUI: About Window
+                //--------------------------------------------------------------------------------
+                GuiWindowAbout(&windowAboutState);
+                //--------------------------------------------------------------------------------
+                
+                // GUI: Exit Window
+                //--------------------------------------------------------------------------------
+                if (windowExitActive)
+                {
+                    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), 0.85f));
+                    int message = GuiMessageBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 }, 
+                                                FormatText("#159#Closing %s", toolName), "Do you really want to exit?", "Yes;No"); 
+                
+                    if ((message == 0) || (message == 2)) windowExitActive = false;
+                    else if (message == 1) exitWindow = true;
+                }
+                //--------------------------------------------------------------------------------
 
             EndTextureMode();
-            
-            DrawTextureRec(target.texture, (Rectangle){ 0, 0, target.texture.width, -target.texture.height }, (Vector2){ 0, 0 }, WHITE);
 
-            // GUI: About Window
-            //--------------------------------------------------------------------------------
-            GuiWindowAbout(&windowAboutState);
-            //--------------------------------------------------------------------------------
-            
-            // GUI: Exit Window
-            //--------------------------------------------------------------------------------
-            if (windowExitActive)
-            {
-                DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), 0.85f));
-                int message = GuiMessageBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 }, 
-                                            FormatText("#159#Closing %s", toolName), "Do you really want to exit?", "Yes;No"); 
-            
-                if ((message == 0) || (message == 2)) windowExitActive = false;
-                else if (message == 1) exitWindow = true;
-            }
-            //--------------------------------------------------------------------------------
+            // Draw render texture to screen
+            if (false) DrawTexturePro(target.texture, (Rectangle){ 0, 0, target.texture.width, -target.texture.height }, (Rectangle){ 0, 0, target.texture.width*2, target.texture.height*2 }, (Vector2){ 0, 0 }, 0.0f, WHITE);
+            else DrawTextureRec(target.texture, (Rectangle){ 0, 0, target.texture.width, -target.texture.height }, (Vector2){ 0, 0 }, WHITE);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -486,8 +407,6 @@ int main(int argc, char *argv[])
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    UnloadTexture(texNoise);    // Unload background noise texture
-
     CloseWindow();              // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
@@ -621,13 +540,54 @@ static void ProcessCommandLine(int argc, char *argv[])
 //--------------------------------------------------------------------------------------------
 // Load/Save/Export functions
 //--------------------------------------------------------------------------------------------
-// ...
+
+// Load raylib icons data (.rgi)
+static IconData *LoadIconData(const char *fileName)
+{
+    IconData *icons = NULL;
+    // rgi file should include following information:
+    //   - file ID      4 byte
+    //   - icons count  2 byte
+    //   - icons size   2 byte 
+    //
+    //   - icons data binary array (unsigned int *) (16x16/32 = 8 int)
+    //   - icons name id [64 bytes max]
+    
+    // Style File Structure (.rgi)
+    // ------------------------------------------------------
+    // Offset  | Size    | Type       | Description
+    // ------------------------------------------------------
+    // 0       | 4       | char       | Signature: "rGI "
+    // 4       | 2       | short      | Version: 100
+    // 6       | 2       | short      | reserved
+    
+    // 8       | 2       | short      | Num icons (N)
+    // 8       | 2       | short      | Size icons (Options: 16, 32, 64)
+
+    // Icons Data: (Icon bitdata: 16*16/8 = 32 bytes + 64 bytes (name) )*N
+    // foreach (icon)
+    // {
+    //   8+8*i  | 2       | int       | ControlId
+    //   8+8*i  | 64      | char      | Icon NameId
+    // }
+    
+    return icons;
+}
 
 //--------------------------------------------------------------------------------------------
 // Auxiliar functions
 //--------------------------------------------------------------------------------------------
 
-// Converts an image to bits array considering only no-alpha-pixel vs alpha-pixel
+// Load raylib icons array from image
+// NOTE: Images are loaded as GRAY+ALPHA
+static IconData *LoadIconsList(Image image, int iconSize, int iconPadding, unsigned int *count)
+{
+    IconData *icons = NULL;
+    
+    return icons;
+}
+
+// Converts an image to bits array following: Alpha->0, NoAlpha->1
 // Very useful to store 1bit color images in an efficient (and quite secure) way
 // NOTE: Image size MUST be multiple of 8 for correct fit
 static unsigned char *ImageToBits(Image image)
@@ -675,16 +635,15 @@ static Image ImageFromBits(unsigned char *bytes, int width, int height, Color co
     return image;
 }
 
-// Generate color-alpha image from and array of bits, stored as int
-// NOTE: 0-BLANK, 1-WHITE
-static Image GetIconsImage(unsigned int *values, int iconsCount, int iconsPerLine)
+// Load GRAY+ALPHA image from and array of bits, stored as int (0-BLANK, 1-WHITE)
+static Image LoadIconsImage(unsigned int *values, int iconsCount, int iconsPerLine)
 {
     #define BIT_CHECK(a,b) ((a) & (1<<(b)))
 
     Image image = { 0 };
 
-    image.width = RICON_SIZE*iconsPerLine;
-    image.height = (RICON_SIZE*(1 + (iconsCount/iconsPerLine)));
+    image.width = ICON_SIZE*iconsPerLine;
+    image.height = (ICON_SIZE*(1 + (iconsCount/iconsPerLine)));
     image.mipmaps = 1;
     image.format = UNCOMPRESSED_GRAY_ALPHA;
     image.data = (unsigned char *)calloc(image.width*image.height, 2);      // All pixels BLANK by default
@@ -696,12 +655,12 @@ static Image GetIconsImage(unsigned int *values, int iconsCount, int iconsPerLin
 
     for (int n = 0; n < iconsCount; n++)
     {
-        for (int i = 0, y = 0; i < RICON_SIZE*RICON_SIZE/32; i++)
+        for (int i = 0, y = 0; i < ICON_SIZE*ICON_SIZE/32; i++)
         {
             for (int k = 0; k < 32; k++)
             {
-                pixelX = (n%iconsPerLine)*RICON_SIZE + (k%RICON_SIZE);
-                pixelY = (n/iconsPerLine)*RICON_SIZE + y;
+                pixelX = (n%iconsPerLine)*ICON_SIZE + (k%ICON_SIZE);
+                pixelY = (n/iconsPerLine)*ICON_SIZE + y;
 
                 if (BIT_CHECK(values[8*n + i], k)) ((unsigned short *)image.data)[pixelY*image.width + pixelX] = 0xffff;    // Draw pixel WHITE
 
@@ -713,16 +672,16 @@ static Image GetIconsImage(unsigned int *values, int iconsCount, int iconsPerLin
     return image;
 }
 
-void GenIconsHeaderFromImage(Image image, const char *headerFileName)
+void ExportIconsAsCode(Image image, const char *headerFileName)
 {
     //Image ricons = LoadImage(riconFile);    //ricons.png
     Color *pixels = GetImageData(image);
     
-    Rectangle icorec = { 0, 0, RICON_SIZE, RICON_SIZE };
+    Rectangle icorec = { 0, 0, ICON_SIZE, ICON_SIZE };
     Color pixel = BLACK;
     
     // Calculate number of bytes required
-    int size = MAX_ICONS_X*MAX_ICONS_Y*RICON_SIZE*RICON_SIZE/32;
+    int size = MAX_ICONS_X*MAX_ICONS_Y*ICON_SIZE*ICON_SIZE/32;
     unsigned int *values = (unsigned int *)calloc(size, sizeof(unsigned int));
     
     int n = 0;      // Icons counter
@@ -733,15 +692,15 @@ void GenIconsHeaderFromImage(Image image, const char *headerFileName)
         for (int x = 0; x < MAX_ICONS_X; x++)
         {
             // Get icon start pixel position within image (top-left corner)
-            icorec.x = ICONS_PADDING + x*(RICON_SIZE + 2*ICONS_PADDING);
-            icorec.y = ICONS_PADDING + y*(RICON_SIZE + 2*ICONS_PADDING);
+            icorec.x = ICONS_PADDING + x*(ICON_SIZE + 2*ICONS_PADDING);
+            icorec.y = ICONS_PADDING + y*(ICON_SIZE + 2*ICONS_PADDING);
 
             // Move along pixels within each icon area
-            for (int p = 0; p < RICON_SIZE*RICON_SIZE; p++)
+            for (int p = 0; p < ICON_SIZE*ICON_SIZE; p++)
             {
-                pixel = pixels[((int)icorec.y + p/RICON_SIZE)*(MAX_ICONS_X*(RICON_SIZE + 2*ICONS_PADDING)) + ((int)icorec.x + p%RICON_SIZE)];
+                pixel = pixels[((int)icorec.y + p/ICON_SIZE)*(MAX_ICONS_X*(ICON_SIZE + 2*ICONS_PADDING)) + ((int)icorec.x + p%ICON_SIZE)];
                 
-                if (ColorToInt(pixel) == 0xffffffff) BIT_SET(values[n*(RICON_SIZE*RICON_SIZE/32) + p/32], k);
+                if (ColorToInt(pixel) == 0xffffffff) BIT_SET(values[n*(ICON_SIZE*ICON_SIZE/32) + p/32], k);
                 
                 k++;
                 if (k == 32) k = 0;
@@ -769,11 +728,11 @@ void DrawIcon(int iconId, Vector2 position, int pixelSize, Color color)
 {
     #define BIT_CHECK(a,b) ((a) & (1<<(b)))
     
-    for (int i = 0, y = 0; i < RICON_SIZE*RICON_SIZE/32; i++)
+    for (int i = 0, y = 0; i < ICON_SIZE*ICON_SIZE/32; i++)
     {
         for (int k = 0; k < 32; k++)
         {
-            if (BIT_CHECK(RICONS[8*iconId + i], k)) DrawRectangle(position.x + (k%RICON_SIZE)*pixelSize, position.y + y*pixelSize, pixelSize, pixelSize, color);
+            if (BIT_CHECK(RICONS[8*iconId + i], k)) DrawRectangle(position.x + (k%ICON_SIZE)*pixelSize, position.y + y*pixelSize, pixelSize, pixelSize, color);
             if ((k == 15) || (k == 31)) y++;
         }
     }
