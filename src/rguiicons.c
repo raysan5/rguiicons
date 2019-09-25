@@ -79,14 +79,15 @@ bool __stdcall FreeConsole(void);       // Close console from code (kernel32.lib
 
 #define MAX_ICONS_X     16
 #define MAX_ICONS_Y     16
-#define ICON_SIZE       16
-#define ICONS_PADDING    2
+
+#define ICON_SIZE       16      // Default icon size
+#define ICON_PADDING    2       // Default icon padding
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
 
-// rIcon data
+// Icon required data
 // NOTE: Image format should be GRAYSCALE
 typedef struct IconData {
     Image image;
@@ -111,19 +112,17 @@ static void ProcessCommandLine(int argc, char *argv[]);     // Process command l
 #endif
 
 // Load/Save/Export data functions
-static IconData *LoadIconData(const char *fileName);        // Load raylib icons data (.rgi)
+static IconData *LoadIconData(const char *fileName, int *count);  // Load raylib icons data (.rgi)
+static void SaveIconData(IconData *icons, int count, const char *fileName);
 
+static IconData *LoadIconDataFromImage(Image image, int iconSize, int iconPadding, unsigned int *count);
+static Image LoadIconsImage(unsigned int *values, int iconsCount, int iconsPerLine);
+
+static void ExportIconsAsCode(Image image, const char *headerFileName);
 
 // Auxiliar functions
-
-
-static IconData *LoadIconsList(Image image, int iconSize, int iconPadding, unsigned int *count);
-
 static unsigned char *ImageToBits(Image image);
 static Image ImageFromBits(unsigned char *bytes, int width, int height, Color color);
-
-static Image LoadIconsImage(unsigned int *values, int iconsCount, int iconsPerLine);
-static void ExportIconsAsCode(Image image, const char *headerFileName);
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -424,9 +423,10 @@ static void ShowCommandLineInfo(void)
 {
     printf("\n//////////////////////////////////////////////////////////////////////////////////\n");
     printf("//                                                                              //\n");
-    printf("// %s v%s ONE - %s           //\n", toolName, toolVersion, toolDescription);
-    printf("// powered by raylib v2.5 (www.raylib.com) and raygui v2.0                      //\n");
-    printf("// more info and bugs-report: github.com/raysan5/rfxgen                         //\n");
+    printf("// %s v%s ONE - %s            //\n", toolName, toolVersion, toolDescription);
+    printf("// powered by raylib v2.6 (www.raylib.com) and raygui v2.6                      //\n");
+    printf("// more info and bugs-report: github.com/raylibtech/rtools                      //\n");
+    printf("// feedback and support:      ray[at]raylibtech.com                             //\n");
     printf("//                                                                              //\n");
     printf("// Copyright (c) 2019 raylib technologies (@raylibtech)                         //\n");
     printf("//                                                                              //\n");
@@ -434,29 +434,20 @@ static void ShowCommandLineInfo(void)
 
     printf("USAGE:\n\n");
     printf("    > rguiicons [--help] --input <filename.ext> [--output <filename.ext>]\n");
-    printf("                    [--format <value>]\n");
 
     printf("\nOPTIONS:\n\n");
     printf("    -h, --help                      : Show tool version and command line usage help\n");
     printf("    -i, --input <filename.ext>      : Define input file.\n");
-    printf("                                      Supported extensions: .rfx, .sfs, .wav\n");
+    printf("                                      Supported extensions: .rgi, .png\n");
     printf("    -o, --output <filename.ext>     : Define output file.\n");
-    printf("                                      Supported extensions: .wav, .h\n");
-    printf("                                      NOTE: If not specified, defaults to: output.wav\n\n");
-    printf("    -f, --format <value>            : Format output file.\n");
-    printf("                                      Supported values:\n");
-    printf("                                          Sample rate:      22050, 44100\n");
-    printf("                                          Sample size:      8, 16, 32\n");
-    printf("                                          Channels:         1 (mono), 2 (stereo)\n");
-    printf("                                      NOTE: If not specified, defaults to: 44100, 16, 1\n\n");
+    printf("                                      Supported extensions: .rgi, .png, .h\n");
+    printf("                                      NOTE: If not specified, defaults to: output.rgi\n\n");
 
     printf("\nEXAMPLES:\n\n");
-    printf("    > rguiicons --input sound.rfx --output jump.wav\n");
-    printf("        Process <sound.rfx> to generate <sound.wav> at 44100 Hz, 32 bit, Mono\n\n");
-    printf("    > rguiicons --input sound.rfx --output jump.wav --format 22050 16 2\n");
-    printf("        Process <sound.rfx> to generate <jump.wav> at 22050 Hz, 16 bit, Stereo\n\n");
-    printf("    > rguiicons --input sound.rfx --play\n");
-    printf("        Plays <sound.rfx>, wave data is generated internally but not saved\n\n");
+    printf("    > rguiicons --input icons.rgi --output icons.png\n");
+    printf("        Process <icons.rgi> to generate <icons.png>\n\n");
+    printf("    > rguiicons --input icons.rgi --output ricons.h\n");
+    printf("        Process <icons.rgi> to generate <ricons.h>\n\n");
 }
 
 // Process command line input
@@ -465,8 +456,8 @@ static void ProcessCommandLine(int argc, char *argv[])
     // CLI required variables
     bool showUsageInfo = false;     // Toggle command line usage info
 
-    char inFileName[256] = { 0 };   // Input file name
-    char outFileName[256] = { 0 };  // Output file name
+    char inFileName[512] = { 0 };   // Input file name
+    char outFileName[512] = { 0 };  // Output file name
     int outputFormat = 0;           // Supported output formats
 
     // Process command line arguments
@@ -482,8 +473,8 @@ static void ProcessCommandLine(int argc, char *argv[])
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
                 // Check for valid file extension: input
-                if (IsFileExtension(argv[i + 1], ".xx1") ||
-                    IsFileExtension(argv[i + 1], ".xx2"))
+                if (IsFileExtension(argv[i + 1], ".rgi") ||
+                    IsFileExtension(argv[i + 1], ".png"))
                 {
                     strcpy(inFileName, argv[i + 1]);    // Read input file
                 }
@@ -499,8 +490,9 @@ static void ProcessCommandLine(int argc, char *argv[])
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
                 // Check for valid file extension: output
-                if (IsFileExtension(argv[i + 1], ".out1") ||
-                    IsFileExtension(argv[i + 1], ".out2"))
+                if (IsFileExtension(argv[i + 1], ".rgi") ||
+                    IsFileExtension(argv[i + 1], ".png") ||
+                    IsFileExtension(argv[i + 1], ".h"))
                 {
                     strcpy(outFileName, argv[i + 1]);   // Read output filename
                 }
@@ -510,25 +502,16 @@ static void ProcessCommandLine(int argc, char *argv[])
             }
             else printf("WARNING: No output file provided\n");
         }
-        else if ((strcmp(argv[i], "-f") == 0) || (strcmp(argv[i], "--format") == 0))
-        {
-            // Check for valid argument and valid parameters
-            if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
-            {
-                // TODO: Read provided values
-            }
-            else printf("WARNING: Format parameters provided not valid\n");
-        }
     }
 
     // Process input file if provided
     if (inFileName[0] != '\0')
     {
-        if (outFileName[0] == '\0') strcpy(outFileName, "output.out");  // Set a default name for output in case not provided
+        // Set a default name for output in case not provided
+        if (outFileName[0] == '\0') strcpy(outFileName, "output.rgi");
 
         printf("\nInput file:       %s", inFileName);
         printf("\nOutput file:      %s", outFileName);
-        printf("\nOutput format:    %i\n\n", 0);
 
         // TODO: Process input --> output
     }
@@ -542,7 +525,7 @@ static void ProcessCommandLine(int argc, char *argv[])
 //--------------------------------------------------------------------------------------------
 
 // Load raylib icons data (.rgi)
-static IconData *LoadIconData(const char *fileName)
+static IconData *LoadIconData(const char *fileName, int *count)
 {
     IconData *icons = NULL;
     // rgi file should include following information:
@@ -692,13 +675,13 @@ void ExportIconsAsCode(Image image, const char *headerFileName)
         for (int x = 0; x < MAX_ICONS_X; x++)
         {
             // Get icon start pixel position within image (top-left corner)
-            icorec.x = ICONS_PADDING + x*(ICON_SIZE + 2*ICONS_PADDING);
-            icorec.y = ICONS_PADDING + y*(ICON_SIZE + 2*ICONS_PADDING);
+            icorec.x = ICON_PADDING + x*(ICON_SIZE + 2*ICON_PADDING);
+            icorec.y = ICON_PADDING + y*(ICON_SIZE + 2*ICON_PADDING);
 
             // Move along pixels within each icon area
             for (int p = 0; p < ICON_SIZE*ICON_SIZE; p++)
             {
-                pixel = pixels[((int)icorec.y + p/ICON_SIZE)*(MAX_ICONS_X*(ICON_SIZE + 2*ICONS_PADDING)) + ((int)icorec.x + p%ICON_SIZE)];
+                pixel = pixels[((int)icorec.y + p/ICON_SIZE)*(MAX_ICONS_X*(ICON_SIZE + 2*ICON_PADDING)) + ((int)icorec.x + p%ICON_SIZE)];
                 
                 if (ColorToInt(pixel) == 0xffffffff) BIT_SET(values[n*(ICON_SIZE*ICON_SIZE/32) + p/32], k);
                 
