@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v2.6 - A simple and easy-to-use immediate-mode gui library
+*   raygui v2.7-dev - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *
@@ -220,6 +220,13 @@ typedef struct GuiTextBoxState {
     int select;      // Marks position of cursor when selection has started
 } GuiTextBoxState;
 #endif
+
+// Style property
+typedef struct GuiStyleProp {
+    unsigned short controlId;
+    unsigned short propertyId;
+    int propertyValue;
+} GuiStyleProp;
 
 // Gui control state
 typedef enum {
@@ -457,9 +464,7 @@ RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                  
 
 // Styles loading functions
 RAYGUIDEF void GuiLoadStyle(const char *fileName);              // Load style file (.rgs)
-RAYGUIDEF void GuiLoadStyleProps(const int *props, int count);  // Load style properties from array
 RAYGUIDEF void GuiLoadStyleDefault(void);                       // Load style default over global style
-RAYGUIDEF void GuiUpdateStyleComplete(void);                    // Updates full style properties set with default values
 
 /*
 typedef GuiStyle (unsigned int *)
@@ -646,6 +651,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 static const char *GetTextIcon(const char *text, int *iconId)
 {
 #if defined(RAYGUI_SUPPORT_RICONS)
+    *iconId = -1;
     if (text[0] == '#')     // Maybe we have an icon!
     {
         char iconValue[4] = { 0 };
@@ -662,7 +668,7 @@ static const char *GetTextIcon(const char *text, int *iconId)
 
         // Move text pointer after icon
         // WARNING: If only icon provided, it could point to EOL character!
-        if (*iconId > 0) text += (i + 1);
+        if (*iconId >= 0) text += (i + 1);
     }
 #endif
 
@@ -690,7 +696,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
 
 #if defined(RAYGUI_SUPPORT_RICONS)
-        if (iconId > 0)
+        if (iconId >= 0)
         {
             textWidth += RICONS_SIZE;
 
@@ -728,10 +734,10 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         // Draw text (with icon if available)
         //---------------------------------------------------------------------------------
 #if defined(RAYGUI_SUPPORT_RICONS)
-        if (iconId > 0)
+        if (iconId >= 0)
         {
             // NOTE: We consider icon height, probably different than text size
-            DrawIcon(iconId, RAYGUI_CLITERAL(Vector2){ position.x, bounds.y + bounds.height/2 - RICONS_SIZE/2 + VALIGN_OFFSET(bounds.height) }, 1, tint);
+            GuiDrawIcon(iconId, RAYGUI_CLITERAL(Vector2){ position.x, bounds.y + bounds.height/2 - RICONS_SIZE/2 + VALIGN_OFFSET(bounds.height) }, 1, tint);
             position.x += (RICONS_SIZE + ICON_TEXT_PADDING);
         }
 #endif
@@ -797,6 +803,12 @@ RAYGUIDEF void GuiSetStyle(int control, int property, int value)
 {
     if (!guiStyleLoaded) GuiLoadStyleDefault();
     guiStyle[control*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property] = value;
+    
+    // Default properties are propagated to all controls
+    if ((control == 0) && (property < NUM_PROPS_DEFAULT))
+    {
+        for (int i = 1; i < NUM_CONTROLS; i++) guiStyle[i*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property] = value;
+    }
 }
 
 // Get control style property value
@@ -1263,7 +1275,7 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char *text, int active)
     float initBoundsX = bounds.x;
 
     // Get substrings items from text (items pointers)
-    int rows[64] = { 0 };
+    int rows[256] = { 0 };
     int itemsCount = 0;
     const char **items = GuiTextSplit(text, &itemsCount, rows);
 
@@ -3245,7 +3257,9 @@ RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxVal
 RAYGUIDEF int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active)
 {
     int itemsCount = 0;
-    const char **items = GuiTextSplit(text, &itemsCount, NULL);
+    const char **items = NULL;
+    
+    if (text != NULL) items = GuiTextSplit(text, &itemsCount, NULL);
 
     return GuiListViewEx(bounds, items, itemsCount, NULL, scrollIndex, active);
 }
@@ -3331,7 +3345,7 @@ RAYGUIDEF int GuiListViewEx(Rectangle bounds, const char **text, int count, int 
     DrawRectangleLinesEx(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), guiAlpha));
 
     // Draw visible items
-    for (int i = 0; i < visibleItems; i++)
+    for (int i = 0; ((i < visibleItems) && (text != NULL)); i++)
     {
         if (state == GUI_STATE_DISABLED)
         {
@@ -3847,16 +3861,8 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                         // Style property: p <control_id> <property_id> <property_value> <property_name>
                         
                         sscanf(buffer, "p %d %d 0x%x", &controlId, &propertyId, &propertyValue);
-                        
-                        if (controlId == 0) // DEFAULT control
-                        {
-                            // If a DEFAULT property is loaded, it is propagated to all controls,
-                            // NOTE: All DEFAULT properties should be defined first in the file
-                            GuiSetStyle(0, propertyId, propertyValue);
-                            
-                            if (propertyId < NUM_PROPS_DEFAULT) for (int i = 1; i < NUM_CONTROLS; i++) GuiSetStyle(i, propertyId, propertyValue);
-                        }
-                        else GuiSetStyle(controlId, propertyId, propertyValue);
+                
+                        GuiSetStyle(controlId, propertyId, propertyValue);
                         
                     } break;
                     case 'f':
@@ -4013,22 +4019,6 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
     }
 }
 
-// Load style from a palette values array
-RAYGUIDEF void GuiLoadStyleProps(const int *props, int count)
-{
-    int completeSets = count/(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED);
-    int uncompleteSetProps = count%(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED);
-
-    // Load style palette values from array (complete property sets)
-    for (int i = 0; i < completeSets; i++)
-    {
-        for (int j = 0; j < (NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED); j++) GuiSetStyle(i, j, props[i]);
-    }
-
-    // Load style palette values from array (uncomplete property set)
-    for (int k = 0; k < uncompleteSetProps; k++) GuiSetStyle(completeSets, k, props[completeSets*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + k]);
-}
-
 // Load style default over global style
 RAYGUIDEF void GuiLoadStyleDefault(void)
 {
@@ -4049,19 +4039,11 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, 0xb5c1c2ff);
     GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, 0xe6e9e9ff);
     GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, 0xaeb7b8ff);
-    GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);          // WARNING: Some controls use other values
-    GuiSetStyle(DEFAULT, TEXT_PADDING, 0);          // WARNING: Some controls use other values
-    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);    // WARNING: Some controls use other values
-
-    // Populate all controls with default style
-    for (int i = 1; i < NUM_CONTROLS; i++)
-    {
-        for (int j = 0; j < NUM_PROPS_DEFAULT; j++) GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
-    }
+    GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);                       // WARNING: Some controls use other values
+    GuiSetStyle(DEFAULT, TEXT_PADDING, 0);                       // WARNING: Some controls use other values
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER); // WARNING: Some controls use other values
     
-    guiFont = GetFontDefault();     // Initialize default font
-    
-    // Initialize default control-specific properties: BORDER_WIDTH, TEXT_PADDING, TEXT_ALIGNMENT
+    // Initialize control-specific property values
     // NOTE: Those properties are in default list but require specific values by control type
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiSetStyle(BUTTON, BORDER_WIDTH, 2);
@@ -4074,16 +4056,15 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(VALUEBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiSetStyle(SPINNER, TEXT_PADDING, 4);
     GuiSetStyle(SPINNER, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
-    GuiSetStyle(STATUSBAR, TEXT_PADDING, 10);
+    GuiSetStyle(STATUSBAR, TEXT_PADDING, 6);
     GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
-    
     
     // Initialize extended property values
     // NOTE: By default, extended property values are initialized to 0
-    GuiSetStyle(DEFAULT, TEXT_SIZE, 10);            // DEFAULT, shared by all controls
-    GuiSetStyle(DEFAULT, TEXT_SPACING, 1);          // DEFAULT, shared by all controls
-    GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);           // DEFAULT specific property
-    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff);     // DEFAULT specific property
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 10);                // DEFAULT, shared by all controls
+    GuiSetStyle(DEFAULT, TEXT_SPACING, 1);              // DEFAULT, shared by all controls
+    GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);       // DEFAULT specific property
+    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff); // DEFAULT specific property
     GuiSetStyle(TOGGLE, GROUP_PADDING, 2);
     GuiSetStyle(SLIDER, SLIDER_WIDTH, 15);
     GuiSetStyle(SLIDER, SLIDER_PADDING, 1);
@@ -4115,20 +4096,8 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(COLORPICKER, HUEBAR_PADDING, 0xa);
     GuiSetStyle(COLORPICKER, HUEBAR_SELECTOR_HEIGHT, 6);
     GuiSetStyle(COLORPICKER, HUEBAR_SELECTOR_OVERFLOW, 2);
-}
-
-// Updates controls style with default values
-RAYGUIDEF void GuiUpdateStyleComplete(void)
-{
-    // Populate all controls with default style
-    // NOTE: Extended style properties are ignored
-    for (int i = 1; i < NUM_CONTROLS; i++)
-    {
-        for (int j = 0; j < NUM_PROPS_DEFAULT; j++) GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
-    }
     
-    // NOTE: Some default properties depend on control type: BORDER_WIDTH, TEXT_PADDING, TEXT_ALIGNMENT
-    // TODO: Maybe those properties shouldn't be populated?
+    guiFont = GetFontDefault();     // Initialize default font
 }
 
 // Get text with icon id prepended
@@ -4171,8 +4140,8 @@ static const char **GuiTextSplit(const char *text, int *count, int *textRow)
     //      1. Maximum number of possible split strings is set by MAX_SUBSTRINGS_COUNT
     //      2. Maximum size of text to split is MAX_TEXT_BUFFER_LENGTH
 
-    #define MAX_TEXT_BUFFER_LENGTH   1024
-    #define MAX_SUBSTRINGS_COUNT       64
+    #define MAX_TEXT_BUFFER_LENGTH   4096
+    #define MAX_SUBSTRINGS_COUNT      256
 
     static const char *result[MAX_SUBSTRINGS_COUNT] = { NULL };
     static char buffer[MAX_TEXT_BUFFER_LENGTH] = { 0 };
