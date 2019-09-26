@@ -197,19 +197,23 @@ int main(int argc, char *argv[])
     //-----------------------------------------------------------------------------------
     Vector2 anchor01 = { 0, 0 };
     
-    bool btnLoadPressed = false;
-    bool btnSavePressed = false;
-    bool btnExportPressed = false;
-    bool btnCopyPressed = false;
-    bool btnCutPressed = false;
-    bool btnPastePressed = false;
-    bool btnAboutPressed = false;
-    
     int fileTypeActive = 0;
     bool iconNameIdEditMode = false;
     char iconNameIdText[128] = "";
     
     float zoomValue = 0.0f;
+    
+    int selectedIcon = 0;
+    
+    char toggleIconsText[MAX_RICONS*6] = { 0 };
+    
+    for (int i = 0; i < MAX_RICONS; i++)
+    {
+        if ((i + 1)%16 == 0) strncpy(toggleIconsText + 6*i, TextFormat("#%03i#\n", i), 6);
+        else strncpy(toggleIconsText + 6*i, TextFormat("#%03i#;", i), 6);
+    }
+    
+    toggleIconsText[MAX_RICONS*6 - 1] = '\0';
     
     bool btnSaveIconPressed = false;
     bool btnClearIconPressed = false;
@@ -242,6 +246,8 @@ int main(int argc, char *argv[])
     {
         // TODO: Set some default values
     }
+    
+    int iconData[8] = { 0 };
 
     SetTargetFPS(60);
     //------------------------------------------------------------
@@ -256,13 +262,20 @@ int main(int argc, char *argv[])
             int dropsCount = 0;
             char **droppedFiles = GetDroppedFiles(&dropsCount);
 
-            if (IsFileExtension(droppedFiles[0], ".ex1") ||
-                IsFileExtension(droppedFiles[0], ".ex2"))
+            if (IsFileExtension(droppedFiles[0], ".rgi"))
             {
-                // TODO: Do something with recognized fileformats
+                // TODO: Load .rgi data into raygui icons set
 
                 SetWindowTitle(FormatText("%s v%s - %s", toolName, toolVersion, inFileName));
             }
+            else if (IsFileExtension(droppedFiles[0], ".png"))
+            {
+                // TODO: Load .png data into raygui icons set
+                // NOTE: Icons png file must be valid!!! --> Check? Allow it?
+            }
+#if defined(VERSION_ONE)
+            else if (IsFileExtension(droppedFileName, ".rgs")) GuiLoadStyle(droppedFileName);
+#endif
 
             ClearDroppedFiles();
         }
@@ -294,9 +307,15 @@ int main(int argc, char *argv[])
         
         iconEditScale += (float)GetMouseWheelMove()/10.0f;
         if (iconEditScale < 0.2f) iconEditScale = 0.2f;
+        
+        if (cell.x > (ICON_SIZE - 1)) cell.x = ICON_SIZE - 1;
+        if (cell.y > (ICON_SIZE - 1)) cell.y = ICON_SIZE - 1;
 
-        //...
-
+        if ((cell.x > 0) && (cell.y > 0) && (cell.x < ICON_SIZE) && (cell.y < ICON_SIZE))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) GuiSetIconPixel(selectedIcon, (int)cell.x, (int)cell.y, true);
+            else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) GuiSetIconPixel(selectedIcon, (int)cell.x, (int)cell.y, false);
+        }
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -310,6 +329,9 @@ int main(int argc, char *argv[])
 
                 ClearBackground(BLANK);     // Clear render target
                 
+                if (windowAboutState.windowAboutActive || windowExitActive) GuiDisable();
+                else GuiEnable();
+                
                 // GUI: Main toolbar
                 //----------------------------------------------------------------------------------
                 GuiPanel((Rectangle){ anchor01.x + 0, anchor01.y + 0, 640, 45 });
@@ -320,17 +342,28 @@ int main(int argc, char *argv[])
                 
                 if (GuiButton((Rectangle){ anchor01.x + 115, anchor01.y + 10, 25, 25 }, "#16#"))
                 {
-                    // TODO: Copy selected icon --> int iconToCopy = id;
+                    // Get icon data
+                    for (int i = 0; i < ICON_SIZE*ICON_SIZE; i++)
+                    {
+                        // TODO: Simplify this!
+                        //if (GuiCheckIconPixel(selectedIcon, i/ICON_SIZE, i%ICON_SIZE)) iconData[i/ICON_SIZE + ((i%ICON_SIZE)%2*16))]
+                    }
                 }
-                
+
                 if (GuiButton((Rectangle){ anchor01.x + 145, anchor01.y + 10, 25, 25 }, "#17#"))
                 {
-                    // TODO: Cut selected icon --> int iconToCopy = id; ClearIcon(id);
+                    // TODO: Keep a copy somewhere! --> unsigned int *GuiGetIconData(int iconId);  // 8 integer values
+                    
+                    for (int i = 0; i < ICON_SIZE*ICON_SIZE; i++)
+                    {
+                        GuiSetIconPixel(selectedIcon, i/ICON_SIZE, i%ICON_SIZE, false);
+                    }
                 }
                 
                 if (GuiButton((Rectangle){ anchor01.x + 175, anchor01.y + 10, 25, 25 }, "#18#"))
                 {
-                    // TODO: ClearIcon(); Paste iconToCopy
+                    // TODO: ClearIcon(); Paste iconData
+                    //for (int i = 0; i < ICON_SIZE*ICON_SIZE; i++) if (BIT_CHECK(iconData[i])) GuiSetIconPixel(selectedIcon, i/ICON_SIZE, i%ICON_SIZE, true);
                 }
                 
                 if (GuiButton((Rectangle){ anchor01.x + 260, anchor01.y + 10, 75, 25 }, "#191#ABOUT")) windowAboutState.windowAboutActive = true;
@@ -340,33 +373,37 @@ int main(int argc, char *argv[])
                 //----------------------------------------------------------------------------------
                 GuiLabel((Rectangle){ anchor01.x + 15, anchor01.y + 45, 140, 25 }, "Choose rIcon for Edit:");
                 
-                // TODO: Draw ricons image (all of them)
-                GuiDummyRec((Rectangle){ anchor01.x + 15, anchor01.y + 65, 320, 320 }, "rIcons File");
+                // Draw ricons selection panel
+                selectedIcon = GuiToggleGroup((Rectangle){ anchor01.x + 15, anchor01.y + 70, 18, 18 }, toggleIconsText, selectedIcon);
                 
-                fileTypeActive = GuiComboBox((Rectangle){ anchor01.x + 15, anchor01.y + 400, 160, 25 }, "rIcons FIle (.rgi);rIcons Image (.png);rIcons Code (.h)", fileTypeActive);
-                btnExportPressed = GuiButton((Rectangle){ anchor01.x + 185, anchor01.y + 400, 150, 25 }, "#07#Export rIcons"); 
+                fileTypeActive = GuiComboBox((Rectangle){ anchor01.x + 15, anchor01.y + 400, 160, 25 }, "rIcons File (.rgi);rIcons Image (.png);rIcons Code (.h)", fileTypeActive);
+                if (GuiButton((Rectangle){ anchor01.x + 185, anchor01.y + 400, 150, 25 }, "#07#Export rIcons")) showExportFileDialog = true;
                 
                 GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "rIcon Name ID:");
-                if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 65, 260, 25 }, iconNameIdText, 128, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
+                if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 70, 260, 25 }, iconNameIdText, 128, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
                 
                 zoomValue = GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 110, 180, 10 }, "ZOOM:", TextFormat("x%i", (int)zoomValue*4), zoomValue, 1, 4);
                 zoomValue = (float)((int)zoomValue);
                 
                 // TODO: Draw selected icon at selected scale (x2, x4, x6)
+                DrawRectangle(anchor01.x + 365, anchor01.y + 130, 256, 256, Fade(LIGHTGRAY, 0.3f));
+                GuiDrawIcon(selectedIcon, (Vector2){ anchor01.x + 365, anchor01.y + 130 }, 16, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
+                /*
                 for (int i = 0; i < ICON_SIZE*ICON_SIZE; i++)
                 {
                     DrawRectangle(anchor01.x + 365 + (i%ICON_SIZE)*ICON_SIZE, anchor01.y + 130 + (i/ICON_SIZE)*ICON_SIZE, ICON_SIZE, ICON_SIZE, RED);
                 }
+                */
                
                 // Draw grid (returns selected cell)
                 cell = GuiGrid((Rectangle){ anchor01.x + 365, anchor01.y + 130, 256, 256 }, 16, 1);
+                
+                // TODO: Review returned cell, sometimes out-of-bounds
 
                 // Draw selected cell lines
                 if ((cell.x >= 0) && (cell.y >= 0))
                 {
-                    DrawRectangleLinesEx((Rectangle){ anchor01.x + 135 + 128 - scaledSize/2 + cell.x*scaleFactor, 
-                                                      anchor01.y + 10 + 128 - scaledSize/2 + cell.y*scaleFactor, 
-                                                      scaleFactor, scaleFactor }, 1, RED);
+                    DrawRectangleLinesEx((Rectangle){ anchor01.x + 365 + 16*cell.x, anchor01.y + 130 + 16*cell.y, 16, 16 }, 1, RED);
                 }
                 
                 btnSaveIconPressed = GuiButton((Rectangle){ anchor01.x + 440, anchor01.y + 400, 100, 25 }, "#012#Save Image"); 
@@ -707,22 +744,6 @@ void ExportIconsAsCode(Image image, const char *headerFileName)
     free(pixels);
     UnloadImage(image);
 }
-
-#if 0
-void DrawIcon(int iconId, Vector2 position, int pixelSize, Color color)
-{
-    #define BIT_CHECK(a,b) ((a) & (1<<(b)))
-    
-    for (int i = 0, y = 0; i < ICON_SIZE*ICON_SIZE/32; i++)
-    {
-        for (int k = 0; k < 32; k++)
-        {
-            if (BIT_CHECK(RICONS[8*iconId + i], k)) DrawRectangle(position.x + (k%ICON_SIZE)*pixelSize, position.y + y*pixelSize, pixelSize, pixelSize, color);
-            if ((k == 15) || (k == 31)) y++;
-        }
-    }
-}
-#endif
 
 /*
 #define ICO_DATA_READER
