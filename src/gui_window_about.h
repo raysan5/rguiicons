@@ -170,7 +170,7 @@ void GuiWindowAbout(GuiWindowAboutState *state)
     const char *mode = "ZERO";
 #endif
 
-    const int toolColor = 0xff00ffff;
+    const int toolColor = 0x48c9c5ff;
 
     if (state->windowAboutActive)
     {
