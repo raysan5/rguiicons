@@ -615,7 +615,7 @@ void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color color)
     {
         for (int k = 0; k < 32; k++)
         {
-            if (BIT_CHECK(guiIcons[8*iconId + i], k)) 
+            if (BIT_CHECK(guiIcons[iconId*RICON_DATA_ELEMENTS + i], k))
             {
             #if !defined(RICONS_STANDALONE)
                 DrawRectangle(position.x + (k%RICON_SIZE)*pixelSize, position.y + y*pixelSize, pixelSize, pixelSize, color);
