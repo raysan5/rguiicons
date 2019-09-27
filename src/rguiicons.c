@@ -115,6 +115,8 @@ static bool SaveIcons(const char *fileName, int format);    // Save raygui icons
 static void ExportIconsAsCode2(const char *fileName);       // Export gui icons as code
 
 // Auxiliar functions
+static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color color);    // Draw icon data
+
 static unsigned char *ImageToBits(Image image);
 static Image ImageFromBits(unsigned char *bytes, int width, int height, Color color);
 
@@ -192,9 +194,7 @@ int main(int argc, char *argv[])
     int fileTypeActive = 0;
     bool iconNameIdEditMode = false;
     char iconNameIdText[128] = "";
-    
-    float zoomValue = 0.0f;
-    
+
     int selectedIcon = 0;
     
     // ToggleGroup() text
@@ -296,16 +296,15 @@ int main(int argc, char *argv[])
 
         if (IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_ENTER)) ToggleFullscreen();
         
-        
-        
-        
-        
+        if (IsKeyPressed(KEY_DELETE))
+        {
+            for (int i = 0; i < RICON_SIZE*RICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RICON_SIZE, i%RICON_SIZE);
+        }
         
         iconEditScale += GetMouseWheelMove();
         if (iconEditScale < 2) iconEditScale = 2;
         else if (iconEditScale > 16) iconEditScale = 16;
-        zoomValue = iconEditScale;
-        
+
         // Security check to avoid cells out of limits
         if (cell.x > (RICON_SIZE - 1)) cell.x = RICON_SIZE - 1;
         if (cell.y > (RICON_SIZE - 1)) cell.y = RICON_SIZE - 1;
@@ -340,26 +339,32 @@ int main(int argc, char *argv[])
                 if (GuiButton((Rectangle){ anchor01.x + 40, anchor01.y + 10, 25, 25 }, "#02#")) showSaveFileDialog = true;
                 if (GuiButton((Rectangle){ anchor01.x + 70, anchor01.y + 10, 25, 25 }, "#07#")) showExportFileDialog = true;
                 
-                if (GuiButton((Rectangle){ anchor01.x + 115, anchor01.y + 10, 25, 25 }, "#16#"))
+                if ((GuiButton((Rectangle){ anchor01.x + 115, anchor01.y + 10, 25, 25 }, "#16#")) || 
+                    (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C)))
                 {
                     memcpy(iconData, GuiGetIconData(selectedIcon), RICON_DATA_ELEMENTS*sizeof(unsigned int));
                     iconDataToCopy = true;
                 }
 
-                if (GuiButton((Rectangle){ anchor01.x + 145, anchor01.y + 10, 25, 25 }, "#17#"))
+                if ((GuiButton((Rectangle){ anchor01.x + 145, anchor01.y + 10, 25, 25 }, "#17#")) || 
+                    (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_X)))
                 {
                     memcpy(iconData, GuiGetIconData(selectedIcon), RICON_DATA_ELEMENTS*sizeof(unsigned int));
                     for (int i = 0; i < RICON_SIZE*RICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RICON_SIZE, i%RICON_SIZE);
                     iconDataToCopy = true;
                 }
                 
-                if (GuiButton((Rectangle){ anchor01.x + 175, anchor01.y + 10, 25, 25 }, "#18#"))
+                if ((GuiButton((Rectangle){ anchor01.x + 175, anchor01.y + 10, 25, 25 }, "#18#")) || 
+                    (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V)))
                 {
                     if (iconDataToCopy) GuiSetIconData(selectedIcon, iconData);
-                    iconDataToCopy = false;
+                    //iconDataToCopy = false;
                 }
                 
-                if (GuiButton((Rectangle){ anchor01.x + 260, anchor01.y + 10, 75, 25 }, "#191#ABOUT")) windowAboutState.windowAboutActive = true;
+                GuiGroupBox((Rectangle){ anchor01.x + 210, anchor01.y + 10, 25, 25 }, NULL);
+                if (iconDataToCopy) DrawIconData(iconData, anchor01.x + 210 + 4, anchor01.y + 10 + 4, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
+                
+                if (GuiButton((Rectangle){ anchor01.x + 550, anchor01.y + 10, 75, 25 }, "#191#ABOUT")) windowAboutState.windowAboutActive = true;
                 //----------------------------------------------------------------------------------
                 
                 // GUI: Work area
@@ -375,7 +380,9 @@ int main(int argc, char *argv[])
                 GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "rIcon Name ID:");
                 if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 70, 260, 25 }, iconNameIdText, 128, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
                 
-                zoomValue = GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 110, 180, 10 }, "ZOOM:", TextFormat("x%i", (int)zoomValue), zoomValue, 0, 16);
+                iconEditScale = (int)GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 110, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), (float)iconEditScale, 0, 16);
+                if (iconEditScale < 2) iconEditScale = 2;
+                else if (iconEditScale > 16) iconEditScale = 16;
 
                 // Draw selected icon at selected scale
                 DrawRectangle(anchor01.x + 365, anchor01.y + 130, 256, 256, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_NORMAL)), 0.3f));
@@ -559,6 +566,25 @@ static void ProcessCommandLine(int argc, char *argv[])
 //--------------------------------------------------------------------------------------------
 // Auxiliar functions
 //--------------------------------------------------------------------------------------------
+
+// Draw icon data
+static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color color)
+{
+    #define BIT_CHECK(a,b) ((a) & (1<<(b)))
+
+    for (int i = 0, j = 0; i < RICON_SIZE*RICON_SIZE/32; i++)
+    {
+        for (int k = 0; k < 32; k++)
+        {
+            if (BIT_CHECK(data[i], k))
+            {
+                DrawRectangle(x + (k%RICON_SIZE)*pixelSize, y + j*pixelSize, pixelSize, pixelSize, color);
+            }
+            
+            if ((k == 15) || (k == 31)) j++;
+        }
+    }
+}
 
 // Converts an image to bits array following: Alpha->0, NoAlpha->1
 // Very useful to store 1bit color images in an efficient (and quite secure) way
