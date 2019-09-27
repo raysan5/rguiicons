@@ -41,7 +41,13 @@
 // Defines and Macros
 //----------------------------------------------------------------------------------
 #define MAX_RICONS     256      // Maximum number of icons
-#define RICONS_SIZE     16      // Size of icons (squared)
+#define RICON_SIZE     16       // Size of icons (squared)
+
+// Icons data is defined by bit array (every bit represents one pixel)
+// Those arrays are stored as unsigned int data arrays, so every array
+// element defines 32 pixels (bits) information
+// Number of elemens depend on RICON_SIZE (by default 16x16 pixels) 
+#define RICON_DATA_ELEMENTS   (RICON_SIZE*RICON_SIZE/32)       
 
 //----------------------------------------------------------------------------------
 // Icons enumeration
@@ -253,8 +259,12 @@ typedef enum {
 //----------------------------------------------------------------------------------
 void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color color);
 
-void GuiSetIconPixel(int iconId, int x, int y, bool value); // Set icon pixel value
-bool GuiCheckIconPixel(int iconId, int x, int y);           // Check icon pixel value 
+unsigned int *GuiGetIconData(int iconId);            // Get icon bit data
+void GuiSetIconData(int iconId, unsigned int *data); // Set icon bit data
+
+void GuiSetIconPixel(int iconId, int x, int y);      // Set icon pixel value
+void GuiClearIconPixel(int iconId, int x, int y);    // Clear icon pixel value
+bool GuiCheckIconPixel(int iconId, int x, int y);    // Check icon pixel value 
 
 #endif // RICONS_H
 
@@ -269,6 +279,9 @@ bool GuiCheckIconPixel(int iconId, int x, int y);           // Check icon pixel 
 #if !defined(RICONS_STANDALONE)
     #include "raylib.h"         // Required for: Icons drawing function: DrawRectangle()
 #endif
+
+#include <stdio.h>              // Required for: fopen(), fclose()...
+#include <string.h>             // Required for: memset(), memcpy()
 
 // Global gui icons array (allocated on heap by default)
 // NOTE: Each icon is defined by 8 unsigned int values, each value bit represents a pixel
@@ -533,19 +546,79 @@ static unsigned int guiIcons[MAX_RICONS*8] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
 };
 
+// Load raygui icons file (.rgi)
+void GuiLoadIcons(const char *fileName)
+{
+    // Style File Structure (.rgi)
+    // ------------------------------------------------------
+    // Offset  | Size    | Type       | Description
+    // ------------------------------------------------------
+    // 0       | 4       | char       | Signature: "rGI "
+    // 4       | 2       | short      | Version: 100
+    // 6       | 2       | short      | reserved
+    
+    // 8       | 2       | short      | Num icons (N)
+    // 8       | 2       | short      | Icons size (Options: 16, 32, 64) (S)
+
+    // Icons name id (32 bytes per name id)
+    // foreach (icon)
+    // {
+    //   8+8*i  | 32      | char      | Icon NameId
+    // }
+    
+    // Icons data: One bit per pixel, stored as unsigned int array (depends on icon size)
+    // S*S pixels/32bit per unsigned int = K unsigned int per icon
+    // foreach (icon)
+    // {
+    //   8+8*i  | K      | unsigned int | Icon Data
+    // }
+
+    FILE *rgiFile = fopen(fileName, "rb");
+
+    if (rgiFile != NULL)
+    {
+        char signature[5] = "";
+        short version = 0;
+        short reserved = 0;
+        short iconsCount = 0;
+        short iconsSize = 0;
+
+        fread(signature, 1, 4, rgiFile);
+        fread(&version, 1, sizeof(short), rgiFile);
+        fread(&reserved, 1, sizeof(short), rgiFile);
+        fread(&iconsCount, 1, sizeof(short), rgiFile);
+        fread(&iconsSize, 1, sizeof(short), rgiFile);
+
+        if ((signature[0] == 'r') &&
+            (signature[1] == 'G') &&
+            (signature[2] == 'I') &&
+            (signature[3] == ' '))
+        {
+            // Skip icons name id
+            // TODO: Do something with this info...
+            fseek(rgiFile, 32*iconsCount, SEEK_SET);
+            
+            // Read icons data directly over guiIcons data array
+            fread(guiIcons, iconsCount*iconsSize*iconsSize/sizeof(unsigned int)*8, sizeof(unsigned int), rgiFile);
+        }
+    
+        fclose(rgiFile);
+    }
+}
+
 // Draw selected icon using rectangles pixel-by-pixel
 void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color color)
 {
     #define BIT_CHECK(a,b) ((a) & (1<<(b)))
 
-    for (int i = 0, y = 0; i < RICONS_SIZE*RICONS_SIZE/32; i++)
+    for (int i = 0, y = 0; i < RICON_SIZE*RICON_SIZE/32; i++)
     {
         for (int k = 0; k < 32; k++)
         {
             if (BIT_CHECK(guiIcons[8*iconId + i], k)) 
             {
             #if !defined(RICONS_STANDALONE)
-                DrawRectangle(position.x + (k%RICONS_SIZE)*pixelSize, position.y + y*pixelSize, pixelSize, pixelSize, color);
+                DrawRectangle(position.x + (k%RICON_SIZE)*pixelSize, position.y + y*pixelSize, pixelSize, pixelSize, color);
             #endif
             }
             
@@ -554,14 +627,50 @@ void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color color)
     }
 }
 
+/*
+typedef struct GuiIcon {
+    unsigned int data[8];
+    unsigned char nameId[32];
+} GuiIcon;
+*/
+
+// Get icon bit data
+// NOTE: Bit data array grouped as unsigned int (ICON_SIZE*ICON_SIZE/32 elements)
+unsigned int *GuiGetIconData(int iconId)
+{
+    static unsigned int iconData[RICON_DATA_ELEMENTS] = { 0 };
+    memset(iconData, 0, RICON_DATA_ELEMENTS*sizeof(unsigned int));
+
+    if (iconId < MAX_RICONS) memcpy(iconData, &guiIcons[iconId*RICON_DATA_ELEMENTS], RICON_DATA_ELEMENTS*sizeof(unsigned int));
+    
+    return iconData;
+}
+
+// Set icon bit data
+// NOTE: Data must be provided as unsigned int array (ICON_SIZE*ICON_SIZE/32 elements)
+void GuiSetIconData(int iconId, unsigned int *data)
+{
+    if (iconId < MAX_RICONS) memcpy(&guiIcons[iconId*RICON_DATA_ELEMENTS], data, RICON_DATA_ELEMENTS*sizeof(unsigned int));
+}
+
 // Set icon pixel value
-void GuiSetIconPixel(int iconId, int x, int y, bool value)
+void GuiSetIconPixel(int iconId, int x, int y)
 {
     #define BIT_SET(a,b)   ((a) |= (1<<(b)))
-    #define BIT_CLEAR(a,b) ((a) &= ~((1)<<(b)))
     
-    if (value) BIT_SET(guiIcons[iconId*8 + y/2], x + (y%2*16));
-    else BIT_CLEAR(guiIcons[iconId*8 + y/2], x + (y%2*16));
+    // This logic works for any RICON_SIZE pixels icons,
+    // For example, in case of 16x16 pixels, every 2 lines fit in one unsigned int data element
+    BIT_SET(guiIcons[iconId*RICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RICON_SIZE)*RICON_SIZE));
+}
+
+// Clear icon pixel value
+void GuiClearIconPixel(int iconId, int x, int y)
+{
+    #define BIT_CLEAR(a,b) ((a) &= ~((1)<<(b)))
+
+    // This logic works for any RICON_SIZE pixels icons,
+    // For example, in case of 16x16 pixels, every 2 lines fit in one unsigned int data element
+    BIT_CLEAR(guiIcons[iconId*RICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RICON_SIZE)*RICON_SIZE));
 }
 
 // Check icon pixel value 
