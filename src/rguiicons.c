@@ -39,6 +39,12 @@
 
 #include "raylib.h"
 
+// NOTE: Some raygui elements need to be defined before including raygui
+#define TEXTSPLIT_MAX_TEXT_LENGTH      4096
+#define TEXTSPLIT_MAX_TEXT_ELEMENTS     256
+#define TOGGLEGROUP_MAX_ELEMENTS        256
+#define GRID_COLOR_ALPHA                0.2f
+
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_SUPPORT_RICONS
 #include "external/raygui.h"            // Required for: IMGUI controls
@@ -80,21 +86,12 @@ bool __stdcall FreeConsole(void);       // Close console from code (kernel32.lib
 #define MAX_ICONS_X     16
 #define MAX_ICONS_Y     16
 
-#define ICON_SIZE       16      // Default icon size
 #define ICON_PADDING    2       // Default icon padding
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
-
-// Icon required data
-// NOTE: Image format should be GRAYSCALE
-typedef struct IconData {
-    Image image;
-    Color *pixels;
-    Texture2D texture;
-    unsigned char nameId[64];
-} IconData;
+// ...
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
@@ -114,17 +111,16 @@ static void ProcessCommandLine(int argc, char *argv[]);     // Process command l
 #endif
 
 // Load/Save/Export data functions
-static IconData *LoadIconData(const char *fileName, int *count);  // Load raylib icons data (.rgi)
-static void SaveIconData(IconData *icons, int count, const char *fileName);
-
-static IconData *LoadIconDataFromImage(Image image, int iconSize, int iconPadding, unsigned int *count);
-static Image LoadIconsImage(unsigned int *values, int iconsCount, int iconsPerLine);
-
-static void ExportIconsAsCode(Image image, const char *headerFileName);
+static bool SaveIcons(const char *fileName, int format);    // Save raygui icons file (.rgi)
+static void ExportIconsAsCode2(const char *fileName);       // Export gui icons as code
 
 // Auxiliar functions
 static unsigned char *ImageToBits(Image image);
 static Image ImageFromBits(unsigned char *bytes, int width, int height, Color color);
+
+static Image LoadIconsImage(unsigned int *values, int iconsCount, int iconsPerLine);
+static void ExportIconsAsCode(Image image, const char *headerFileName);
+
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -180,18 +176,14 @@ int main(int argc, char *argv[])
 
     // General pourpose variables
     Vector2 mousePoint = { 0.0f, 0.0f };
-    int framesCounter = 0;
 
     // Create a RenderTexture2D to be used for render to texture
     RenderTexture2D target = LoadRenderTexture(screenWidth, screenHeight);
     SetTextureFilter(target.texture, FILTER_POINT);
     
-    float iconEditScale = 1.0f;     // Icon edit mode scale
-    float iconEditOffset = 0.0f;    // Icon edit offset inside box, allow icon movement
 
-    Vector2 cell = { -1, -1 };      // Grid cell mouse position
-    int scaledSize = 1.0f;
-    float scaleFactor = 1.0f;
+    Vector2 cell = { -1, -1 };  // Grid cell mouse position
+    int iconEditScale = 16;     // Icon edit scale
     
     // GUI: Full
     //-----------------------------------------------------------------------------------
@@ -205,6 +197,8 @@ int main(int argc, char *argv[])
     
     int selectedIcon = 0;
     
+    // ToggleGroup() text
+    // NOTE: Every icon requires 6 text characters: "#001#;"
     char toggleIconsText[MAX_RICONS*6] = { 0 };
     
     for (int i = 0; i < MAX_RICONS; i++)
@@ -229,6 +223,8 @@ int main(int argc, char *argv[])
     bool showLoadFileDialog = false;
     bool showSaveFileDialog = false;
     bool showExportFileDialog = false;
+    
+    bool showSaveImageDialog = false;
     //-----------------------------------------------------------------------------------
     
     // GUI: Exit Window
@@ -238,16 +234,14 @@ int main(int argc, char *argv[])
     //-----------------------------------------------------------------------------------
 
     // Check if an input file has been provided on command line
-    if (inFileName[0] != '\0')
+    if ((inFileName[0] != '\0') && (IsFileExtension(inFileName, ".rgi")))
     {
-        // TODO: Do something with loaded data
+        GuiLoadIcons(inFileName);
+        SetWindowTitle(FormatText("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
     }
-    else
-    {
-        // TODO: Set some default values
-    }
-    
-    int iconData[8] = { 0 };
+
+    unsigned int iconData[8] = { 0 };
+    bool iconDataToCopy = false;
 
     SetTargetFPS(60);
     //------------------------------------------------------------
@@ -264,17 +258,14 @@ int main(int argc, char *argv[])
 
             if (IsFileExtension(droppedFiles[0], ".rgi"))
             {
-                // TODO: Load .rgi data into raygui icons set
+                // Load .rgi data into raygui icons set
+                GuiLoadIcons(droppedFiles[0]);
 
-                SetWindowTitle(FormatText("%s v%s - %s", toolName, toolVersion, inFileName));
-            }
-            else if (IsFileExtension(droppedFiles[0], ".png"))
-            {
-                // TODO: Load .png data into raygui icons set
-                // NOTE: Icons png file must be valid!!! --> Check? Allow it?
+                strcpy(inFileName, droppedFiles[0]);
+                SetWindowTitle(FormatText("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
             }
 #if defined(VERSION_ONE)
-            else if (IsFileExtension(droppedFileName, ".rgs")) GuiLoadStyle(droppedFileName);
+            else if (IsFileExtension(droppedFiles[0], ".rgs")) GuiLoadStyle(droppedFiles[0]);
 #endif
 
             ClearDroppedFiles();
@@ -283,17 +274,17 @@ int main(int argc, char *argv[])
 
         // Keyboard shortcuts
         //------------------------------------------------------------------------------------
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) showLoadFileDialog = true;      // Show dialog: load icons data (.png)
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) showSaveFileDialog = true;      // Show dialog: save icons data (.png)
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) showExportFileDialog = true;    // Show dialog: export icons data (.h)
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) showLoadFileDialog = true;      // Show dialog: load icons data (.rgi)
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) showSaveFileDialog = true;      // Show dialog: save icons data (.rgi)
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) showExportFileDialog = true;    // Show dialog: export icons data (.png, .h)
 
         if (IsKeyPressed(KEY_F1)) windowAboutState.windowAboutActive = !windowAboutState.windowAboutActive;
         //----------------------------------------------------------------------------------
 
         // Basic program flow logic
         //----------------------------------------------------------------------------------
-        framesCounter++;                    // General usage frames counter
         mousePoint = GetMousePosition();    // Get mouse position each frame
+        
         if (WindowShouldClose()) exitWindow = true;
 
         // Show closing window on ESC
@@ -305,16 +296,25 @@ int main(int argc, char *argv[])
 
         if (IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_ENTER)) ToggleFullscreen();
         
-        iconEditScale += (float)GetMouseWheelMove()/10.0f;
-        if (iconEditScale < 0.2f) iconEditScale = 0.2f;
         
-        if (cell.x > (ICON_SIZE - 1)) cell.x = ICON_SIZE - 1;
-        if (cell.y > (ICON_SIZE - 1)) cell.y = ICON_SIZE - 1;
+        
+        
+        
+        
+        iconEditScale += GetMouseWheelMove();
+        if (iconEditScale < 2) iconEditScale = 2;
+        else if (iconEditScale > 16) iconEditScale = 16;
+        zoomValue = iconEditScale;
+        
+        // Security check to avoid cells out of limits
+        if (cell.x > (RICON_SIZE - 1)) cell.x = RICON_SIZE - 1;
+        if (cell.y > (RICON_SIZE - 1)) cell.y = RICON_SIZE - 1;
 
-        if ((cell.x > 0) && (cell.y > 0) && (cell.x < ICON_SIZE) && (cell.y < ICON_SIZE))
+        // Icon painting mouse logic
+        if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RICON_SIZE) && (cell.y < RICON_SIZE))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) GuiSetIconPixel(selectedIcon, (int)cell.x, (int)cell.y, true);
-            else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) GuiSetIconPixel(selectedIcon, (int)cell.x, (int)cell.y, false);
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) GuiSetIconPixel(selectedIcon, (int)cell.x, (int)cell.y);
+            else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) GuiClearIconPixel(selectedIcon, (int)cell.x, (int)cell.y);
         }
         //----------------------------------------------------------------------------------
 
@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
             // Draw texture to render target
             BeginTextureMode(target);
 
-                ClearBackground(BLANK);     // Clear render target
+                ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
                 
                 if (windowAboutState.windowAboutActive || windowExitActive) GuiDisable();
                 else GuiEnable();
@@ -342,28 +342,21 @@ int main(int argc, char *argv[])
                 
                 if (GuiButton((Rectangle){ anchor01.x + 115, anchor01.y + 10, 25, 25 }, "#16#"))
                 {
-                    // Get icon data
-                    for (int i = 0; i < ICON_SIZE*ICON_SIZE; i++)
-                    {
-                        // TODO: Simplify this!
-                        //if (GuiCheckIconPixel(selectedIcon, i/ICON_SIZE, i%ICON_SIZE)) iconData[i/ICON_SIZE + ((i%ICON_SIZE)%2*16))]
-                    }
+                    memcpy(iconData, GuiGetIconData(selectedIcon), RICON_DATA_ELEMENTS*sizeof(unsigned int));
+                    iconDataToCopy = true;
                 }
 
                 if (GuiButton((Rectangle){ anchor01.x + 145, anchor01.y + 10, 25, 25 }, "#17#"))
                 {
-                    // TODO: Keep a copy somewhere! --> unsigned int *GuiGetIconData(int iconId);  // 8 integer values
-                    
-                    for (int i = 0; i < ICON_SIZE*ICON_SIZE; i++)
-                    {
-                        GuiSetIconPixel(selectedIcon, i/ICON_SIZE, i%ICON_SIZE, false);
-                    }
+                    memcpy(iconData, GuiGetIconData(selectedIcon), RICON_DATA_ELEMENTS*sizeof(unsigned int));
+                    for (int i = 0; i < RICON_SIZE*RICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RICON_SIZE, i%RICON_SIZE);
+                    iconDataToCopy = true;
                 }
                 
                 if (GuiButton((Rectangle){ anchor01.x + 175, anchor01.y + 10, 25, 25 }, "#18#"))
                 {
-                    // TODO: ClearIcon(); Paste iconData
-                    //for (int i = 0; i < ICON_SIZE*ICON_SIZE; i++) if (BIT_CHECK(iconData[i])) GuiSetIconPixel(selectedIcon, i/ICON_SIZE, i%ICON_SIZE, true);
+                    if (iconDataToCopy) GuiSetIconData(selectedIcon, iconData);
+                    iconDataToCopy = false;
                 }
                 
                 if (GuiButton((Rectangle){ anchor01.x + 260, anchor01.y + 10, 75, 25 }, "#191#ABOUT")) windowAboutState.windowAboutActive = true;
@@ -382,37 +375,36 @@ int main(int argc, char *argv[])
                 GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "rIcon Name ID:");
                 if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 70, 260, 25 }, iconNameIdText, 128, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
                 
-                zoomValue = GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 110, 180, 10 }, "ZOOM:", TextFormat("x%i", (int)zoomValue*4), zoomValue, 1, 4);
-                zoomValue = (float)((int)zoomValue);
-                
-                // TODO: Draw selected icon at selected scale (x2, x4, x6)
-                DrawRectangle(anchor01.x + 365, anchor01.y + 130, 256, 256, Fade(LIGHTGRAY, 0.3f));
-                GuiDrawIcon(selectedIcon, (Vector2){ anchor01.x + 365, anchor01.y + 130 }, 16, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
-                /*
-                for (int i = 0; i < ICON_SIZE*ICON_SIZE; i++)
-                {
-                    DrawRectangle(anchor01.x + 365 + (i%ICON_SIZE)*ICON_SIZE, anchor01.y + 130 + (i/ICON_SIZE)*ICON_SIZE, ICON_SIZE, ICON_SIZE, RED);
-                }
-                */
+                zoomValue = GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 110, 180, 10 }, "ZOOM:", TextFormat("x%i", (int)zoomValue), zoomValue, 0, 16);
+
+                // Draw selected icon at selected scale
+                DrawRectangle(anchor01.x + 365, anchor01.y + 130, 256, 256, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_NORMAL)), 0.3f));
+                GuiDrawIcon(selectedIcon, (Vector2){ anchor01.x + 365 + 128 - RICON_SIZE*iconEditScale/2, anchor01.y + 130 + 128 - RICON_SIZE*iconEditScale/2 }, iconEditScale, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
                
                 // Draw grid (returns selected cell)
-                cell = GuiGrid((Rectangle){ anchor01.x + 365, anchor01.y + 130, 256, 256 }, 16, 1);
+                cell = GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RICON_SIZE*iconEditScale/2, anchor01.y + 130 + 128 - RICON_SIZE*iconEditScale/2, RICON_SIZE*iconEditScale, RICON_SIZE*iconEditScale }, iconEditScale, 1);
                 
                 // TODO: Review returned cell, sometimes out-of-bounds
 
                 // Draw selected cell lines
-                if ((cell.x >= 0) && (cell.y >= 0))
+                if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RICON_SIZE) && (cell.y < RICON_SIZE))
                 {
-                    DrawRectangleLinesEx((Rectangle){ anchor01.x + 365 + 16*cell.x, anchor01.y + 130 + 16*cell.y, 16, 16 }, 1, RED);
+                    DrawRectangleLinesEx((Rectangle){ anchor01.x + 365 + iconEditScale*cell.x + 128 - RICON_SIZE*iconEditScale/2, 
+                                                      anchor01.y + 130 + iconEditScale*cell.y + 128 - RICON_SIZE*iconEditScale/2, 
+                                                      iconEditScale + 1, iconEditScale + 1 }, 1, RED);
                 }
                 
-                btnSaveIconPressed = GuiButton((Rectangle){ anchor01.x + 440, anchor01.y + 400, 100, 25 }, "#012#Save Image"); 
-                btnClearIconPressed = GuiButton((Rectangle){ anchor01.x + 545, anchor01.y + 400, 80, 25 }, "#079#Clear"); 
+                if (GuiButton((Rectangle){ anchor01.x + 440, anchor01.y + 400, 100, 25 }, "#012#Save Image")) showSaveImageDialog = true;
+                
+                if (GuiButton((Rectangle){ anchor01.x + 545, anchor01.y + 400, 80, 25 }, "#079#Clear"))
+                {
+                    for (int i = 0; i < RICON_SIZE*RICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RICON_SIZE, i%RICON_SIZE);
+                }
                 //----------------------------------------------------------------------------------
 
                 // Draw status info
-                GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 435, 350, 25 }, "TOTAL FILE ICONS: 0/0");
-                GuiStatusBar((Rectangle){ anchor01.x + 350, anchor01.y + 435, 290, 25 }, "SELECTED: 0/0 - NAME_ID");
+                GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 435, 351, 25 }, "TOTAL FILE ICONS: 0/0");
+                GuiStatusBar((Rectangle){ anchor01.x + 350, anchor01.y + 435, 290, 25 }, TextFormat("SELECTED: %i/256 - NAME_ID", selectedIcon));
 
 
                 // GUI: About Window
@@ -477,7 +469,7 @@ static void ShowCommandLineInfo(void)
     printf("\nOPTIONS:\n\n");
     printf("    -h, --help                      : Show tool version and command line usage help\n");
     printf("    -i, --input <filename.ext>      : Define input file.\n");
-    printf("                                      Supported extensions: .rgi, .png\n");
+    printf("                                      Supported extensions: .rgi\n");
     printf("    -o, --output <filename.ext>     : Define output file.\n");
     printf("                                      Supported extensions: .rgi, .png, .h\n");
     printf("                                      NOTE: If not specified, defaults to: output.rgi\n\n");
@@ -512,8 +504,7 @@ static void ProcessCommandLine(int argc, char *argv[])
             if (((i + 1) < argc) && (argv[i + 1][0] != '-'))
             {
                 // Check for valid file extension: input
-                if (IsFileExtension(argv[i + 1], ".rgi") ||
-                    IsFileExtension(argv[i + 1], ".png"))
+                if (IsFileExtension(argv[i + 1], ".rgi"))
                 {
                     strcpy(inFileName, argv[i + 1]);    // Read input file
                 }
@@ -563,51 +554,11 @@ static void ProcessCommandLine(int argc, char *argv[])
 // Load/Save/Export functions
 //--------------------------------------------------------------------------------------------
 
-// Load raylib icons data (.rgi)
-static IconData *LoadIconData(const char *fileName, int *count)
-{
-    IconData *icons = NULL;
-    // rgi file should include following information:
-    //   - file ID      4 byte
-    //   - icons count  2 byte
-    //   - icons size   2 byte 
-    //
-    //   - icons data binary array (unsigned int *) (16x16/32 = 8 int)
-    //   - icons name id [64 bytes max]
-    
-    // Style File Structure (.rgi)
-    // ------------------------------------------------------
-    // Offset  | Size    | Type       | Description
-    // ------------------------------------------------------
-    // 0       | 4       | char       | Signature: "rGI "
-    // 4       | 2       | short      | Version: 100
-    // 6       | 2       | short      | reserved
-    
-    // 8       | 2       | short      | Num icons (N)
-    // 8       | 2       | short      | Size icons (Options: 16, 32, 64)
-
-    // Icons Data: (Icon bitdata: 16*16/8 = 32 bytes + 64 bytes (name) )*N
-    // foreach (icon)
-    // {
-    //   8+8*i  | 2       | int       | ControlId
-    //   8+8*i  | 64      | char      | Icon NameId
-    // }
-    
-    return icons;
-}
+// ...
 
 //--------------------------------------------------------------------------------------------
 // Auxiliar functions
 //--------------------------------------------------------------------------------------------
-
-// Load raylib icons array from image
-// NOTE: Images are loaded as GRAY+ALPHA
-static IconData *LoadIconsList(Image image, int iconSize, int iconPadding, unsigned int *count)
-{
-    IconData *icons = NULL;
-    
-    return icons;
-}
 
 // Converts an image to bits array following: Alpha->0, NoAlpha->1
 // Very useful to store 1bit color images in an efficient (and quite secure) way
@@ -664,8 +615,8 @@ static Image LoadIconsImage(unsigned int *values, int iconsCount, int iconsPerLi
 
     Image image = { 0 };
 
-    image.width = ICON_SIZE*iconsPerLine;
-    image.height = (ICON_SIZE*(1 + (iconsCount/iconsPerLine)));
+    image.width = RICON_SIZE*iconsPerLine;
+    image.height = (RICON_SIZE*(1 + (iconsCount/iconsPerLine)));
     image.mipmaps = 1;
     image.format = UNCOMPRESSED_GRAY_ALPHA;
     image.data = (unsigned char *)calloc(image.width*image.height, 2);      // All pixels BLANK by default
@@ -677,12 +628,12 @@ static Image LoadIconsImage(unsigned int *values, int iconsCount, int iconsPerLi
 
     for (int n = 0; n < iconsCount; n++)
     {
-        for (int i = 0, y = 0; i < ICON_SIZE*ICON_SIZE/32; i++)
+        for (int i = 0, y = 0; i < RICON_SIZE*RICON_SIZE/32; i++)
         {
             for (int k = 0; k < 32; k++)
             {
-                pixelX = (n%iconsPerLine)*ICON_SIZE + (k%ICON_SIZE);
-                pixelY = (n/iconsPerLine)*ICON_SIZE + y;
+                pixelX = (n%iconsPerLine)*RICON_SIZE + (k%RICON_SIZE);
+                pixelY = (n/iconsPerLine)*RICON_SIZE + y;
 
                 if (BIT_CHECK(values[8*n + i], k)) ((unsigned short *)image.data)[pixelY*image.width + pixelX] = 0xffff;    // Draw pixel WHITE
 
@@ -699,11 +650,11 @@ void ExportIconsAsCode(Image image, const char *headerFileName)
     //Image ricons = LoadImage(riconFile);    //ricons.png
     Color *pixels = GetImageData(image);
     
-    Rectangle icorec = { 0, 0, ICON_SIZE, ICON_SIZE };
+    Rectangle icorec = { 0, 0, RICON_SIZE, RICON_SIZE };
     Color pixel = BLACK;
     
     // Calculate number of bytes required
-    int size = MAX_ICONS_X*MAX_ICONS_Y*ICON_SIZE*ICON_SIZE/32;
+    int size = MAX_ICONS_X*MAX_ICONS_Y*RICON_SIZE*RICON_SIZE/32;
     unsigned int *values = (unsigned int *)calloc(size, sizeof(unsigned int));
     
     int n = 0;      // Icons counter
@@ -714,15 +665,15 @@ void ExportIconsAsCode(Image image, const char *headerFileName)
         for (int x = 0; x < MAX_ICONS_X; x++)
         {
             // Get icon start pixel position within image (top-left corner)
-            icorec.x = ICON_PADDING + x*(ICON_SIZE + 2*ICON_PADDING);
-            icorec.y = ICON_PADDING + y*(ICON_SIZE + 2*ICON_PADDING);
+            icorec.x = ICON_PADDING + x*(RICON_SIZE + 2*ICON_PADDING);
+            icorec.y = ICON_PADDING + y*(RICON_SIZE + 2*ICON_PADDING);
 
             // Move along pixels within each icon area
-            for (int p = 0; p < ICON_SIZE*ICON_SIZE; p++)
+            for (int p = 0; p < RICON_SIZE*RICON_SIZE; p++)
             {
-                pixel = pixels[((int)icorec.y + p/ICON_SIZE)*(MAX_ICONS_X*(ICON_SIZE + 2*ICON_PADDING)) + ((int)icorec.x + p%ICON_SIZE)];
+                pixel = pixels[((int)icorec.y + p/RICON_SIZE)*(MAX_ICONS_X*(RICON_SIZE + 2*ICON_PADDING)) + ((int)icorec.x + p%RICON_SIZE)];
                 
-                if (ColorToInt(pixel) == 0xffffffff) BIT_SET(values[n*(ICON_SIZE*ICON_SIZE/32) + p/32], k);
+                if (ColorToInt(pixel) == 0xffffffff) BIT_SET(values[n*(RICON_SIZE*RICON_SIZE/32) + p/32], k);
                 
                 k++;
                 if (k == 32) k = 0;
@@ -744,136 +695,3 @@ void ExportIconsAsCode(Image image, const char *headerFileName)
     free(pixels);
     UnloadImage(image);
 }
-
-/*
-#define ICO_DATA_READER
-#if defined(ICO_DATA_READER)
-    if (IsFileExtension(argv[1], ".ico"))
-    {
-        // Icon data reader
-        FILE *icoFile = fopen(argv[1], "rb");
-
-        // NOTE: raylib.ico, in the way it was generated, 256x256 PNG is embedded directly while the
-        // resto of image sizes seem to be embedded in an uncompressed form (BMP?)
-
-        if (icoFile == NULL) return -1;
-
-        // Load .ico information
-        IcoHeader icoHeader = { 0 };
-        fread(&icoHeader, 1, sizeof(IcoHeader), icoFile);
-
-        printf("icoHeader.imageType: %i\n", icoHeader.imageType);
-        printf("icoHeader.icoPackCount: %i\n", icoHeader.icoPackCount);
-
-        IcoDirEntry *icoDirEntry = (IcoDirEntry *)calloc(icoHeader.icoPackCount, sizeof(IcoDirEntry));
-        unsigned char *icoData[icoHeader.icoPackCount];
-
-        for (int i = 0; i < icoHeader.icoPackCount; i++)
-        {
-            fread(&icoDirEntry[i], 1, sizeof(IcoDirEntry), icoFile);
-
-            printf("%ix%i@%i - %i - %i\n", icoDirEntry[i].width, icoDirEntry[i].height,
-                   icoDirEntry[i].bpp, icoDirEntry[i].size, icoDirEntry[i].offset);
-        }
-
-        for (int i = 0; i < icoHeader.icoPackCount; i++)
-        {
-            icoData[i] = (unsigned char *)malloc(icoDirEntry[i].size);
-            fread(icoData[i], icoDirEntry[i].size, 1, icoFile);         // Read icon png data
-
-            Image image = { 0 };
-
-            // Reading png data from memory buffer
-            int channels;
-            image.data = stbi_load_from_memory(icoData[i], icoDirEntry[i].size, &image.width, &image.height, &channels, 0);
-
-            printf("Read image data from PNG in memory: %ix%i @ %ibpp\n", image.width, image.height, channels*8);
-
-            image.mipmaps =  1;
-
-            if (channels == 1) image.format = UNCOMPRESSED_GRAYSCALE;
-            else if (channels == 2) image.format = UNCOMPRESSED_GRAY_ALPHA;
-            else if (channels == 3) image.format = UNCOMPRESSED_R8G8B8;
-            else if (channels == 4) image.format = UNCOMPRESSED_R8G8B8A8;
-            else printf("WARNING: Number of data channels not supported");
-
-            // TODO: Extract icon name from dropped file
-
-            ExportImage(image, FormatText("icon_%ix%i.png", image.width, image.height));
-
-            UnloadImage(image);
-        }
-
-        fclose(icoFile);
-
-        for (int i = 0; i < icoHeader.icoPackCount; i++)
-        {
-            free(icoDirEntry);
-            free(icoData[i]);
-        }
-    }
-#endif
-
-#if defined(ICO_DATA_WRITTER)
-    // Generate ICO file manually
-    char *icoFileNames[MAX_DEFAULT_ICONS];
-
-    // Generate file names to load from expected sizes
-    for (int i = 0; i < MAX_DEFAULT_ICONS; i++)
-    {
-        icoFileNames[i] = (char *)calloc(128, 1);
-        sprintf(icoFileNames[i], "%s_%ix%i.png", argv[1], icoSizesPlatform[i], icoSizesPlatform[i]);
-    }
-
-    FILE *icoFile = fopen(FormatText("%s.ico", argv[1]), "wb");
-
-    IcoHeader icoHeader = { .reserved = 0, .imageType = 1, .icoPackCount = MAX_DEFAULT_ICONS };
-    fwrite(&icoHeader, 1, sizeof(IcoHeader), icoFile);
-
-    IcoDirEntry *icoDirEntry = (IcoDirEntry *)calloc(icoHeader.icoPackCount, sizeof(IcoDirEntry));
-    unsigned char *icoData[icoHeader.icoPackCount];
-    int offset = 6 + 16*icoHeader.icoPackCount;
-
-    for (int i = 0; i < icoHeader.icoPackCount; i++)
-    {
-        printf("Reading file: %s\n", icoFileNames[i]);
-        FILE *pngFile = fopen(icoFileNames[i], "rb");
-
-        fseek(pngFile, 0, SEEK_END);        // Move file pointer to end of file
-        int size = (int)ftell(pngFile);     // Get file size
-        fseek(pngFile, 0, SEEK_SET);        // Reset file pointer
-
-        printf("File size: %i\n\n", size);
-
-        icoData[i] = (unsigned char *)malloc(size);
-        fread(icoData[i], size, 1, pngFile);   // Read fulll file data
-        fclose(pngFile);
-
-        icoDirEntry[i].width = (icoSizesPlatform[i] == 256) ? 0 : icoSizesPlatform[i];
-        icoDirEntry[i].height = (icoSizesPlatform[i] == 256) ? 0 : icoSizesPlatform[i];
-        icoDirEntry[i].bpp = 32;
-        icoDirEntry[i].size = size;
-        icoDirEntry[i].offset = offset;
-
-        offset += size;
-    }
-
-    for (int i = 0; i < icoHeader.icoPackCount; i++) fwrite(&icoDirEntry[i], 1, sizeof(IcoDirEntry), icoFile);
-
-    for (int i = 0; i < icoHeader.icoPackCount; i++)
-    {
-        fwrite(icoData[i], 1, icoDirEntry[i].size, icoFile);
-        printf("Data written: %i\n", icoDirEntry[i].size);
-    }
-
-    fclose(icoFile);
-
-    for (int i = 0; i < MAX_DEFAULT_ICONS; i++) free(icoFileNames[i]);
-
-    for (int i = 0; i < icoHeader.icoPackCount; i++)
-    {
-        free(icoDirEntry);
-        free(icoData[i]);
-    }
-#endif
-*/
