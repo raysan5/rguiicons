@@ -83,11 +83,6 @@ bool __stdcall FreeConsole(void);       // Close console from code (kernel32.lib
 #define BIT_SET(a,b) ((a) |= (1<<(b)))
 #define BIT_CHECK(a,b) ((a) & (1<<(b)))
 
-#define MAX_ICONS_X     16
-#define MAX_ICONS_Y     16
-
-#define ICON_PADDING    2       // Default icon padding
-
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
@@ -102,6 +97,209 @@ const char *toolDescription = "A simple and easy-to-use raygui icons editor";
 
 static bool saveChangesRequired = false;    // Flag to notice save changes are required
 
+// Icons name id text
+static char guiIconsName[RICON_MAX_ICONS][32] = {
+    "NONE",
+    "FOLDER_FILE_OPEN",
+    "FILE_SAVE_CLASSIC",
+    "FOLDER_OPEN",
+    "FOLDER_SAVE",
+    "FILE_OPEN",
+    "FILE_SAVE",
+    "FILE_EXPORT",
+    "FILE_NEW",
+    "FILE_DELETE",
+    "FILETYPE_TEXT",
+    "FILETYPE_AUDIO",
+    "FILETYPE_IMAGE",
+    "FILETYPE_PLAY",
+    "FILETYPE_VIDEO",
+    "FILETYPE_INFO",
+    "FILE_COPY",
+    "FILE_CUT",
+    "FILE_PASTE",
+    "CURSOR_HAND",
+    "CURSOR_POINTER",
+    "CURSOR_CLASSIC",
+    "PENCIL",
+    "PENCIL_BIG",
+    "BRUSH_CLASSIC",
+    "BRUSH_PAINTER",
+    "WATER_DROP",
+    "COLOR_PICKER",
+    "RUBBER",
+    "COLOR_BUCKET",
+    "TEXT_T",
+    "TEXT_A",
+    "SCALE",
+    "RESIZE",
+    "FILTER_POINT",
+    "FILTER_BILINEAR",
+    "CROP",
+    "CROP_ALPHA",
+    "SQUARE_TOGGLE",
+    "SIMMETRY",
+    "SIMMETRY_HORIZONTAL",
+    "SIMMETRY_VERTICAL",
+    "LENS",
+    "LENS_BIG",
+    "EYE_ON",
+    "EYE_OFF",
+    "FILTER_TOP",
+    "FILTER",
+    "TARGET_POINT",
+    "TARGET_SMALL",
+    "TARGET_BIG",
+    "TARGET_MOVE",
+    "CURSOR_MOVE",
+    "CURSOR_SCALE",
+    "CURSOR_SCALE_RIGHT",
+    "CURSOR_SCALE_LEFT",
+    "UNDO",
+    "REDO",
+    "REREDO",
+    "MUTATE",
+    "ROTATE",
+    "REPEAT",
+    "SHUFFLE",
+    "EMPTYBOX",
+    "TARGET",
+    "TARGET_SMALL_FILL",
+    "TARGET_BIG_FILL",
+    "TARGET_MOVE_FILL",
+    "CURSOR_MOVE_FILL",
+    "CURSOR_SCALE_FILL",
+    "CURSOR_SCALE_RIGHT_FILL",
+    "CURSOR_SCALE_LEFT_FILL",
+    "UNDO_FILL",
+    "REDO_FILL",
+    "REREDO_FILL",
+    "MUTATE_FILL",
+    "ROTATE_FILL",
+    "REPEAT_FILL",
+    "SHUFFLE_FILL",
+    "EMPTYBOX_SMALL",
+    "BOX",
+    "BOX_TOP",
+    "BOX_TOP_RIGHT",
+    "BOX_RIGHT",
+    "BOX_BOTTOM_RIGHT",
+    "BOX_BOTTOM",
+    "BOX_BOTTOM_LEFT",
+    "BOX_LEFT",
+    "BOX_TOP_LEFT",
+    "BOX_CENTER",
+    "BOX_CIRCLE_MASK",
+    "POT",
+    "ALPHA_MULTIPLY",
+    "ALPHA_CLEAR",
+    "DITHERING",
+    "MIPMAPS",
+    "BOX_GRID",
+    "GRID",
+    "BOX_CORNERS_SMALL",
+    "BOX_CORNERS_BIG",
+    "FOUR_BOXES",
+    "GRID_FILL",
+    "BOX_MULTISIZE",
+    "ZOOM_SMALL",
+    "ZOOM_MEDIUM",
+    "ZOOM_BIG",
+    "ZOOM_ALL",
+    "ZOOM_CENTER",
+    "BOX_DOTS_SMALL",
+    "BOX_DOTS_BIG",
+    "BOX_CONCENTRIC",
+    "BOX_GRID_BIG",
+    "OK_TICK",
+    "CROSS",
+    "ARROW_LEFT",
+    "ARROW_RIGHT",
+    "ARROW_BOTTOM",
+    "ARROW_TOP",
+    "ARROW_LEFT_FILL",
+    "ARROW_RIGHT_FILL",
+    "ARROW_BOTTOM_FILL",
+    "ARROW_TOP_FILL",
+    "AUDIO",
+    "FX",
+    "WAVE",
+    "WAVE_SINUS",
+    "WAVE_SQUARE",
+    "WAVE_TRIANGULAR",
+    "CROSS_SMALL",
+    "PLAYER_PREVIOUS",
+    "PLAYER_PLAY_BACK",
+    "PLAYER_PLAY",
+    "PLAYER_PAUSE",
+    "PLAYER_STOP",
+    "PLAYER_NEXT",
+    "PLAYER_RECORD",
+    "MAGNET",
+    "LOCK_CLOSE",
+    "LOCK_OPEN",
+    "CLOCK",
+    "TOOLS",
+    "GEAR",
+    "GEAR_BIG",
+    "BIN",
+    "HAND_POINTER",
+    "LASER",
+    "COIN",
+    "EXPLOSION",
+    "1UP",
+    "PLAYER",
+    "PLAYER_JUMP",
+    "KEY",
+    "DEMON",
+    "TEXT_POPUP",
+    "GEAR_EX",
+    "CRACK",
+    "CRACK_POINTS",
+    "STAR",
+    "DOOR",
+    "EXIT",
+    "MODE_2D",
+    "MODE_3D",
+    "CUBE",
+    "CUBE_FACE_TOP",
+    "CUBE_FACE_LEFT",
+    "CUBE_FACE_FRONT",
+    "CUBE_FACE_BOTTOM",
+    "CUBE_FACE_RIGHT",
+    "CUBE_FACE_BACK",
+    "CAMERA",
+    "SPECIAL",
+    "LINK_NET",
+    "LINK_BOXES",
+    "LINK_MULTI",
+    "LINK",
+    "LINK_BROKE",
+    "TEXT_NOTES",
+    "NOTEBOOK",
+    "SUITCASE",
+    "SUITCASE_ZIP",
+    "MAILBOX",
+    "MONITOR",
+    "PRINTER",
+    "PHOTO_CAMERA",
+    "PHOTO_CAMERA_FLASH",
+    "HOUSE",
+    "HEART",
+    "CORNER",
+    "VERTICAL_BARS",
+    "VERTICAL_BARS_FILL",
+    "LIFE_BARS",
+    "INFO",
+    "CROSSLINE",
+    "HELP",
+    "FILETYPE_ALPHA",
+    "FILETYPE_HOME",
+    "LAYERS_VISIBLE",
+    "LAYERS",
+    "WINDOW"   
+};
+
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
@@ -111,8 +309,9 @@ static void ProcessCommandLine(int argc, char *argv[]);     // Process command l
 #endif
 
 // Load/Save/Export data functions
-static bool SaveIcons(const char *fileName, int format);    // Save raygui icons file (.rgi)
-static void ExportIconsAsCode2(const char *fileName);       // Export gui icons as code
+static bool SaveIcons(const char *fileName);                // Save raygui icons file (.rgi)
+static void ExportIconsAsCode(const char *fileName);        // Export gui icons as code (.h)
+static void ExportIconsAsImage(const char *fileName);       // Export gui icons as image (.png)
 
 // Auxiliar functions
 static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color color);    // Draw icon data
@@ -120,8 +319,8 @@ static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color 
 static unsigned char *ImageToBits(Image image);
 static Image ImageFromBits(unsigned char *bytes, int width, int height, Color color);
 
-static Image LoadIconsImage(unsigned int *values, int iconsCount, int iconsPerLine);
-static void ExportIconsAsCode(Image image, const char *headerFileName);
+static Image ImageFromIconData(unsigned int *values, int iconsCount, int iconsPerLine, int padding);
+static void LoadIconsFromImage(Image image);
 
 
 //------------------------------------------------------------------------------------
@@ -193,21 +392,21 @@ int main(int argc, char *argv[])
     
     int fileTypeActive = 0;
     bool iconNameIdEditMode = false;
-    char iconNameIdText[128] = "";
+    //char iconNameIdText[128] = "";
 
     int selectedIcon = 0;
     
     // ToggleGroup() text
     // NOTE: Every icon requires 6 text characters: "#001#;"
-    char toggleIconsText[MAX_RICONS*6] = { 0 };
+    char toggleIconsText[RICON_MAX_ICONS*6] = { 0 };
     
-    for (int i = 0; i < MAX_RICONS; i++)
+    for (int i = 0; i < RICON_MAX_ICONS; i++)
     {
         if ((i + 1)%16 == 0) strncpy(toggleIconsText + 6*i, TextFormat("#%03i#\n", i), 6);
         else strncpy(toggleIconsText + 6*i, TextFormat("#%03i#;", i), 6);
     }
     
-    toggleIconsText[MAX_RICONS*6 - 1] = '\0';
+    toggleIconsText[RICON_MAX_ICONS*6 - 1] = '\0';
     
     bool btnSaveIconPressed = false;
     bool btnClearIconPressed = false;
@@ -224,7 +423,7 @@ int main(int argc, char *argv[])
     bool showSaveFileDialog = false;
     bool showExportFileDialog = false;
     
-    bool showSaveImageDialog = false;
+    bool showExportIconImageDialog = false;
     //-----------------------------------------------------------------------------------
     
     // GUI: Exit Window
@@ -236,11 +435,15 @@ int main(int argc, char *argv[])
     // Check if an input file has been provided on command line
     if ((inFileName[0] != '\0') && (IsFileExtension(inFileName, ".rgi")))
     {
-        GuiLoadIcons(inFileName);
+        char **tempIconsName = GuiLoadIcons(inFileName, true);
+        for (int i = 0; i < RICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
+        free(tempIconsName);
+        
         SetWindowTitle(FormatText("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
     }
 
     unsigned int iconData[8] = { 0 };
+    unsigned char iconName[32] = { 0 };
     bool iconDataToCopy = false;
 
     SetTargetFPS(60);
@@ -258,8 +461,10 @@ int main(int argc, char *argv[])
 
             if (IsFileExtension(droppedFiles[0], ".rgi"))
             {
-                // Load .rgi data into raygui icons set
-                GuiLoadIcons(droppedFiles[0]);
+                // Load .rgi data into raygui icons set (and gui icon names for the tool)
+                char **tempIconsName = GuiLoadIcons(inFileName, true);
+                for (int i = 0; i < RICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
+                free(tempIconsName);
 
                 strcpy(inFileName, droppedFiles[0]);
                 SetWindowTitle(FormatText("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
@@ -343,6 +548,7 @@ int main(int argc, char *argv[])
                     (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C)))
                 {
                     memcpy(iconData, GuiGetIconData(selectedIcon), RICON_DATA_ELEMENTS*sizeof(unsigned int));
+                    strcpy(iconName, guiIconsName[selectedIcon]);
                     iconDataToCopy = true;
                 }
 
@@ -351,14 +557,21 @@ int main(int argc, char *argv[])
                 {
                     memcpy(iconData, GuiGetIconData(selectedIcon), RICON_DATA_ELEMENTS*sizeof(unsigned int));
                     for (int i = 0; i < RICON_SIZE*RICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RICON_SIZE, i%RICON_SIZE);
+                    
+                    strcpy(iconName, guiIconsName[selectedIcon]);
+                    memset(guiIconsName[selectedIcon], 0, 32);
+                    
                     iconDataToCopy = true;
                 }
                 
                 if ((GuiButton((Rectangle){ anchor01.x + 175, anchor01.y + 10, 25, 25 }, "#18#")) || 
                     (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V)))
                 {
-                    if (iconDataToCopy) GuiSetIconData(selectedIcon, iconData);
-                    //iconDataToCopy = false;
+                    if (iconDataToCopy)
+                    {
+                        GuiSetIconData(selectedIcon, iconData);
+                        strcpy(guiIconsName[selectedIcon], iconName);
+                    }
                 }
                 
                 GuiGroupBox((Rectangle){ anchor01.x + 210, anchor01.y + 10, 25, 25 }, NULL);
@@ -378,7 +591,9 @@ int main(int argc, char *argv[])
                 if (GuiButton((Rectangle){ anchor01.x + 185, anchor01.y + 400, 150, 25 }, "#07#Export rIcons")) showExportFileDialog = true;
                 
                 GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "rIcon Name ID:");
-                if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 70, 260, 25 }, iconNameIdText, 128, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
+                
+                // NOTE: We show icon name id for selected icon
+                if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 70, 260, 25 }, guiIconsName[selectedIcon], 128, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
                 
                 iconEditScale = (int)GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 110, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), (float)iconEditScale, 0, 16);
                 if (iconEditScale < 2) iconEditScale = 2;
@@ -401,7 +616,7 @@ int main(int argc, char *argv[])
                                                       iconEditScale + 1, iconEditScale + 1 }, 1, RED);
                 }
                 
-                if (GuiButton((Rectangle){ anchor01.x + 440, anchor01.y + 400, 100, 25 }, "#012#Save Image")) showSaveImageDialog = true;
+                if (GuiButton((Rectangle){ anchor01.x + 440, anchor01.y + 400, 100, 25 }, "#012#Save Image")) showExportIconImageDialog = true;
                 
                 if (GuiButton((Rectangle){ anchor01.x + 545, anchor01.y + 400, 80, 25 }, "#079#Clear"))
                 {
@@ -431,6 +646,135 @@ int main(int argc, char *argv[])
                     else if (message == 1) exitWindow = true;
                 }
                 //--------------------------------------------------------------------------------
+                
+                // GUI: Load File Dialog (and loading logic)
+                //----------------------------------------------------------------------------------------
+                if (showLoadFileDialog)
+                {
+    #if defined(CUSTOM_MODAL_DIALOGS)
+                    int result = GuiFileDialog(DIALOG_MESSAGE, "Load raygui icons file ...", inFileName, "Ok", "Just drag and drop your .rgi style file!");
+    #else
+                    int result = GuiFileDialog(DIALOG_OPEN, "Load raygui icons file", inFileName, "*.rgi", "raygui Icons Files (*.rgi)");
+    #endif
+                    if (result == 1)
+                    {
+                        // Load gui icons data (and gui icon names for the tool)
+                        char **tempIconsName = GuiLoadIcons(inFileName, true);
+                        for (int i = 0; i < RICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
+                        free(tempIconsName);
+        
+                        SetWindowTitle(FormatText("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
+                        saveChangesRequired = false;
+                    }
+                    
+                    if (result >= 0) showLoadFileDialog = false;
+                }
+                //----------------------------------------------------------------------------------------
+
+                // GUI: Save File Dialog (and saving logic)
+                //----------------------------------------------------------------------------------------
+                if (showSaveFileDialog)
+                {
+                    if (inFileName[0] != '\0') strcpy(outFileName, inFileName);
+                    else strcpy(outFileName, "icons.rgi");
+                    
+    #if defined(CUSTOM_MODAL_DIALOGS)
+                    int result = GuiFileDialog(DIALOG_TEXTINPUT, "Save raygui icons file...", outFileName, "Ok;Cancel", NULL);
+    #else
+                    int result = GuiFileDialog(DIALOG_SAVE, "Save raygui icons file...", outFileName, "*.rgi", "raygui Icons Files (*.rgi)");
+    #endif
+                    if (result == 1)
+                    {
+                        // Save icons file
+                        // Check for valid extension and make sure it is
+                        if ((GetExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".rgi")) strcat(outFileName, ".rgi\0");
+
+                        // Save icons file
+                        SaveIcons(outFileName);
+
+                    #if defined(PLATFORM_WEB)
+                        // Download file from MEMFS (emscripten memory filesystem)
+                        // NOTE: Second argument must be a simple filename (we can't use directories)
+                        emscripten_run_script(TextFormat("SaveFileFromMEMFSToDisk('%s','%s')", outFileName, GetFileName(outFileName)));
+                    #endif
+                    }
+                    
+                    if (result >= 0) showSaveFileDialog = false;
+                }
+                //----------------------------------------------------------------------------------------
+                
+                // GUI: Export File Dialog (and saving logic)
+                //----------------------------------------------------------------------------------------
+                if (showExportFileDialog)
+                {
+                    if (inFileName[0] != '\0') strcpy(outFileName, inFileName);
+                    else strcpy(outFileName, "icons.rgi");
+
+                    char filters[64] = { 0 };   // Consider different supported file types
+
+                    switch (fileTypeActive)
+                    {
+                        case 0: strcpy(filters, "*.rgi"); strcat(outFileName, ".rgi"); break;   // Icons file (.rgi)
+                        case 1: strcpy(filters, "*.png"); strcat(outFileName, ".png"); break;   // Icons image (.png)
+                        case 2: strcpy(filters, "*.h"); strcat(outFileName, ".h"); break;       // Icons code (.h)
+                        default: break;
+                    }
+
+    #if defined(CUSTOM_MODAL_DIALOGS)
+                    int result = GuiFileDialog(DIALOG_TEXTINPUT, "Export raygui icons file...", outFileName, "Ok;Cancel", NULL);
+    #else
+                    int result = GuiFileDialog(DIALOG_SAVE, "Export raygui icons file...", outFileName, filters, TextFormat("File type (%s)", filters));
+    #endif
+                    if (result == 1)
+                    {
+                        // Export file: outFileName
+                        switch (fileTypeActive)
+                        {
+                            case 0: SaveIcons(outFileName); break;
+                            case 1: ExportIconsAsImage(outFileName); break;
+                            case 2: ExportIconsAsCode(outFileName); break;
+                            default: break;
+                        }
+         
+                    #if defined(PLATFORM_WEB)
+                        // Download file from MEMFS (emscripten memory filesystem)
+                        // NOTE: Second argument must be a simple filename (we can't use directories)
+                        emscripten_run_script(TextFormat("SaveFileFromMEMFSToDisk('%s','%s')", outFileName, GetFileName(outFileName)));
+                    #endif
+                    }
+                    
+                    if (result >= 0) showExportFileDialog = false;
+                }
+                //----------------------------------------------------------------------------------------
+                
+                // GUI: Export Icon Image Dialog (and saving logic)
+                //----------------------------------------------------------------------------------------
+                if (showExportIconImageDialog)
+                {
+                    strcpy(outFileName, TextFormat("%s_%ix%i.png", TextToLower(guiIconsName[selectedIcon]), RICON_SIZE, RICON_SIZE));
+
+    #if defined(CUSTOM_MODAL_DIALOGS)
+                    int result = GuiFileDialog(DIALOG_TEXTINPUT, "Export raygui icon as image file...", outFileName, "Ok;Cancel", NULL);
+    #else
+                    int result = GuiFileDialog(DIALOG_SAVE, "Export raygui icon as image file...", outFileName, "*.png", "Image File (*.png)");
+    #endif
+                    if (result == 1)
+                    {
+                        // Export file: outFileName
+                        Image icon = ImageFromIconData(GuiGetIconData(selectedIcon), 1, 1, 0);
+                        ExportImage(icon, outFileName);
+                        UnloadImage(icon);
+         
+                    #if defined(PLATFORM_WEB)
+                        // Download file from MEMFS (emscripten memory filesystem)
+                        // NOTE: Second argument must be a simple filename (we can't use directories)
+                        emscripten_run_script(TextFormat("SaveFileFromMEMFSToDisk('%s','%s')", outFileName, GetFileName(outFileName)));
+                    #endif
+                    }
+                    
+                    if (result >= 0) showExportIconImageDialog = false;
+                }
+                //----------------------------------------------------------------------------------------
 
             EndTextureMode();
 
@@ -561,7 +905,106 @@ static void ProcessCommandLine(int argc, char *argv[])
 // Load/Save/Export functions
 //--------------------------------------------------------------------------------------------
 
-// ...
+// Save raygui icons file (.rgi)
+static bool SaveIcons(const char *fileName)
+{
+    // Style File Structure (.rgi)
+    // ------------------------------------------------------
+    // Offset  | Size    | Type       | Description
+    // ------------------------------------------------------
+    // 0       | 4       | char       | Signature: "rGI "
+    // 4       | 2       | short      | Version: 100
+    // 6       | 2       | short      | reserved
+    
+    // 8       | 2       | short      | Num icons (N)
+    // 10      | 2       | short      | Icons size (Options: 16, 32, 64) (S)
+
+    // Icons name id (32 bytes per name id)
+    // foreach (icon)
+    // {
+    //   12+32*i  | 32   | char       | Icon NameId
+    // }
+    
+    // Icons data: One bit per pixel, stored as unsigned int array (depends on icon size)
+    // S*S pixels/32bit per unsigned int = K unsigned int per icon
+    // foreach (icon)
+    // {
+    //   ...   | K       | unsigned int | Icon Data
+    // }
+
+    bool result = false;
+    FILE *rgiFile = fopen(fileName, "wb");
+
+    if (rgiFile != NULL)
+    {
+        char signature[5] = "rGI ";
+        short version = 100;
+        short reserved = 0;
+        short iconsCount = RICON_MAX_ICONS;
+        short iconsSize = RICON_SIZE;
+
+        fwrite(signature, 1, 4, rgiFile);
+        fwrite(&version, 1, sizeof(short), rgiFile);
+        fwrite(&reserved, 1, sizeof(short), rgiFile);
+        fwrite(&iconsCount, 1, sizeof(short), rgiFile);
+        fwrite(&iconsSize, 1, sizeof(short), rgiFile);
+
+        for (int i = 0; i < iconsCount; i++) 
+        {
+            // Write icons name id
+            fwrite(guiIconsName[i], 32, 1, rgiFile);
+
+            // Write icons data
+            fwrite(GuiGetIconData(i), (iconsSize*iconsSize/32), sizeof(unsigned int), rgiFile);
+        }
+
+        fclose(rgiFile);
+        result = true;
+    }
+    
+    return result;
+}
+
+// Export gui icons as image (.png)
+// NOTE: By default we add 1 pixel padding by icon
+static void ExportIconsAsImage(const char *fileName)
+{
+    Image image = { 0 };
+
+    image.width = RICON_SIZE*16;
+    image.height = RICON_SIZE*16;
+    image.mipmaps = 1;
+    image.format = UNCOMPRESSED_GRAYSCALE;
+    image.data = (unsigned char *)calloc(image.width*image.height, 1);  // All pixels BLACK by default
+
+    for (int i = 0, x = 0, y = 0; i < RICON_MAX_ICONS; i++)
+    {
+        Image icon = ImageFromIconData(GuiGetIconData(i), 1, 1, 0);
+        ImageDraw(&image, icon, (Rectangle){ 0, 0, RICON_SIZE, RICON_SIZE }, (Rectangle){ x, y, 16, 16 }, WHITE);
+        UnloadImage(icon);
+        
+        x += 16;
+        if (x >= 256) { x = 0; y += 16; }
+    }
+    
+    ExportImage(image, fileName);
+    UnloadImage(image);
+    
+    // TODO: Save icons name id into PNG chunk: 
+    //SaveTextChunkPNG(TextDataPNG data, const char *fileName)
+}
+
+// Export gui icons as code (.h)
+static void ExportIconsAsCode(const char *fileName)
+{
+    FILE *riconsFile = fopen(fileName, "wt");
+    
+    fprintf(riconsFile, "static unsigned int guiIcons[%i] = {\n", RICON_MAX_ICONS);
+    //for (int i = 0; i < RICON_MAX_ICONS; i++) fprintf(riconsFile, (((i + 1)%8 == 0)? "0x%08x,    // RICON_%s\n" : "0x%08x, "), values[i], guiIconsName[i]);
+    fprintf(riconsFile, "};\n");
+    
+    fclose(riconsFile);
+}
 
 //--------------------------------------------------------------------------------------------
 // Auxiliar functions
@@ -635,14 +1078,17 @@ static Image ImageFromBits(unsigned char *bytes, int width, int height, Color co
 }
 
 // Load GRAY+ALPHA image from and array of bits, stored as int (0-BLANK, 1-WHITE)
-static Image LoadIconsImage(unsigned int *values, int iconsCount, int iconsPerLine)
+static Image ImageFromIconData(unsigned int *icons, int iconsCount, int iconsPerLine, int padding)
 {
     #define BIT_CHECK(a,b) ((a) & (1<<(b)))
 
     Image image = { 0 };
+    
+    int lines = iconsCount/iconsPerLine;
+    if (iconsCount%iconsPerLine > 0) lines++;
 
-    image.width = RICON_SIZE*iconsPerLine;
-    image.height = (RICON_SIZE*(1 + (iconsCount/iconsPerLine)));
+    image.width = (RICON_SIZE + 2*padding)*iconsPerLine;
+    image.height = (RICON_SIZE + 2*padding)*lines;
     image.mipmaps = 1;
     image.format = UNCOMPRESSED_GRAY_ALPHA;
     image.data = (unsigned char *)calloc(image.width*image.height, 2);      // All pixels BLANK by default
@@ -658,10 +1104,10 @@ static Image LoadIconsImage(unsigned int *values, int iconsCount, int iconsPerLi
         {
             for (int k = 0; k < 32; k++)
             {
-                pixelX = (n%iconsPerLine)*RICON_SIZE + (k%RICON_SIZE);
-                pixelY = (n/iconsPerLine)*RICON_SIZE + y;
+                pixelX = padding + (n%iconsPerLine)*RICON_SIZE + (k%RICON_SIZE);
+                pixelY = padding + (n/iconsPerLine)*RICON_SIZE + y;
 
-                if (BIT_CHECK(values[8*n + i], k)) ((unsigned short *)image.data)[pixelY*image.width + pixelX] = 0xffff;    // Draw pixel WHITE
+                if (BIT_CHECK(icons[8*n + i], k)) ((unsigned short *)image.data)[pixelY*image.width + pixelX] = 0xffff;    // Draw pixel WHITE
 
                 if ((k == 15) || (k == 31)) y++;
             }
@@ -671,8 +1117,14 @@ static Image LoadIconsImage(unsigned int *values, int iconsCount, int iconsPerLi
     return image;
 }
 
-void ExportIconsAsCode(Image image, const char *headerFileName)
+// Generate icons code file from icons image
+void LoadIconsFromImage(Image image)
 {
+    #define ICON_PADDING    2       // Icons padding on image
+    
+    #define MAX_ICONS_X     16      // Number of icons on x
+    #define MAX_ICONS_Y     16      // Number of icons on y
+    
     //Image ricons = LoadImage(riconFile);    //ricons.png
     Color *pixels = GetImageData(image);
     
@@ -708,15 +1160,6 @@ void ExportIconsAsCode(Image image, const char *headerFileName)
             n++;
         }
     }
-
-    // Save binary values into header file
-    FILE *riconsFile = fopen(headerFileName, "wt");
-    
-    fprintf(riconsFile, "static unsigned int RICONS[%i] = {\n", size);
-    for (int i = 0; i < size; i++) fprintf(riconsFile, (((i + 1)%8 == 0)? "0x%08x,\n" : "0x%08x, "), values[i]);
-    fprintf(riconsFile, "};\n");
-    
-    fclose(riconsFile);
     
     free(pixels);
     UnloadImage(image);
