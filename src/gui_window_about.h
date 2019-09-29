@@ -149,7 +149,7 @@ void GuiWindowAbout(GuiWindowAboutState *state)
     const char *windowAboutText = "#191#About rGuiIcons";
     const char *lblDescriptionText = "A simple and easy-to-use raygui icons editor";
     const char *lblNameVersionText = "rGuiIcons v1.0";
-    const char *lblDateText = "(Sept. 2019)";
+    const char *lblDateText = "(Oct. 2019)";
     const char *lblUsedLibsText = "Powered by:";
     const char *linkraylibText = "www.raylib.com";
     const char *linkGitraylibText = "github.com/raysan5/raylib";
