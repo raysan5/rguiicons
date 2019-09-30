@@ -314,7 +314,7 @@ static char guiIconsName[RICON_MAX_ICONS][32] = {
     "FILETYPE_HOME",
     "LAYERS_VISIBLE",
     "LAYERS",
-    "WINDOW"   
+    "WINDOW"
 };
 
 //----------------------------------------------------------------------------------
@@ -737,7 +737,11 @@ int main(int argc, char *argv[])
                 // Draw ricons selection panel
                 selectedIcon = GuiToggleGroup((Rectangle){ anchor01.x + 15, anchor01.y + 70, 18, 18 }, toggleIconsText, selectedIcon);
                 
+#if defined(VERSION_ONE)
                 fileTypeActive = GuiComboBox((Rectangle){ anchor01.x + 15, anchor01.y + 400, 160, 25 }, "rIcons File (.rgi);rIcons Image (.png);rIcons Code (.h)", fileTypeActive);
+#else
+                fileTypeActive = GuiComboBox((Rectangle){ anchor01.x + 15, anchor01.y + 400, 160, 25 }, "rIcons File (.rgi);rIcons Image (.png)", fileTypeActive);
+#endif
                 if (GuiButton((Rectangle){ anchor01.x + 185, anchor01.y + 400, 150, 25 }, "#07#Export rIcons")) showExportFileDialog = true;
                 
                 GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "rIcon Name ID:");
