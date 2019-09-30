@@ -55,14 +55,7 @@
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
 
-// Gui icon type (one icon info)
-// NOTE: This structure is not used at the moment,
-// All icons are joined in a single guiIcons[] array
-// and icons name id is actually defined as enum values
-typedef struct GuiIcon {
-    unsigned int data[RICON_DATA_ELEMENTS];
-    unsigned char nameId[RICON_MAX_NAME_LENGTH];
-} GuiIcon;
+
 
 //----------------------------------------------------------------------------------
 // Icons enumeration
@@ -267,12 +260,15 @@ typedef enum {
     RICON_LAYERS_VISIBLE,
     RICON_LAYERS,
     RICON_WINDOW
-} rIconName;
+} guiIconName;
 
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
 void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color color);
+
+
+unsigned int *GuiGetIcons(void);                     // Get full icons data pointer
 
 unsigned int *GuiGetIconData(int iconId);            // Get icon bit data
 void GuiSetIconData(int iconId, unsigned int *data); // Set icon bit data
@@ -560,6 +556,9 @@ static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
 };
+
+// Get full icons data pointer
+unsigned int *GuiGetIcons(void) { return guiIcons; }
 
 // Load raygui icons file (.rgi)
 // NOTE: In case nameIds are required, they can be requested with loadIconsName,
