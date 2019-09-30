@@ -33,7 +33,7 @@ Changes are previewed in real time in the same tool!
 Once a icon has been created/edited, just save icons set file (.rgi)
 or export icon set image (.png) for preview and reference.
 
-rGuiIcons ONE also allows exporting icons set as code to embedd
+rGuiIcons ONE also allows exporting icons set as code for embedding
 in custom programs or any other use.
 
 rGuiIcons ONE comes with a powerful command line for icons formats conversion. 
