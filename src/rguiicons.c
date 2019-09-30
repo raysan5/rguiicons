@@ -396,6 +396,7 @@ int main(int argc, char *argv[])
     // Create a RenderTexture2D to be used for render to texture
     RenderTexture2D target = LoadRenderTexture(screenWidth, screenHeight);
     SetTextureFilter(target.texture, FILTER_POINT);
+    int screenScale = 1;
     
     Vector2 cell = { -1, -1 };  // Grid cell mouse position
     int iconEditScale = 16;     // Icon edit scale
@@ -406,7 +407,6 @@ int main(int argc, char *argv[])
     
     int fileTypeActive = 0;
     bool iconNameIdEditMode = false;
-    //char iconNameIdText[128] = "";
 
     int selectedIcon = 0;
     
@@ -421,6 +421,9 @@ int main(int argc, char *argv[])
     }
     
     toggleIconsText[RICON_MAX_ICONS*6 - 1] = '\0';
+    
+    bool hiDpiActive = false;
+    bool prevHiDpiActive = hiDpiActive;
     
     bool btnSaveIconPressed = false;
     bool btnClearIconPressed = false;
@@ -645,6 +648,27 @@ int main(int argc, char *argv[])
             else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) GuiClearIconPixel(selectedIcon, (int)cell.x, (int)cell.y);
         }
         //----------------------------------------------------------------------------------
+        
+        // Screen scale logic (x2)
+        //----------------------------------------------------------------------------------
+        if (hiDpiActive != prevHiDpiActive)
+        {
+            if (hiDpiActive)
+            {
+                screenScale = 2;
+                SetWindowSize(screenWidth*2, screenHeight*2);
+                SetMouseScale(0.5f, 0.5f);
+            }
+            else
+            {
+                screenScale = 1;
+                SetWindowSize(screenWidth, screenHeight);
+                SetMouseScale(1.0f, 1.0f);
+            }
+            
+            prevHiDpiActive = hiDpiActive;
+        }
+        //----------------------------------------------------------------------------------
 
         // Draw
         //----------------------------------------------------------------------------------
@@ -700,6 +724,8 @@ int main(int argc, char *argv[])
                 
                 GuiGroupBox((Rectangle){ anchor01.x + 210, anchor01.y + 10, 25, 25 }, NULL);
                 if (iconDataToCopy) DrawIconData(iconData, anchor01.x + 210 + 4, anchor01.y + 10 + 4, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
+                
+                hiDpiActive = GuiToggle((Rectangle){ anchor01.x + 520, anchor01.y + 10, 25, 25 }, "#199#", hiDpiActive);
                 
                 if (GuiButton((Rectangle){ anchor01.x + 550, anchor01.y + 10, 75, 25 }, "#191#ABOUT")) windowAboutState.windowAboutActive = true;
                 //----------------------------------------------------------------------------------
@@ -802,7 +828,7 @@ int main(int argc, char *argv[])
                 if (showSaveFileDialog)
                 {
                     if (inFileName[0] != '\0') strcpy(outFileName, inFileName);
-                    else strcpy(outFileName, "icons.rgi");
+                    else strcpy(outFileName, "gui_icons.rgi");
                     
     #if defined(CUSTOM_MODAL_DIALOGS)
                     int result = GuiFileDialog(DIALOG_TEXTINPUT, "Save raygui icons file...", outFileName, "Ok;Cancel", NULL);
@@ -834,7 +860,7 @@ int main(int argc, char *argv[])
                 if (showExportFileDialog)
                 {
                     if (inFileName[0] != '\0') strcpy(outFileName, GetFileNameWithoutExt(inFileName));
-                    else strcpy(outFileName, "ricons");
+                    else strcpy(outFileName, "gui_icons");
 
                     char filters[64] = { 0 };   // Consider different supported file types
 
@@ -914,8 +940,7 @@ int main(int argc, char *argv[])
             EndTextureMode();
 
             // Draw render texture to screen
-            if (false) DrawTexturePro(target.texture, (Rectangle){ 0, 0, target.texture.width, -target.texture.height }, (Rectangle){ 0, 0, target.texture.width*2, target.texture.height*2 }, (Vector2){ 0, 0 }, 0.0f, WHITE);
-            else DrawTextureRec(target.texture, (Rectangle){ 0, 0, target.texture.width, -target.texture.height }, (Vector2){ 0, 0 }, WHITE);
+            DrawTexturePro(target.texture, (Rectangle){ 0, 0, target.texture.width, -target.texture.height }, (Rectangle){ 0, 0, target.texture.width*screenScale, target.texture.height*screenScale }, (Vector2){ 0, 0 }, 0.0f, WHITE);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -1062,8 +1087,7 @@ void LoadIconsFromImage(Image image, int iconsCount, int iconsSize, int iconsPer
 {
     int lines = iconsCount/iconsPerLine;
     if (iconsCount%iconsPerLine > 0) lines++;
-    
-    //Image ricons = LoadImage(riconFile);    //ricons.png
+
     Color *pixels = GetImageData(image);
     
     Rectangle icorec = { 0, 0, iconsSize, iconsSize };
@@ -1179,28 +1203,38 @@ static void ExportIconsAsCode(const char *fileName)
         fprintf(codeFile, "//                                                                              //\n");
         fprintf(codeFile, "// raygui Icons exporter v1.0 - Icons data exported as a values array           //\n");
         fprintf(codeFile, "//                                                                              //\n");
-        fprintf(codeFile, "// USAGE: On init call: GuiLoadIcons();                                         //\n");
-        fprintf(codeFile, "//                                                                              //\n");
         fprintf(codeFile, "// more info and bugs-report:  github.com/raysan5/raygui                        //\n");
         fprintf(codeFile, "// feedback and support:       ray[at]raylibtech.com                            //\n");
         fprintf(codeFile, "//                                                                              //\n");
         fprintf(codeFile, "// Copyright (c) 2019 raylib technologies (@raylibtech)                         //\n");
         fprintf(codeFile, "//                                                                              //\n");
         fprintf(codeFile, "//////////////////////////////////////////////////////////////////////////////////\n\n");
+        
+        fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
+        fprintf(codeFile, "// Defines and Macros\n");
+        fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
+        fprintf(codeFile, "#define RICON_MAX_ICONS       %i   // Maximum number of icons\n", RICON_MAX_ICONS);
+        fprintf(codeFile, "#define RICON_SIZE             %i   // Size of icons (squared)\n\n", RICON_SIZE);
+
+        fprintf(codeFile, "// Icons data is defined by bit array (every bit represents one pixel)\n");
+        fprintf(codeFile, "// Those arrays are stored as unsigned int data arrays, so every array\n");
+        fprintf(codeFile, "// element defines 32 pixels (bits) of information\n");
+        fprintf(codeFile, "// Number of elemens depend on RICON_SIZE (by default 16x16 pixels)\n");
+        fprintf(codeFile, "#define RICON_DATA_ELEMENTS   (RICON_SIZE*RICON_SIZE/32)\n\n");
        
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
         fprintf(codeFile, "// Icons enumeration\n");
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
         
         fprintf(codeFile, "typedef enum {\n");
-        for (int i = 0; i < RICON_MAX_ICONS; i++) fprintf(codeFile, "    RICON_%s = %i,\n", (guiIconsName[i][0] != '\0')? guiIconsName[i] : TextFormat("%03i", i), i);
+        for (int i = 0; i < RICON_MAX_ICONS; i++) fprintf(codeFile, "    RICON_%-24s = %i,\n", (guiIconsName[i][0] != '\0')? guiIconsName[i] : TextFormat("%03i", i), i);
         fprintf(codeFile, "} guiIconName;\n\n");
 
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
         fprintf(codeFile, "// Icons data\n");
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
         
-        fprintf(codeFile, "static unsigned int guiIcons[%i] = {\n", RICON_MAX_ICONS);
+        fprintf(codeFile, "static unsigned int guiIcons[RICON_MAX_ICONS] = {\n");
         for (int i = 0; i < RICON_MAX_ICONS; i++) 
         {
             unsigned int *icon = GuiGetIconData(i);
