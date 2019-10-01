@@ -40,7 +40,7 @@ rGuiIcons ONE also allows exporting icons set as code for embedding in custom pr
 
 ## rGuiIcons Screenshot
 
-![rGuiIcons](screenshots/rguiicons_v100.png)
+![rGuiIcons](screenshots/rguiicons_v100_shot01.png)
 
 ## rGuiIcons License
 
