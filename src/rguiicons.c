@@ -488,12 +488,13 @@ int main(int argc, char *argv[])
     {
         // Undo icons change logic
         //----------------------------------------------------------------------------------
-        // Every 120 frames we check if current layout has changed and record a new undo state
+        // Make sure no windows are open to store changes
         if (!windowAboutState.windowAboutActive && !windowExitActive && !showLoadFileDialog &&
             !showSaveFileDialog && !showExportFileDialog && !showExportIconImageDialog)
         {
             undoFrameCounter++;
 
+            // Every 120 frames we check if current layout has changed and record a new undo state
             if (undoFrameCounter >= 120)
             {
                 if (memcmp(undoIconSet[currentUndoIndex].values, GuiGetIcons(), RICON_MAX_ICONS*RICON_DATA_ELEMENTS*sizeof(unsigned int)) != 0)
@@ -692,6 +693,7 @@ int main(int argc, char *argv[])
                 if (GuiButton((Rectangle){ anchor01.x + 40, anchor01.y + 10, 25, 25 }, "#02#")) showSaveFileDialog = true;
                 if (GuiButton((Rectangle){ anchor01.x + 70, anchor01.y + 10, 25, 25 }, "#07#")) showExportFileDialog = true;
                 
+                // Copy button/shortcut logic
                 if ((GuiButton((Rectangle){ anchor01.x + 115, anchor01.y + 10, 25, 25 }, "#16#")) || 
                     (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C)))
                 {
@@ -700,6 +702,7 @@ int main(int argc, char *argv[])
                     iconDataToCopy = true;
                 }
 
+                // Cut button/shortcut logic
                 if ((GuiButton((Rectangle){ anchor01.x + 145, anchor01.y + 10, 25, 25 }, "#17#")) || 
                     (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_X)))
                 {
@@ -712,6 +715,7 @@ int main(int argc, char *argv[])
                     iconDataToCopy = true;
                 }
                 
+                // Paste button/shortcut logic
                 if ((GuiButton((Rectangle){ anchor01.x + 175, anchor01.y + 10, 25, 25 }, "#18#")) || 
                     (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V)))
                 {
@@ -734,7 +738,7 @@ int main(int argc, char *argv[])
                 //----------------------------------------------------------------------------------
                 GuiLabel((Rectangle){ anchor01.x + 15, anchor01.y + 45, 140, 25 }, "Choose rIcon for Edit:");
                 
-                // Draw ricons selection panel
+                // Draw icons selection panel
                 selectedIcon = GuiToggleGroup((Rectangle){ anchor01.x + 15, anchor01.y + 70, 18, 18 }, toggleIconsText, selectedIcon);
                 
 #if defined(VERSION_ONE)
@@ -747,7 +751,7 @@ int main(int argc, char *argv[])
                 GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "rIcon Name ID:");
                 
                 // NOTE: We show icon name id for selected icon
-                if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 70, 260, 25 }, guiIconsName[selectedIcon], 128, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
+                if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 70, 260, 25 }, guiIconsName[selectedIcon], 32, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
                 
                 iconEditScale = (int)GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 110, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), (float)iconEditScale, 0, 16);
                 if (iconEditScale < 2) iconEditScale = 2;
@@ -759,8 +763,6 @@ int main(int argc, char *argv[])
                
                 // Draw grid (returns selected cell)
                 cell = GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RICON_SIZE*iconEditScale/2, anchor01.y + 130 + 128 - RICON_SIZE*iconEditScale/2, RICON_SIZE*iconEditScale, RICON_SIZE*iconEditScale }, iconEditScale, 1);
-                
-                // TODO: Review returned cell, sometimes out-of-bounds
 
                 // Draw selected cell lines
                 if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RICON_SIZE) && (cell.y < RICON_SIZE))
