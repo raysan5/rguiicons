@@ -31,7 +31,7 @@ c 011 5 btnExport 185 400 150 25 1 #07#Export rIcons
 c 012 4 lblIconNameId 365 45 126 25 1 rIcon Name ID:
 c 013 13 iconNameId 365 65 260 25 1 SAMPLE TEXT
 c 014 18 zoom 410 110 180 10 1 ZOOM:
-c 015 24 dummy02 365 130 260 260 1 rIcon Edit
+c 015 24 dummy02 367 126 260 260 1 rIcon Edit
 c 016 5 btnSaveIcon 440 400 100 25 1 #012#Save Image
 c 017 5 btnClearIcon 545 400 80 25 1 #079#Clear
 c 018 20 statusFile 0 435 350 25 1 TOTAL FILE ICONS: 0/0
