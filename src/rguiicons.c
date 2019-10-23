@@ -1002,11 +1002,15 @@ static void ShowCommandLineInfo(void)
 static void ProcessCommandLine(int argc, char *argv[])
 {
     // CLI required variables
-    bool showUsageInfo = false;     // Toggle command line usage info
+    bool showUsageInfo = false;         // Toggle command line usage info
 
-    char inFileName[512] = { 0 };   // Input file name
-    char outFileName[512] = { 0 };  // Output file name
-    int outputFormat = 0;           // Supported output formats
+    char inFileName[512] = { 0 };       // Input file name
+    char outFileName[512] = { 0 };      // Output file name
+    int outputFormat = 0;               // Supported output formats
+
+#if defined(COMMAND_LINE_ONLY)
+    if (argc == 1) showUsageInfo = true;
+#endif
 
     // Process command line arguments
     for (int i = 1; i < argc; i++)
