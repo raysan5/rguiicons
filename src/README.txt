@@ -60,4 +60,4 @@ rGuiIcons is closed source software but it's based on open-source technologies:
 rGuiIcons ZERO is free and rGuiIcons ONE is low-cost, with the addition of some useful features. 
 In any case, consider it as a small donation to help the author keep working on software for games/tools development.
 
-Copyright (c) 2019 raylib technologies (@raylibtech). All Rights Reserved.
+Copyright (c) 2019-2020 raylib technologies (@raylibtech). All Rights Reserved.

@@ -29,7 +29,7 @@
 *
 *   LICENSE: Propietary License
 *
-*   Copyright (c) 2019 raylib technologies (@raylibtech). All Rights Reserved.
+*   Copyright (c) 2019-2020 raylib technologies (@raylibtech). All Rights Reserved.
 *
 *   Unauthorized copying of this file, via any medium is strictly prohibited
 *   This project is proprietary and confidential unless the owner allows
@@ -976,7 +976,7 @@ static void ShowCommandLineInfo(void)
     printf("// more info and bugs-report: github.com/raylibtech/rtools                      //\n");
     printf("// feedback and support:      ray[at]raylibtech.com                             //\n");
     printf("//                                                                              //\n");
-    printf("// Copyright (c) 2019 raylib technologies (@raylibtech)                         //\n");
+    printf("// Copyright (c) 2019-2020 raylib technologies (@raylibtech)                    //\n");
     printf("//                                                                              //\n");
     printf("//////////////////////////////////////////////////////////////////////////////////\n\n");
 
@@ -1216,7 +1216,7 @@ static void ExportIconsAsCode(const char *fileName)
         fprintf(codeFile, "// more info and bugs-report:  github.com/raysan5/raygui                        //\n");
         fprintf(codeFile, "// feedback and support:       ray[at]raylibtech.com                            //\n");
         fprintf(codeFile, "//                                                                              //\n");
-        fprintf(codeFile, "// Copyright (c) 2019 raylib technologies (@raylibtech)                         //\n");
+        fprintf(codeFile, "// Copyright (c) 2020 raylib technologies (@raylibtech)                         //\n");
         fprintf(codeFile, "//                                                                              //\n");
         fprintf(codeFile, "//////////////////////////////////////////////////////////////////////////////////\n\n");
 
