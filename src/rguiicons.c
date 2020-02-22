@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rGuiIcons v1.0 - A simple and easy-to-use raygui icons editor
+*   rGuiIcons v1.1 - A simple and easy-to-use raygui icons editor
 *
 *   CONFIGURATION:
 *
@@ -24,6 +24,8 @@
 *       gcc -o rguiicons rguiicons.c external/tinyfiledialogs.c -s -Iexternal -no-pie -D_DEFAULT_SOURCE /
 *           -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 *
+*   NOTE: On PLATFORM_ANDROID and PLATFORM_WEB file dialogs are not available
+*
 *   DEVELOPERS:
 *       Ramon Santamaria (@raysan5):   Developer, supervisor, updater and maintainer.
 *
@@ -38,6 +40,11 @@
 **********************************************************************************************/
 
 #include "raylib.h"
+
+#if defined(PLATFORM_WEB)
+    #define CUSTOM_MODAL_DIALOGS        // Force custom modal dialogs usage
+    #include <emscripten/emscripten.h>  // Emscripten library - LLVM to JavaScript compiler
+#endif
 
 // NOTE: Some raygui elements need to be defined before including raygui
 #define TEXTSPLIT_MAX_TEXT_LENGTH      4096
@@ -460,7 +467,7 @@ int main(int argc, char *argv[])
     }
 
     unsigned int iconData[8] = { 0 };
-    unsigned char iconName[32] = { 0 };
+    char iconName[32] = { 0 };
     bool iconDataToCopy = false;
 
     // Undo system variables
@@ -489,7 +496,7 @@ int main(int argc, char *argv[])
         // Undo icons change logic
         //----------------------------------------------------------------------------------
         // Make sure no windows are open to store changes
-        if (!windowAboutState.windowAboutActive && !windowExitActive && !showLoadFileDialog &&
+        if (!windowAboutState.windowActive && !windowExitActive && !showLoadFileDialog &&
             !showSaveFileDialog && !showExportFileDialog && !showExportIconImageDialog)
         {
             undoFrameCounter++;
@@ -586,9 +593,9 @@ int main(int argc, char *argv[])
 
                 // TODO: Load icons name id from PNG zTXt chunk if available
             }
-#if defined(VERSION_ONE)
+//#if defined(VERSION_ONE)
             else if (IsFileExtension(droppedFiles[0], ".rgs")) GuiLoadStyle(droppedFiles[0]);
-#endif
+//#endif
 
             ClearDroppedFiles();
         }
@@ -609,7 +616,7 @@ int main(int argc, char *argv[])
         }
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) showExportFileDialog = true;    // Show dialog: export icons data (.png, .h)
 
-        if (IsKeyPressed(KEY_F1)) windowAboutState.windowAboutActive = !windowAboutState.windowAboutActive;
+        if (IsKeyPressed(KEY_F1)) windowAboutState.windowActive = !windowAboutState.windowActive;
         //----------------------------------------------------------------------------------
 
         // Basic program flow logic
@@ -682,7 +689,7 @@ int main(int argc, char *argv[])
 
                 ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
-                if (windowAboutState.windowAboutActive || windowExitActive) GuiDisable();
+                if (windowAboutState.windowActive || windowExitActive) GuiDisable();
                 else GuiEnable();
 
                 // GUI: Main toolbar
@@ -728,10 +735,12 @@ int main(int argc, char *argv[])
 
                 GuiGroupBox((Rectangle){ anchor01.x + 210, anchor01.y + 10, 25, 25 }, NULL);
                 if (iconDataToCopy) DrawIconData(iconData, anchor01.x + 210 + 4, anchor01.y + 10 + 4, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
-
+#if !defined(PLATFORM_WEB)
                 hiDpiActive = GuiToggle((Rectangle){ anchor01.x + 520, anchor01.y + 10, 25, 25 }, "#199#", hiDpiActive);
-
-                if (GuiButton((Rectangle){ anchor01.x + 550, anchor01.y + 10, 75, 25 }, "#191#ABOUT")) windowAboutState.windowAboutActive = true;
+#else
+                if (GuiButton((Rectangle){ anchor01.x + 520, anchor01.y + 10, 25, 25 }, "#53#")) ToggleFullscreen();
+#endif
+                if (GuiButton((Rectangle){ anchor01.x + 550, anchor01.y + 10, 75, 25 }, "#191#ABOUT")) windowAboutState.windowActive = true;
                 //----------------------------------------------------------------------------------
 
                 // GUI: Work area
@@ -853,7 +862,7 @@ int main(int argc, char *argv[])
                     #if defined(PLATFORM_WEB)
                         // Download file from MEMFS (emscripten memory filesystem)
                         // NOTE: Second argument must be a simple filename (we can't use directories)
-                        emscripten_run_script(TextFormat("SaveFileFromMEMFSToDisk('%s','%s')", outFileName, GetFileName(outFileName)));
+                        emscripten_run_script(TextFormat("saveFileFromMEMFSToDisk('%s','%s')", outFileName, GetFileName(outFileName)));
                     #endif
                     }
 
@@ -888,9 +897,16 @@ int main(int argc, char *argv[])
                         // Export file: outFileName
                         switch (fileTypeActive)
                         {
-                            case 0: SaveIcons(outFileName); break;
+                            case 0: 
+                            {
+                                // Check for valid extension and make sure it is
+                                if ((GetExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".rgi")) strcat(outFileName, ".rgi\0");
+                                SaveIcons(outFileName);
+                            } break;
                             case 1:
                             {
+                                // Check for valid extension and make sure it is
+                                if ((GetExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".png")) strcat(outFileName, ".png\0");
                                 Image image = ImageFromIconData(GuiGetIcons(), RICON_MAX_ICONS, 16, 1);
                                 ExportImage(image, outFileName);
                                 UnloadImage(image);
@@ -899,14 +915,19 @@ int main(int argc, char *argv[])
                                 //SaveTextChunkPNG(TextDataPNG data, const char *fileName)
 
                             } break;
-                            case 2: ExportIconsAsCode(outFileName); break;
+                            case 2: 
+                            {
+                                // Check for valid extension and make sure it is
+                                if ((GetExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".h")) strcat(outFileName, ".h\0");
+                                ExportIconsAsCode(outFileName);
+                            } break;
                             default: break;
                         }
 
                     #if defined(PLATFORM_WEB)
                         // Download file from MEMFS (emscripten memory filesystem)
                         // NOTE: Second argument must be a simple filename (we can't use directories)
-                        emscripten_run_script(TextFormat("SaveFileFromMEMFSToDisk('%s','%s')", outFileName, GetFileName(outFileName)));
+                        emscripten_run_script(TextFormat("saveFileFromMEMFSToDisk('%s','%s')", outFileName, GetFileName(outFileName)));
                     #endif
                     }
 
@@ -920,14 +941,16 @@ int main(int argc, char *argv[])
                 {
                     strcpy(outFileName, TextFormat("%s_%ix%i.png", TextToLower(guiIconsName[selectedIcon]), RICON_SIZE, RICON_SIZE));
 
-    #if defined(CUSTOM_MODAL_DIALOGS)
+                #if defined(CUSTOM_MODAL_DIALOGS)
                     int result = GuiFileDialog(DIALOG_TEXTINPUT, "Export raygui icon as image file...", outFileName, "Ok;Cancel", NULL);
-    #else
+                #else
                     int result = GuiFileDialog(DIALOG_SAVE, "Export raygui icon as image file...", outFileName, "*.png", "Image File (*.png)");
-    #endif
+                #endif
                     if (result == 1)
                     {
                         // Export file: outFileName
+                        // Check for valid extension and make sure it is
+                        if ((GetExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".png")) strcat(outFileName, ".png\0");
                         Image icon = ImageFromIconData(GuiGetIconData(selectedIcon), 1, 1, 0);
                         ExportImage(icon, outFileName);
                         UnloadImage(icon);
@@ -935,7 +958,7 @@ int main(int argc, char *argv[])
                     #if defined(PLATFORM_WEB)
                         // Download file from MEMFS (emscripten memory filesystem)
                         // NOTE: Second argument must be a simple filename (we can't use directories)
-                        emscripten_run_script(TextFormat("SaveFileFromMEMFSToDisk('%s','%s')", outFileName, GetFileName(outFileName)));
+                        emscripten_run_script(TextFormat("saveFileFromMEMFSToDisk('%s','%s')", outFileName, GetFileName(outFileName)));
                     #endif
                     }
 
@@ -965,7 +988,7 @@ int main(int argc, char *argv[])
 // Module functions
 //--------------------------------------------------------------------------------------------
 
-#if defined(VERSION_ONE)
+#if defined(VERSION_ONE) && !defined(PLATFORM_WEB)
 // Show command line usage info
 static void ShowCommandLineInfo(void)
 {
@@ -1085,7 +1108,7 @@ static void ProcessCommandLine(int argc, char *argv[])
 
     if (showUsageInfo) ShowCommandLineInfo();
 }
-#endif      // VERSION_ONE
+#endif      // VERSION_ONE -> COMMAND_LINE
 
 //--------------------------------------------------------------------------------------------
 // Load/Save/Export functions
