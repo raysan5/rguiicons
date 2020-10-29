@@ -854,7 +854,7 @@ int main(int argc, char *argv[])
                     {
                         // Save icons file
                         // Check for valid extension and make sure it is
-                        if ((GetExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".rgi")) strcat(outFileName, ".rgi\0");
+                        if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".rgi")) strcat(outFileName, ".rgi\0");
 
                         // Save icons file
                         SaveIcons(outFileName);
@@ -900,13 +900,13 @@ int main(int argc, char *argv[])
                             case 0: 
                             {
                                 // Check for valid extension and make sure it is
-                                if ((GetExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".rgi")) strcat(outFileName, ".rgi\0");
+                                if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".rgi")) strcat(outFileName, ".rgi\0");
                                 SaveIcons(outFileName);
                             } break;
                             case 1:
                             {
                                 // Check for valid extension and make sure it is
-                                if ((GetExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".png")) strcat(outFileName, ".png\0");
+                                if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".png")) strcat(outFileName, ".png\0");
                                 Image image = ImageFromIconData(GuiGetIcons(), RICON_MAX_ICONS, 16, 1);
                                 ExportImage(image, outFileName);
                                 UnloadImage(image);
@@ -918,7 +918,7 @@ int main(int argc, char *argv[])
                             case 2: 
                             {
                                 // Check for valid extension and make sure it is
-                                if ((GetExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".h")) strcat(outFileName, ".h\0");
+                                if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".h")) strcat(outFileName, ".h\0");
                                 ExportIconsAsCode(outFileName);
                             } break;
                             default: break;
@@ -950,7 +950,7 @@ int main(int argc, char *argv[])
                     {
                         // Export file: outFileName
                         // Check for valid extension and make sure it is
-                        if ((GetExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".png")) strcat(outFileName, ".png\0");
+                        if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".png")) strcat(outFileName, ".png\0");
                         Image icon = ImageFromIconData(GuiGetIconData(selectedIcon), 1, 1, 0);
                         ExportImage(icon, outFileName);
                         UnloadImage(icon);
