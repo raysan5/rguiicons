@@ -1121,7 +1121,7 @@ void LoadIconsFromImage(Image image, int iconsCount, int iconsSize, int iconsPer
     int lines = iconsCount/iconsPerLine;
     if (iconsCount%iconsPerLine > 0) lines++;
 
-    Color *pixels = GetImageData(image);
+    Color *pixels = LoadImageColors(image);
 
     Rectangle icorec = { 0, 0, iconsSize, iconsSize };
     Color pixel = BLACK;
@@ -1156,7 +1156,7 @@ void LoadIconsFromImage(Image image, int iconsCount, int iconsSize, int iconsPer
         }
     }
 
-    free(pixels);
+    UnloadImageColors(pixels);
     UnloadImage(image);
 
     // TODO: return values;
@@ -1350,7 +1350,7 @@ static Image ImageFromIconData(unsigned int *icons, int iconsCount, int iconsPer
 // NOTE: Image size MUST be multiple of 8 for correct fit
 static unsigned char *ImageToBits(Image image)
 {
-    Color *pixels = GetImageData(image);
+    Color *pixels = LoadImageColors(image);
 
     // Calculate number of bytes required
     int size = image.width*image.height/8;
@@ -1365,7 +1365,7 @@ static unsigned char *ImageToBits(Image image)
         }
     }
 
-    free(pixels);
+    UnloadImageColors(pixels);
 
     return bytes;
 }
