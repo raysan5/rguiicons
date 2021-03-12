@@ -394,7 +394,7 @@ int main(int argc, char *argv[])
     const int screenWidth = 640;
     const int screenHeight = 460;
 
-    InitWindow(screenWidth, screenHeight, FormatText("%s v%s - %s", toolName, toolVersion, toolDescription));
+    InitWindow(screenWidth, screenHeight, TextFormat("%s v%s - %s", toolName, toolVersion, toolDescription));
     SetExitKey(0);
 
     // General pourpose variables
@@ -463,7 +463,7 @@ int main(int argc, char *argv[])
         for (int i = 0; i < RICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
         free(tempIconsName);
 
-        SetWindowTitle(FormatText("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
+        SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
     }
 
     unsigned int iconData[8] = { 0 };
@@ -519,7 +519,7 @@ int main(int argc, char *argv[])
                     // Set a '*' mark on loaded file name to notice save requirement
                     if ((inFileName[0] != '\0') && !saveChangesRequired)
                     {
-                        SetWindowTitle(FormatText("%s v%s - %s*", toolName, toolVersion, GetFileName(inFileName)));
+                        SetWindowTitle(TextFormat("%s v%s - %s*", toolName, toolVersion, GetFileName(inFileName)));
                         saveChangesRequired = true;
                     }
                 }
@@ -582,7 +582,7 @@ int main(int argc, char *argv[])
                 free(tempIconsName);
 
                 strcpy(inFileName, droppedFiles[0]);
-                SetWindowTitle(FormatText("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
+                SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
             }
             else if (IsFileExtension(droppedFiles[0], ".png"))
             {
@@ -610,7 +610,7 @@ int main(int argc, char *argv[])
             else if (saveChangesRequired)
             {
                 SaveIcons(inFileName);
-                SetWindowTitle(FormatText("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
+                SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
                 saveChangesRequired = false;
             }
         }
@@ -807,7 +807,7 @@ int main(int argc, char *argv[])
                 {
                     DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), 0.85f));
                     int message = GuiMessageBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 },
-                                                FormatText("#159#Closing %s", toolName), "Do you really want to exit?", "Yes;No");
+                                                TextFormat("#159#Closing %s", toolName), "Do you really want to exit?", "Yes;No");
 
                     if ((message == 0) || (message == 2)) windowExitActive = false;
                     else if (message == 1) exitWindow = true;
@@ -830,7 +830,7 @@ int main(int argc, char *argv[])
                         for (int i = 0; i < RICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
                         free(tempIconsName);
 
-                        SetWindowTitle(FormatText("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
+                        SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
                         saveChangesRequired = false;
                     }
 
