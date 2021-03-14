@@ -1320,7 +1320,7 @@ static Image ImageFromIconData(unsigned int *icons, int iconsCount, int iconsPer
     image.width = (RICON_SIZE + 2*padding)*iconsPerLine;
     image.height = (RICON_SIZE + 2*padding)*lines;
     image.mipmaps = 1;
-    image.format = UNCOMPRESSED_GRAYSCALE;
+    image.format = PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
     image.data = (unsigned char *)calloc(image.width*image.height, 1);  // All pixels BLACK by default
 
     int pixelX = 0;
@@ -1379,7 +1379,7 @@ static Image ImageFromBits(unsigned char *bytes, int width, int height, Color co
     image.width = width;
     image.height = height;
     image.mipmaps = 1;
-    image.format = UNCOMPRESSED_R8G8B8A8;
+    image.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
     image.data = (Color *)calloc(image.width*image.height, sizeof(Color));
 
     for (int i = 0; i < width*height/8; i++)
