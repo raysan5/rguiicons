@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rGuiIcons v1.1 - A simple and easy-to-use raygui icons editor
+*   rGuiIcons v1.5 - A simple and easy-to-use raygui icons editor
 *
 *   CONFIGURATION:
 *
@@ -12,9 +12,9 @@
 *       NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   DEPENDENCIES:
-*       raylib 2.6-dev          - Windowing/input management and drawing.
-*       raygui 2.6              - Immediate-mode GUI controls.
-*       tinyfiledialogs 3.3.9   - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs.
+*       raylib 4.0              - Windowing/input management and drawing.
+*       raygui 3.0              - Immediate-mode GUI controls.
+*       tinyfiledialogs 3.8.8   - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs.
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o rguiicons.exe rguiicons.c external/tinyfiledialogs.c -s rguiicons.rc.data -Iexternal /
@@ -31,7 +31,7 @@
 *
 *   LICENSE: Propietary License
 *
-*   Copyright (c) 2019-2020 raylib technologies (@raylibtech). All Rights Reserved.
+*   Copyright (c) 2019-2021 raylib technologies (@raylibtech). All Rights Reserved.
 *
 *   Unauthorized copying of this file, via any medium is strictly prohibited
 *   This project is proprietary and confidential unless the owner allows
@@ -50,7 +50,7 @@
 #define TEXTSPLIT_MAX_TEXT_LENGTH      4096
 #define TEXTSPLIT_MAX_TEXT_ELEMENTS     256
 #define TOGGLEGROUP_MAX_ELEMENTS        256
-#define GRID_COLOR_ALPHA                0.2f
+#define GRID_COLOR_ALPHA                  0.2f
 
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_SUPPORT_RICONS
@@ -402,7 +402,7 @@ int main(int argc, char *argv[])
 
     // Create a RenderTexture2D to be used for render to texture
     RenderTexture2D target = LoadRenderTexture(screenWidth, screenHeight);
-    SetTextureFilter(target.texture, FILTER_POINT);
+    SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
     int screenScale = 1;
 
     Vector2 cell = { -1, -1 };  // Grid cell mouse position
