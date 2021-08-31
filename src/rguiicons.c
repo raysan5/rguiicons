@@ -116,7 +116,7 @@ typedef struct GuiIconSet {
 // Global Variables Definition
 //----------------------------------------------------------------------------------
 const char *toolName = "rGuiIcons";
-const char *toolVersion = "1.1";
+const char *toolVersion = "1.5";
 const char *toolDescription = "A simple and easy-to-use raygui icons editor";
 
 static bool saveChangesRequired = false;    // Flag to notice save changes are required
