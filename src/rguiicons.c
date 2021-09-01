@@ -333,14 +333,14 @@ static void ProcessCommandLine(int argc, char *argv[]);     // Process command l
 #endif
 
 // Load/Save/Export data functions
-static void LoadIconsFromImage(Image image, int iconsCount, int iconsSize, int iconsPerLine, int padding); // Load icons from image file
+static void LoadIconsFromImage(Image image, int iconCount, int iconSize, int iconsPerLine, int padding); // Load icons from image file
 static bool SaveIcons(const char *fileName);                // Save raygui icons file (.rgi)
 static void ExportIconsAsCode(const char *fileName);        // Export gui icons as code (.h)
 
 // Auxiliar functions
 static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color color);                 // Draw icon data (one icon)
 
-static Image ImageFromIconData(unsigned int *values, int iconsCount, int iconsPerLine, int padding);    // Gen image drom icon data array
+static Image ImageFromIconData(unsigned int *values, int iconCount, int iconsPerLine, int padding);    // Gen image drom icon data array
 
 static unsigned char *ImageToBits(Image image);
 static Image ImageFromBits(unsigned char *bytes, int width, int height, Color color);
@@ -571,8 +571,8 @@ int main(int argc, char *argv[])
         //----------------------------------------------------------------------------------
         if (IsFileDropped())
         {
-            int dropsCount = 0;
-            char **droppedFiles = GetDroppedFiles(&dropsCount);
+            int dropFileCount = 0;
+            char **droppedFiles = GetDroppedFiles(&dropFileCount);
 
             if (IsFileExtension(droppedFiles[0], ".rgi"))
             {
@@ -1116,18 +1116,18 @@ static void ProcessCommandLine(int argc, char *argv[])
 
 // Load icons from image file
 // NOTE: Several parameters are required for proper loading
-void LoadIconsFromImage(Image image, int iconsCount, int iconsSize, int iconsPerLine, int padding)
+void LoadIconsFromImage(Image image, int iconCount, int iconSize, int iconsPerLine, int padding)
 {
-    int lines = iconsCount/iconsPerLine;
-    if (iconsCount%iconsPerLine > 0) lines++;
+    int lines = iconCount/iconsPerLine;
+    if (iconCount%iconsPerLine > 0) lines++;
 
     Color *pixels = LoadImageColors(image);
 
-    Rectangle icorec = { 0, 0, iconsSize, iconsSize };
+    Rectangle icorec = { 0, 0, iconSize, iconSize };
     Color pixel = BLACK;
 
     // Calculate number of bytes required
-    int size = iconsPerLine*lines*iconsSize*iconsSize/32;
+    int size = iconsPerLine*lines*iconSize*iconSize/32;
     unsigned int *values = (unsigned int *)calloc(size, sizeof(unsigned int));
 
     int n = 0;      // Icons counter
@@ -1138,15 +1138,15 @@ void LoadIconsFromImage(Image image, int iconsCount, int iconsSize, int iconsPer
         for (int x = 0; x < iconsPerLine; x++)
         {
             // Get icon start pixel position within image (top-left corner)
-            icorec.x = padding + x*(iconsSize + 2*padding);
-            icorec.y = padding + y*(iconsSize + 2*padding);
+            icorec.x = padding + x*(iconSize + 2*padding);
+            icorec.y = padding + y*(iconSize + 2*padding);
 
             // Move along pixels within each icon area
-            for (int p = 0; p < iconsSize*iconsSize; p++)
+            for (int p = 0; p < iconSize*iconSize; p++)
             {
-                pixel = pixels[((int)icorec.y + p/iconsSize)*(iconsPerLine*(iconsSize + 2*padding)) + ((int)icorec.x + p%iconsSize)];
+                pixel = pixels[((int)icorec.y + p/iconSize)*(iconsPerLine*(iconSize + 2*padding)) + ((int)icorec.x + p%iconSize)];
 
-                if (ColorToInt(pixel) == 0xffffffff) BIT_SET(values[n*(iconsSize*iconsSize/32) + p/32], k);
+                if (ColorToInt(pixel) == 0xffffffff) BIT_SET(values[n*(iconSize*iconSize/32) + p/32], k);
 
                 k++;
                 if (k == 32) k = 0;
@@ -1197,25 +1197,25 @@ static bool SaveIcons(const char *fileName)
         char signature[5] = "rGI ";
         short version = 100;
         short reserved = 0;
-        short iconsCount = RICON_MAX_ICONS;
-        short iconsSize = RICON_SIZE;
+        short iconCount = RICON_MAX_ICONS;
+        short iconSize = RICON_SIZE;
 
         fwrite(signature, 1, 4, rgiFile);
         fwrite(&version, 1, sizeof(short), rgiFile);
         fwrite(&reserved, 1, sizeof(short), rgiFile);
-        fwrite(&iconsCount, 1, sizeof(short), rgiFile);
-        fwrite(&iconsSize, 1, sizeof(short), rgiFile);
+        fwrite(&iconCount, 1, sizeof(short), rgiFile);
+        fwrite(&iconSize, 1, sizeof(short), rgiFile);
 
-        for (int i = 0; i < iconsCount; i++)
+        for (int i = 0; i < iconCount; i++)
         {
             // Write icons name id
             fwrite(guiIconsName[i], 32, 1, rgiFile);
         }
 
-        for (int i = 0; i < iconsCount; i++)
+        for (int i = 0; i < iconCount; i++)
         {
             // Write icons data
-            fwrite(GuiGetIconData(i), (iconsSize*iconsSize/32), sizeof(unsigned int), rgiFile);
+            fwrite(GuiGetIconData(i), (iconSize*iconSize/32), sizeof(unsigned int), rgiFile);
         }
 
         fclose(rgiFile);
@@ -1308,14 +1308,14 @@ static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color 
 }
 
 // Gen GRAYSCALE image from and array of bits stored as int (0-BLANK, 1-WHITE)
-static Image ImageFromIconData(unsigned int *icons, int iconsCount, int iconsPerLine, int padding)
+static Image ImageFromIconData(unsigned int *icons, int iconCount, int iconsPerLine, int padding)
 {
     #define BIT_CHECK(a,b) ((a) & (1<<(b)))
 
     Image image = { 0 };
 
-    int lines = iconsCount/iconsPerLine;
-    if (iconsCount%iconsPerLine > 0) lines++;
+    int lines = iconCount/iconsPerLine;
+    if (iconCount%iconsPerLine > 0) lines++;
 
     image.width = (RICON_SIZE + 2*padding)*iconsPerLine;
     image.height = (RICON_SIZE + 2*padding)*lines;
@@ -1326,7 +1326,7 @@ static Image ImageFromIconData(unsigned int *icons, int iconsCount, int iconsPer
     int pixelX = 0;
     int pixelY = 0;
 
-    for (int n = 0; n < iconsCount; n++)
+    for (int n = 0; n < iconCount; n++)
     {
         for (int i = 0, y = 0; i < RICON_SIZE*RICON_SIZE/32; i++)
         {
