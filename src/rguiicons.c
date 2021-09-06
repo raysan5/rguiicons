@@ -5,11 +5,16 @@
 *   CONFIGURATION:
 *
 *   #define VERSION_ONE
-*       Enable PRO features for the tool. Usually command-line and export options related.
+*       Enable PRO features for the tool:
+*       - Support command line usage
 *
 *   #define CUSTOM_MODAL_DIALOGS
 *       Use custom raygui generated modal dialogs instead of native OS ones
 *       NOTE: Avoids including tinyfiledialogs depencency library
+*
+*   VERSIONS HISTORY:
+*       1.5  (xx-Nov-2021) Updated to raylib 4.0 and raygui 3.0
+*       1.0  (30-Sep-2019) First release
 *
 *   DEPENDENCIES:
 *       raylib 4.0              - Windowing/input management and drawing.
@@ -28,6 +33,7 @@
 *
 *   DEVELOPERS:
 *       Ramon Santamaria (@raysan5):   Developer, supervisor, updater and maintainer.
+*
 *
 *   LICENSE: Propietary License
 *
@@ -328,6 +334,7 @@ static char guiIconsName[RICON_MAX_ICONS][32] = {
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
 #if defined(VERSION_ONE)
+// Command line functionality
 static void ShowCommandLineInfo(void);                      // Show command line usage info
 static void ProcessCommandLine(int argc, char *argv[]);     // Process command line input
 #endif
@@ -373,7 +380,7 @@ int main(int argc, char *argv[])
                 strcpy(inFileName, argv[1]);        // Read input filename to open with gui interface
             }
         }
-#if defined(VERSION_ONE)
+#if defined(VERSION_ONE)    // Command line
         else
         {
             ProcessCommandLine(argc, argv);
@@ -593,9 +600,7 @@ int main(int argc, char *argv[])
 
                 // TODO: Load icons name id from PNG zTXt chunk if available
             }
-//#if defined(VERSION_ONE)
             else if (IsFileExtension(droppedFiles[0], ".rgs")) GuiLoadStyle(droppedFiles[0]);
-//#endif
 
             ClearDroppedFiles();
         }
@@ -750,11 +755,8 @@ int main(int argc, char *argv[])
                 // Draw icons selection panel
                 selectedIcon = GuiToggleGroup((Rectangle){ anchor01.x + 15, anchor01.y + 70, 18, 18 }, toggleIconsText, selectedIcon);
 
-#if defined(VERSION_ONE)
                 fileTypeActive = GuiComboBox((Rectangle){ anchor01.x + 15, anchor01.y + 400, 160, 25 }, "rIcons File (.rgi);rIcons Image (.png);rIcons Code (.h)", fileTypeActive);
-#else
-                fileTypeActive = GuiComboBox((Rectangle){ anchor01.x + 15, anchor01.y + 400, 160, 25 }, "rIcons File (.rgi);rIcons Image (.png)", fileTypeActive);
-#endif
+
                 if (GuiButton((Rectangle){ anchor01.x + 185, anchor01.y + 400, 150, 25 }, "#07#Export rIcons")) showExportFileDialog = true;
 
                 GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "rIcon Name ID:");
@@ -988,7 +990,7 @@ int main(int argc, char *argv[])
 // Module functions
 //--------------------------------------------------------------------------------------------
 
-#if defined(VERSION_ONE) && !defined(PLATFORM_WEB)
+#if defined(VERSION_ONE) && !defined(PLATFORM_WEB)      // Command line
 // Show command line usage info
 static void ShowCommandLineInfo(void)
 {
@@ -1108,7 +1110,7 @@ static void ProcessCommandLine(int argc, char *argv[])
 
     if (showUsageInfo) ShowCommandLineInfo();
 }
-#endif      // VERSION_ONE -> COMMAND_LINE
+#endif      // VERSION_ONE (Command line)
 
 //--------------------------------------------------------------------------------------------
 // Load/Save/Export functions
