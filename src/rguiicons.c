@@ -1236,20 +1236,21 @@ static void ExportIconsAsCode(const char *fileName)
     {
         fprintf(codeFile, "//////////////////////////////////////////////////////////////////////////////////\n");
         fprintf(codeFile, "//                                                                              //\n");
-        fprintf(codeFile, "// raygui Icons exporter v1.0 - Icons data exported as a values array           //\n");
+        fprintf(codeFile, "// raygui Icons exporter v1.1 - Icons data exported as a values array           //\n");
         fprintf(codeFile, "//                                                                              //\n");
         fprintf(codeFile, "// more info and bugs-report:  github.com/raysan5/raygui                        //\n");
         fprintf(codeFile, "// feedback and support:       ray[at]raylibtech.com                            //\n");
         fprintf(codeFile, "//                                                                              //\n");
-        fprintf(codeFile, "// Copyright (c) 2020 raylib technologies (@raylibtech)                         //\n");
+        fprintf(codeFile, "// Copyright (c) 2019-2021 raylib technologies (@raylibtech)                    //\n");
         fprintf(codeFile, "//                                                                              //\n");
         fprintf(codeFile, "//////////////////////////////////////////////////////////////////////////////////\n\n");
 
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
         fprintf(codeFile, "// Defines and Macros\n");
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
+        fprintf(codeFile, "#define RICON_SIZE             %i   // Size of icons (squared)\n", RICON_SIZE);
         fprintf(codeFile, "#define RICON_MAX_ICONS       %i   // Maximum number of icons\n", RICON_MAX_ICONS);
-        fprintf(codeFile, "#define RICON_SIZE             %i   // Size of icons (squared)\n\n", RICON_SIZE);
+        fprintf(codeFile, "#define RICON_MAX_NAME_LENGTH   %i       // Maximum length of icon name id\n\n", RICON_MAX_NAME_LENGTH);
 
         fprintf(codeFile, "// Icons data is defined by bit array (every bit represents one pixel)\n");
         fprintf(codeFile, "// Those arrays are stored as unsigned int data arrays, so every array\n");
@@ -1269,7 +1270,7 @@ static void ExportIconsAsCode(const char *fileName)
         fprintf(codeFile, "// Icons data\n");
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
 
-        fprintf(codeFile, "static unsigned int guiIcons[RICON_MAX_ICONS] = {\n");
+        fprintf(codeFile, "static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS] = {\n");
         for (int i = 0; i < RICON_MAX_ICONS; i++)
         {
             unsigned int *icon = GuiGetIconData(i);
@@ -1280,7 +1281,6 @@ static void ExportIconsAsCode(const char *fileName)
             fprintf(codeFile, "     // RICON_%s\n", (guiIconsName[i][0] != '\0')? guiIconsName[i] : TextFormat("%03i", i));
         }
         fprintf(codeFile, "};\n");
-
 
         fclose(codeFile);
     }
