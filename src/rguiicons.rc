@@ -1,8 +1,8 @@
 GLFW_ICON ICON "rguiicons.ico"
 
 1 VERSIONINFO
-FILEVERSION     1,0,0,0
-PRODUCTVERSION  1,0,0,0
+FILEVERSION     1,5,0,0
+PRODUCTVERSION  1,5,0,0
 BEGIN
   BLOCK "StringFileInfo"
   BEGIN
@@ -11,12 +11,12 @@ BEGIN
     BEGIN
 	  VALUE "CompanyName", "raylib technologies"
       VALUE "FileDescription", "rGuiIcons - A simple and easy-to-use raygui icons editor"
-      VALUE "FileVersion", "1.0"
+      VALUE "FileVersion", "1.5"
       VALUE "InternalName", "rguiicons"
-      VALUE "LegalCopyright", "(c) 2019 raylib technologies (@raylibtech)"
+      VALUE "LegalCopyright", "(c) 2021 raylib technologies (@raylibtech)"
       //VALUE "OriginalFilename", "raylib_app.exe"
       VALUE "ProductName", "rGuiIcons"
-      VALUE "ProductVersion", "1.0"
+      VALUE "ProductVersion", "1.5"
     END
   END
   BLOCK "VarFileInfo"
