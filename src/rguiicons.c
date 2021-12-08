@@ -770,7 +770,7 @@ int main(int argc, char *argv[])
 
                 // Draw selected icon at selected scale
                 DrawRectangle(anchor01.x + 365, anchor01.y + 130, 256, 256, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_NORMAL)), 0.3f));
-                GuiDrawIcon(selectedIcon, (Vector2){ anchor01.x + 365 + 128 - RICON_SIZE*iconEditScale/2, anchor01.y + 130 + 128 - RICON_SIZE*iconEditScale/2 }, iconEditScale, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
+                GuiDrawIcon(selectedIcon, (int)anchor01.x + 365 + 128 - RICON_SIZE*iconEditScale/2, (int)anchor01.y + 130 + 128 - RICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
 
                 // Draw grid (returns selected cell)
                 cell = GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RICON_SIZE*iconEditScale/2, anchor01.y + 130 + 128 - RICON_SIZE*iconEditScale/2, RICON_SIZE*iconEditScale, RICON_SIZE*iconEditScale }, iconEditScale, 1);

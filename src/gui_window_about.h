@@ -137,7 +137,7 @@ static void DrawTechIcon(int posX, int posY, int size, const char *text, int tex
 
     DrawRectangle(posX - 1, posY - 1, size + 2, size + 2, GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)));
     DrawRectangle(posX, posY, size, size, RAYWHITE);
-    DrawRectangleLinesEx((Rectangle){ posX, posY, size, size }, borderSize, color);
+    DrawRectangleLinesEx((Rectangle){ posX, posY, size, size }, (float)borderSize, color);
     DrawText(text, textPosX, textPosY, textSize, color);
 #if defined(VERSION_ONE)
     if (corner)
@@ -189,7 +189,7 @@ void GuiWindowAbout(GuiWindowAboutState *state)
         GuiLabel((Rectangle){ state->position.x + 85, state->position.y + 55, 200, 30 }, TextFormat("%s %s %s", lblNameVersionText, mode, lblDateText));
         GuiLabel((Rectangle){ state->position.x + 85, state->position.y + 78, 245, 20 }, lblDescriptionText);
 
-        GuiLine((Rectangle){ state->position.x, state->position.y + 100, state->windowWidth, 20 }, NULL);
+        GuiLine((Rectangle){ state->position.x, state->position.y + 100, (float)state->windowWidth, 20 }, NULL);
         GuiLabel((Rectangle){ state->position.x + 8, state->position.y + 113, 126, 25 }, lblUsedLibsText);
 
         DrawTechIcon(state->position.x + 10, state->position.y + 135, 64, "raylib", 10, false, BLACK);
