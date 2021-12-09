@@ -47,6 +47,13 @@
 
 #include "raylib.h"
 
+#define TOOL_NAME               "rGuiIcons"
+#define TOOL_SHORT_NAME         "rGI"
+#define TOOL_VERSION            "1.5"
+#define TOOL_DESCRIPTION        "A simple and easy-to-use raygui icons editor"
+#define TOOL_RELEASE_DATE       "Dec.2021"
+#define TOOL_LOGO_COLOR         0x48c9c5ff
+
 #if defined(PLATFORM_WEB)
     #define CUSTOM_MODAL_DIALOGS        // Force custom modal dialogs usage
     #include <emscripten/emscripten.h>  // Emscripten library - LLVM to JavaScript compiler
@@ -121,9 +128,9 @@ typedef struct GuiIconSet {
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
-const char *toolName = "rGuiIcons";
-const char *toolVersion = "1.5";
-const char *toolDescription = "A simple and easy-to-use raygui icons editor";
+const char *toolName = TOOL_NAME;
+const char *toolVersion = TOOL_VERSION;
+const char *toolDescription = TOOL_DESCRIPTION;
 
 static bool saveChangesRequired = false;    // Flag to notice save changes are required
 
