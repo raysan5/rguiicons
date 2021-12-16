@@ -66,7 +66,6 @@
 #define GRID_COLOR_ALPHA                  0.2f
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_RICONS
 #include "external/raygui.h"            // Required for: IMGUI controls
 
 #undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
@@ -387,7 +386,7 @@ int main(int argc, char *argv[])
                 strcpy(inFileName, argv[1]);        // Read input filename to open with gui interface
             }
         }
-#if defined(VERSION_ONE)    // Command line
+#if defined(VERSION_ONE)
         else
         {
             ProcessCommandLine(argc, argv);
@@ -997,18 +996,18 @@ int main(int argc, char *argv[])
 // Module functions
 //--------------------------------------------------------------------------------------------
 
-#if defined(VERSION_ONE) && !defined(PLATFORM_WEB)      // Command line
+#if defined(VERSION_ONE)            // Command line
 // Show command line usage info
 static void ShowCommandLineInfo(void)
 {
     printf("\n//////////////////////////////////////////////////////////////////////////////////\n");
     printf("//                                                                              //\n");
     printf("// %s v%s ONE - %s            //\n", toolName, toolVersion, toolDescription);
-    printf("// powered by raylib v2.6 (www.raylib.com) and raygui v2.6                      //\n");
+    printf("// powered by raylib v4.0 (www.raylib.com) and raygui v3.0                      //\n");
     printf("// more info and bugs-report: github.com/raylibtech/rtools                      //\n");
     printf("// feedback and support:      ray[at]raylibtech.com                             //\n");
     printf("//                                                                              //\n");
-    printf("// Copyright (c) 2019-2020 raylib technologies (@raylibtech)                    //\n");
+    printf("// Copyright (c) 2019-2022 raylib technologies (@raylibtech)                    //\n");
     printf("//                                                                              //\n");
     printf("//////////////////////////////////////////////////////////////////////////////////\n\n");
 
@@ -1117,7 +1116,7 @@ static void ProcessCommandLine(int argc, char *argv[])
 
     if (showUsageInfo) ShowCommandLineInfo();
 }
-#endif      // VERSION_ONE (Command line)
+#endif      // VERSION_ONE: Command line
 
 //--------------------------------------------------------------------------------------------
 // Load/Save/Export functions
