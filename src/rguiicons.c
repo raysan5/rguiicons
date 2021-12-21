@@ -13,13 +13,13 @@
 *       NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
-*       1.5  (xx-Nov-2021) Updated to raylib 4.0 and raygui 3.0
+*       1.5  (xx-Nov-2021) Updated to raylib 4.0 and raygui 3.1
 *       1.0  (30-Sep-2019) First release
 *
 *   DEPENDENCIES:
-*       raylib 4.0              - Windowing/input management and drawing.
-*       raygui 3.0              - Immediate-mode GUI controls.
-*       tinyfiledialogs 3.8.8   - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs.
+*       raylib 4.0              - Windowing/input management and drawing
+*       raygui 3.1              - Immediate-mode GUI controls with custom styling and icons
+*       tinyfiledialogs 3.8.8   - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o rguiicons.exe rguiicons.c external/tinyfiledialogs.c -s rguiicons.rc.data -Iexternal /
@@ -60,11 +60,10 @@
 #endif
 
 // NOTE: Some raygui elements need to be defined before including raygui
-#define TEXTSPLIT_MAX_TEXT_LENGTH      4096
-#define TEXTSPLIT_MAX_TEXT_ELEMENTS     256
-#define TOGGLEGROUP_MAX_ELEMENTS        256
-#define GRID_COLOR_ALPHA                  0.2f
-
+#define RAYGUI_TEXTSPLIT_MAX_ELEMENTS     256
+#define RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE   4096
+#define RAYGUI_TOGGLEGROUP_MAX_ELEMENTS   256
+#define RAYGUI_GRID_ALPHA                 0.2f
 #define RAYGUI_IMPLEMENTATION
 #include "external/raygui.h"            // Required for: IMGUI controls
 
@@ -84,9 +83,7 @@
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-//#define COMMAND_LINE_ONLY             // Compile tool oly for command line usage
-
-#if (!defined(DEBUG) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
+#if (!defined(_DEBUG) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
 bool __stdcall FreeConsole(void);       // Close console from code (kernel32.lib)
 #endif
 
@@ -113,8 +110,8 @@ bool __stdcall FreeConsole(void);       // Close console from code (kernel32.lib
 // All icons are joined in a single guiIcons[] array
 // and icons name id is actually defined as enum values
 typedef struct GuiIcon {
-    unsigned int data[RICON_DATA_ELEMENTS];
-    unsigned char nameId[RICON_MAX_NAME_LENGTH];
+    unsigned int data[RAYGUI_ICON_DATA_ELEMENTS];
+    unsigned char nameId[RAYGUI_ICON_MAX_NAME_LENGTH];
 } GuiIcon;
 
 // Full icons set
@@ -127,14 +124,14 @@ typedef struct GuiIconSet {
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
-const char *toolName = TOOL_NAME;
-const char *toolVersion = TOOL_VERSION;
-const char *toolDescription = TOOL_DESCRIPTION;
+static const char *toolName = TOOL_NAME;
+static const char *toolVersion = TOOL_VERSION;
+static const char *toolDescription = TOOL_DESCRIPTION;
 
 static bool saveChangesRequired = false;    // Flag to notice save changes are required
 
 // Icons name id text
-static char guiIconsName[RICON_MAX_ICONS][32] = {
+static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "NONE",
     "FOLDER_FILE_OPEN",
     "FILE_SAVE_CLASSIC",
@@ -363,7 +360,7 @@ static Image ImageFromBits(unsigned char *bytes, int width, int height, Color co
 //------------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-#if !defined(DEBUG)
+#if !defined(_DEBUG)
     SetTraceLogLevel(LOG_NONE);         // Disable raylib trace log messsages
 #endif
 #if defined(COMMAND_LINE_ONLY)
@@ -395,7 +392,7 @@ int main(int argc, char *argv[])
 #endif      // VERSION_ONE
     }
 
-#if (!defined(DEBUG) && defined(VERSION_ONE) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
+#if (!defined(_DEBUG) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
     // WARNING (Windows): If program is compiled as Window application (instead of console),
     // no console is available to show output info... solution is compiling a console application
     // and closing console (FreeConsole()) when changing to GUI interface
@@ -432,15 +429,15 @@ int main(int argc, char *argv[])
 
     // ToggleGroup() text
     // NOTE: Every icon requires 6 text characters: "#001#;"
-    char toggleIconsText[RICON_MAX_ICONS*6] = { 0 };
+    char toggleIconsText[RAYGUI_ICON_MAX_ICONS*6] = { 0 };
 
-    for (int i = 0; i < RICON_MAX_ICONS; i++)
+    for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++)
     {
         if ((i + 1)%16 == 0) strncpy(toggleIconsText + 6*i, TextFormat("#%03i#\n", i), 6);
         else strncpy(toggleIconsText + 6*i, TextFormat("#%03i#;", i), 6);
     }
 
-    toggleIconsText[RICON_MAX_ICONS*6 - 1] = '\0';
+    toggleIconsText[RAYGUI_ICON_MAX_ICONS*6 - 1] = '\0';
 
     bool hiDpiActive = false;
     bool prevHiDpiActive = hiDpiActive;
@@ -473,7 +470,7 @@ int main(int argc, char *argv[])
     if ((inFileName[0] != '\0') && (IsFileExtension(inFileName, ".rgi")))
     {
         char **tempIconsName = GuiLoadIcons(inFileName, true);
-        for (int i = 0; i < RICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
+        for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
         free(tempIconsName);
 
         SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
@@ -493,11 +490,11 @@ int main(int argc, char *argv[])
     // Init undo system with current icons set
     for (int i = 0; i < MAX_UNDO_LEVELS; i++)
     {
-        undoIconSet[i].count = RICON_MAX_ICONS;
-        undoIconSet[i].iconSize = RICON_SIZE;
-        undoIconSet[i].values = (unsigned int *)calloc(RICON_MAX_ICONS*RICON_DATA_ELEMENTS, sizeof(unsigned int));
+        undoIconSet[i].count = RAYGUI_ICON_MAX_ICONS;
+        undoIconSet[i].iconSize = RAYGUI_ICON_SIZE;
+        undoIconSet[i].values = (unsigned int *)calloc(RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS, sizeof(unsigned int));
 
-        memcpy(undoIconSet[i].values, GuiGetIcons(), RICON_MAX_ICONS*RICON_DATA_ELEMENTS*sizeof(unsigned int));
+        memcpy(undoIconSet[i].values, GuiGetIcons(), RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
     }
 
     SetTargetFPS(60);
@@ -517,7 +514,7 @@ int main(int argc, char *argv[])
             // Every 120 frames we check if current layout has changed and record a new undo state
             if (undoFrameCounter >= 120)
             {
-                if (memcmp(undoIconSet[currentUndoIndex].values, GuiGetIcons(), RICON_MAX_ICONS*RICON_DATA_ELEMENTS*sizeof(unsigned int)) != 0)
+                if (memcmp(undoIconSet[currentUndoIndex].values, GuiGetIcons(), RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int)) != 0)
                 {
                     // Move cursor to next available position to record undo
                     currentUndoIndex++;
@@ -525,7 +522,7 @@ int main(int argc, char *argv[])
                     if (currentUndoIndex == firstUndoIndex) firstUndoIndex++;
                     if (firstUndoIndex >= MAX_UNDO_LEVELS) firstUndoIndex = 0;
 
-                    memcpy(undoIconSet[currentUndoIndex].values, GuiGetIcons(), RICON_MAX_ICONS*RICON_DATA_ELEMENTS*sizeof(unsigned int));
+                    memcpy(undoIconSet[currentUndoIndex].values, GuiGetIcons(), RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
 
                     lastUndoIndex = currentUndoIndex;
 
@@ -550,11 +547,11 @@ int main(int argc, char *argv[])
                 currentUndoIndex--;
                 if (currentUndoIndex < 0) currentUndoIndex = MAX_UNDO_LEVELS - 1;
 
-                if (memcmp(undoIconSet[currentUndoIndex].values, GuiGetIcons(), RICON_MAX_ICONS*RICON_DATA_ELEMENTS*sizeof(unsigned int)) != 0)
+                if (memcmp(undoIconSet[currentUndoIndex].values, GuiGetIcons(), RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int)) != 0)
                 {
                     // Restore previous icons state
                     // NOTE: GuiGetIcons() returns a pointer to internal data
-                    memcpy(GuiGetIcons(), undoIconSet[currentUndoIndex].values,  RICON_MAX_ICONS*RICON_DATA_ELEMENTS*sizeof(unsigned int));
+                    memcpy(GuiGetIcons(), undoIconSet[currentUndoIndex].values,  RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
                 }
             }
         }
@@ -571,9 +568,9 @@ int main(int argc, char *argv[])
                 {
                     currentUndoIndex = nextUndoIndex;
 
-                    if (memcmp(undoIconSet[currentUndoIndex].values, GuiGetIcons(), RICON_MAX_ICONS*RICON_DATA_ELEMENTS*sizeof(unsigned int)) != 0)
+                    if (memcmp(undoIconSet[currentUndoIndex].values, GuiGetIcons(), RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int)) != 0)
                     {
-                        memcpy(GuiGetIcons(), undoIconSet[currentUndoIndex].values,  RICON_MAX_ICONS*RICON_DATA_ELEMENTS*sizeof(unsigned int));
+                        memcpy(GuiGetIcons(), undoIconSet[currentUndoIndex].values,  RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
                     }
                 }
             }
@@ -591,7 +588,7 @@ int main(int argc, char *argv[])
             {
                 // Load .rgi data into raygui icons set (and gui icon names for the tool)
                 char **tempIconsName = GuiLoadIcons(droppedFiles[0], true);
-                for (int i = 0; i < RICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
+                for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
                 free(tempIconsName);
 
                 strcpy(inFileName, droppedFiles[0]);
@@ -601,7 +598,7 @@ int main(int argc, char *argv[])
             {
                 // TODO: Support icons loading from image
                 //Image image = LoadImage(droppedFiles[0]);
-                //LoadIconsFromImage(image, RICON_MAX_ICONS, 16, 16, 1);    // Loading window required to config parameters (similar to raw)
+                //LoadIconsFromImage(image, RAYGUI_ICON_MAX_ICONS, 16, 16, 1);    // Loading window required to config parameters (similar to raw)
                 //UnloadImage(image);
 
                 // TODO: Load icons name id from PNG zTXt chunk if available
@@ -633,21 +630,23 @@ int main(int argc, char *argv[])
         // Basic program flow logic
         //----------------------------------------------------------------------------------
         mousePoint = GetMousePosition();    // Get mouse position each frame
-
+#if !defined(PLATFORM_WEB)
         if (WindowShouldClose()) exitWindow = true;
-
+#endif
         // Show closing window on ESC
         if (IsKeyPressed(KEY_ESCAPE))
         {
+#if !defined(PLATFORM_WEB)
             // TODO: Define KEY_ESCAPE custom logic (i.e. Show save dialog)
             exitWindow = true;
+#endif
         }
 
         if (IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_ENTER)) ToggleFullscreen();
 
         if (IsKeyPressed(KEY_DELETE))
         {
-            for (int i = 0; i < RICON_SIZE*RICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RICON_SIZE, i%RICON_SIZE);
+            for (int i = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RAYGUI_ICON_SIZE, i%RAYGUI_ICON_SIZE);
 
             memset(guiIconsName[selectedIcon], 0, 32);
         }
@@ -657,11 +656,11 @@ int main(int argc, char *argv[])
         else if (iconEditScale > 16) iconEditScale = 16;
 
         // Security check to avoid cells out of limits
-        if (cell.x > (RICON_SIZE - 1)) cell.x = RICON_SIZE - 1;
-        if (cell.y > (RICON_SIZE - 1)) cell.y = RICON_SIZE - 1;
+        if (cell.x > (RAYGUI_ICON_SIZE - 1)) cell.x = RAYGUI_ICON_SIZE - 1;
+        if (cell.y > (RAYGUI_ICON_SIZE - 1)) cell.y = RAYGUI_ICON_SIZE - 1;
 
         // Icon painting mouse logic
-        if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RICON_SIZE) && (cell.y < RICON_SIZE))
+        if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RAYGUI_ICON_SIZE) && (cell.y < RAYGUI_ICON_SIZE))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) GuiSetIconPixel(selectedIcon, (int)cell.x, (int)cell.y);
             else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) GuiClearIconPixel(selectedIcon, (int)cell.x, (int)cell.y);
@@ -715,7 +714,7 @@ int main(int argc, char *argv[])
                 if ((GuiButton((Rectangle){ anchor01.x + 115, anchor01.y + 10, 25, 25 }, "#16#")) ||
                     (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C)))
                 {
-                    memcpy(iconData, GuiGetIconData(selectedIcon), RICON_DATA_ELEMENTS*sizeof(unsigned int));
+                    memcpy(iconData, GuiGetIconData(selectedIcon), RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
                     strcpy(iconName, guiIconsName[selectedIcon]);
                     iconDataToCopy = true;
                 }
@@ -724,8 +723,8 @@ int main(int argc, char *argv[])
                 if ((GuiButton((Rectangle){ anchor01.x + 145, anchor01.y + 10, 25, 25 }, "#17#")) ||
                     (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_X)))
                 {
-                    memcpy(iconData, GuiGetIconData(selectedIcon), RICON_DATA_ELEMENTS*sizeof(unsigned int));
-                    for (int i = 0; i < RICON_SIZE*RICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RICON_SIZE, i%RICON_SIZE);
+                    memcpy(iconData, GuiGetIconData(selectedIcon), RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
+                    for (int i = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RAYGUI_ICON_SIZE, i%RAYGUI_ICON_SIZE);
 
                     strcpy(iconName, guiIconsName[selectedIcon]);
                     memset(guiIconsName[selectedIcon], 0, 32);
@@ -776,16 +775,16 @@ int main(int argc, char *argv[])
 
                 // Draw selected icon at selected scale
                 DrawRectangle(anchor01.x + 365, anchor01.y + 130, 256, 256, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_NORMAL)), 0.3f));
-                GuiDrawIcon(selectedIcon, (int)anchor01.x + 365 + 128 - RICON_SIZE*iconEditScale/2, (int)anchor01.y + 130 + 128 - RICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
+                GuiDrawIcon(selectedIcon, (int)anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, (int)anchor01.y + 130 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
 
                 // Draw grid (returns selected cell)
-                cell = GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RICON_SIZE*iconEditScale/2, anchor01.y + 130 + 128 - RICON_SIZE*iconEditScale/2, RICON_SIZE*iconEditScale, RICON_SIZE*iconEditScale }, iconEditScale, 1);
+                cell = GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 130 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale }, iconEditScale, 1);
 
                 // Draw selected cell lines
-                if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RICON_SIZE) && (cell.y < RICON_SIZE))
+                if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RAYGUI_ICON_SIZE) && (cell.y < RAYGUI_ICON_SIZE))
                 {
-                    DrawRectangleLinesEx((Rectangle){ anchor01.x + 365 + iconEditScale*cell.x + 128 - RICON_SIZE*iconEditScale/2,
-                                                      anchor01.y + 130 + iconEditScale*cell.y + 128 - RICON_SIZE*iconEditScale/2,
+                    DrawRectangleLinesEx((Rectangle){ anchor01.x + 365 + iconEditScale*cell.x + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
+                                                      anchor01.y + 130 + iconEditScale*cell.y + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
                                                       iconEditScale + 1, iconEditScale + 1 }, 1, RED);
                 }
 
@@ -793,14 +792,14 @@ int main(int argc, char *argv[])
 
                 if (GuiButton((Rectangle){ anchor01.x + 545, anchor01.y + 400, 80, 25 }, "#079#Clear"))
                 {
-                    for (int i = 0; i < RICON_SIZE*RICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RICON_SIZE, i%RICON_SIZE);
+                    for (int i = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RAYGUI_ICON_SIZE, i%RAYGUI_ICON_SIZE);
                 }
                 //----------------------------------------------------------------------------------
 
                 // Draw status info
                 int textPadding = GuiGetStyle(STATUSBAR, TEXT_PADDING);
                 GuiSetStyle(STATUSBAR, TEXT_PADDING, 15);
-                GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 435, 351, 25 }, TextFormat("TOTAL ICONS: %i", RICON_MAX_ICONS));
+                GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 435, 351, 25 }, TextFormat("TOTAL ICONS: %i", RAYGUI_ICON_MAX_ICONS));
                 GuiStatusBar((Rectangle){ anchor01.x + 350, anchor01.y + 435, 290, 25 }, TextFormat("SELECTED: %i - %s", selectedIcon, guiIconsName[selectedIcon]));
                 GuiSetStyle(STATUSBAR, TEXT_PADDING, textPadding);
 
@@ -835,7 +834,7 @@ int main(int argc, char *argv[])
                     {
                         // Load gui icons data (and gui icon names for the tool)
                         char **tempIconsName = GuiLoadIcons(inFileName, true);
-                        for (int i = 0; i < RICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
+                        for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
                         free(tempIconsName);
 
                         SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
@@ -915,7 +914,7 @@ int main(int argc, char *argv[])
                             {
                                 // Check for valid extension and make sure it is
                                 if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".png")) strcat(outFileName, ".png\0");
-                                Image image = ImageFromIconData(GuiGetIcons(), RICON_MAX_ICONS, 16, 1);
+                                Image image = ImageFromIconData(GuiGetIcons(), RAYGUI_ICON_MAX_ICONS, 16, 1);
                                 ExportImage(image, outFileName);
                                 UnloadImage(image);
 
@@ -947,7 +946,7 @@ int main(int argc, char *argv[])
                 //----------------------------------------------------------------------------------------
                 if (showExportIconImageDialog)
                 {
-                    strcpy(outFileName, TextFormat("%s_%ix%i.png", TextToLower(guiIconsName[selectedIcon]), RICON_SIZE, RICON_SIZE));
+                    strcpy(outFileName, TextFormat("%s_%ix%i.png", TextToLower(guiIconsName[selectedIcon]), RAYGUI_ICON_SIZE, RAYGUI_ICON_SIZE));
 
                 #if defined(CUSTOM_MODAL_DIALOGS)
                     int result = GuiFileDialog(DIALOG_TEXTINPUT, "Export raygui icon as image file...", outFileName, "Ok;Cancel", NULL);
@@ -993,9 +992,8 @@ int main(int argc, char *argv[])
 }
 
 //--------------------------------------------------------------------------------------------
-// Module functions
+// Module functions definition
 //--------------------------------------------------------------------------------------------
-
 #if defined(VERSION_ONE)            // Command line
 // Show command line usage info
 static void ShowCommandLineInfo(void)
@@ -1003,7 +1001,7 @@ static void ShowCommandLineInfo(void)
     printf("\n//////////////////////////////////////////////////////////////////////////////////\n");
     printf("//                                                                              //\n");
     printf("// %s v%s - %s                //\n", toolName, toolVersion, toolDescription);
-    printf("// powered by raylib v4.0 (www.raylib.com) and raygui v3.0                      //\n");
+    printf("// powered by raylib v%s and raygui v%s                                       //\n", RAYLIB_VERSION, RAYGUI_VERSION);
     printf("// more info and bugs-report: github.com/raylibtech/rtools                      //\n");
     printf("// feedback and support:      ray[at]raylibtech.com                             //\n");
     printf("//                                                                              //\n");
@@ -1097,14 +1095,14 @@ static void ProcessCommandLine(int argc, char *argv[])
 
         // Load input file: icons data and name ids
         char **tempIconsName = GuiLoadIcons(inFileName, true);
-        for (int i = 0; i < RICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
+        for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
         free(tempIconsName);
 
         // Process input --> output
         if (IsFileExtension(outFileName, ".rgi")) SaveIcons(outFileName);
         else if (IsFileExtension(outFileName, ".png"))
         {
-            Image image = ImageFromIconData(GuiGetIcons(), RICON_MAX_ICONS, 16, 1);
+            Image image = ImageFromIconData(GuiGetIcons(), RAYGUI_ICON_MAX_ICONS, 16, 1);
             ExportImage(image, outFileName);
             UnloadImage(image);
 
@@ -1205,8 +1203,8 @@ static bool SaveIcons(const char *fileName)
         char signature[5] = "rGI ";
         short version = 100;
         short reserved = 0;
-        short iconCount = RICON_MAX_ICONS;
-        short iconSize = RICON_SIZE;
+        short iconCount = RAYGUI_ICON_MAX_ICONS;
+        short iconSize = RAYGUI_ICON_SIZE;
 
         fwrite(signature, 1, 4, rgiFile);
         fwrite(&version, 1, sizeof(short), rgiFile);
@@ -1254,37 +1252,37 @@ static void ExportIconsAsCode(const char *fileName)
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
         fprintf(codeFile, "// Defines and Macros\n");
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
-        fprintf(codeFile, "#define RICON_SIZE             %i   // Size of icons (squared)\n", RICON_SIZE);
-        fprintf(codeFile, "#define RICON_MAX_ICONS       %i   // Maximum number of icons\n", RICON_MAX_ICONS);
-        fprintf(codeFile, "#define RICON_MAX_NAME_LENGTH   %i       // Maximum length of icon name id\n\n", RICON_MAX_NAME_LENGTH);
+        fprintf(codeFile, "#define RAYGUI_ICON_SIZE             %i   // Size of icons (squared)\n", RAYGUI_ICON_SIZE);
+        fprintf(codeFile, "#define RAYGUI_ICON_MAX_ICONS       %i   // Maximum number of icons\n", RAYGUI_ICON_MAX_ICONS);
+        fprintf(codeFile, "#define RAYGUI_ICON_MAX_NAME_LENGTH   %i       // Maximum length of icon name id\n\n", RAYGUI_ICON_MAX_NAME_LENGTH);
 
         fprintf(codeFile, "// Icons data is defined by bit array (every bit represents one pixel)\n");
         fprintf(codeFile, "// Those arrays are stored as unsigned int data arrays, so every array\n");
         fprintf(codeFile, "// element defines 32 pixels (bits) of information\n");
-        fprintf(codeFile, "// Number of elemens depend on RICON_SIZE (by default 16x16 pixels)\n");
-        fprintf(codeFile, "#define RICON_DATA_ELEMENTS   (RICON_SIZE*RICON_SIZE/32)\n\n");
+        fprintf(codeFile, "// Number of elemens depend on RAYGUI_ICON_SIZE (by default 16x16 pixels)\n");
+        fprintf(codeFile, "#define RAYGUI_ICON_DATA_ELEMENTS   (RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32)\n\n");
 
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
         fprintf(codeFile, "// Icons enumeration\n");
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
 
         fprintf(codeFile, "typedef enum {\n");
-        for (int i = 0; i < RICON_MAX_ICONS; i++) fprintf(codeFile, "    RICON_%-24s = %i,\n", (guiIconsName[i][0] != '\0')? guiIconsName[i] : TextFormat("%03i", i), i);
+        for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) fprintf(codeFile, "    RAYGUI_ICON_%-24s = %i,\n", (guiIconsName[i][0] != '\0')? guiIconsName[i] : TextFormat("%03i", i), i);
         fprintf(codeFile, "} guiIconName;\n\n");
 
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
         fprintf(codeFile, "// Icons data\n");
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
 
-        fprintf(codeFile, "static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS] = {\n");
-        for (int i = 0; i < RICON_MAX_ICONS; i++)
+        fprintf(codeFile, "static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = {\n");
+        for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++)
         {
             unsigned int *icon = GuiGetIconData(i);
 
             fprintf(codeFile, "    ");
-            for (int j = 0; j < RICON_DATA_ELEMENTS; j++) fprintf(codeFile, "0x%08x, ", icon[j]);
+            for (int j = 0; j < RAYGUI_ICON_DATA_ELEMENTS; j++) fprintf(codeFile, "0x%08x, ", icon[j]);
 
-            fprintf(codeFile, "     // RICON_%s\n", (guiIconsName[i][0] != '\0')? guiIconsName[i] : TextFormat("%03i", i));
+            fprintf(codeFile, "     // RAYGUI_ICON_%s\n", (guiIconsName[i][0] != '\0')? guiIconsName[i] : TextFormat("%03i", i));
         }
         fprintf(codeFile, "};\n");
 
@@ -1301,13 +1299,13 @@ static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color 
 {
     #define BIT_CHECK(a,b) ((a) & (1<<(b)))
 
-    for (int i = 0, j = 0; i < RICON_SIZE*RICON_SIZE/32; i++)
+    for (int i = 0, j = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32; i++)
     {
         for (int k = 0; k < 32; k++)
         {
             if (BIT_CHECK(data[i], k))
             {
-                DrawRectangle(x + (k%RICON_SIZE)*pixelSize, y + j*pixelSize, pixelSize, pixelSize, color);
+                DrawRectangle(x + (k%RAYGUI_ICON_SIZE)*pixelSize, y + j*pixelSize, pixelSize, pixelSize, color);
             }
 
             if ((k == 15) || (k == 31)) j++;
@@ -1325,8 +1323,8 @@ static Image ImageFromIconData(unsigned int *icons, int iconCount, int iconsPerL
     int lines = iconCount/iconsPerLine;
     if (iconCount%iconsPerLine > 0) lines++;
 
-    image.width = (RICON_SIZE + 2*padding)*iconsPerLine;
-    image.height = (RICON_SIZE + 2*padding)*lines;
+    image.width = (RAYGUI_ICON_SIZE + 2*padding)*iconsPerLine;
+    image.height = (RAYGUI_ICON_SIZE + 2*padding)*lines;
     image.mipmaps = 1;
     image.format = PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
     image.data = (unsigned char *)calloc(image.width*image.height, 1);  // All pixels BLACK by default
@@ -1336,16 +1334,16 @@ static Image ImageFromIconData(unsigned int *icons, int iconCount, int iconsPerL
 
     for (int n = 0; n < iconCount; n++)
     {
-        for (int i = 0, y = 0; i < RICON_SIZE*RICON_SIZE/32; i++)
+        for (int i = 0, y = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32; i++)
         {
             for (int k = 0; k < 32; k++)
             {
-                pixelX = padding + (n%iconsPerLine)*(RICON_SIZE + 2*padding) + (k%RICON_SIZE);
-                pixelY = padding + (n/iconsPerLine)*(RICON_SIZE + 2*padding) + y;
+                pixelX = padding + (n%iconsPerLine)*(RAYGUI_ICON_SIZE + 2*padding) + (k%RAYGUI_ICON_SIZE);
+                pixelY = padding + (n/iconsPerLine)*(RAYGUI_ICON_SIZE + 2*padding) + y;
 
-                if (BIT_CHECK(icons[n*RICON_DATA_ELEMENTS + i], k)) ((unsigned char *)image.data)[pixelY*image.width + pixelX] = 0xff;    // Draw pixel WHITE
+                if (BIT_CHECK(icons[n*RAYGUI_ICON_DATA_ELEMENTS + i], k)) ((unsigned char *)image.data)[pixelY*image.width + pixelX] = 0xff;    // Draw pixel WHITE
 
-                if ((k == (RICON_SIZE - 1)) || (k == 31)) y++;  // Move to next pixels line
+                if ((k == (RAYGUI_ICON_SIZE - 1)) || (k == 31)) y++;  // Move to next pixels line
             }
         }
     }
