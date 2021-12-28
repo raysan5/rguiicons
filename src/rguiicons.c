@@ -5,8 +5,7 @@
 *   CONFIGURATION:
 *
 *   #define VERSION_ONE
-*       Enable PRO features for the tool:
-*       - Support command line usage
+*       Enable command-line usage and PRO features for the tool
 *
 *   #define CUSTOM_MODAL_DIALOGS
 *       Use custom raygui generated modal dialogs instead of native OS ones
@@ -45,14 +44,14 @@
 *
 **********************************************************************************************/
 
-#include "raylib.h"
-
 #define TOOL_NAME               "rGuiIcons"
 #define TOOL_SHORT_NAME         "rGI"
 #define TOOL_VERSION            "1.5"
 #define TOOL_DESCRIPTION        "A simple and easy-to-use raygui icons editor"
 #define TOOL_RELEASE_DATE       "Dec.2021"
 #define TOOL_LOGO_COLOR         0x48c9c5ff
+
+#include "raylib.h"
 
 #if defined(PLATFORM_WEB)
     #define CUSTOM_MODAL_DIALOGS        // Force custom modal dialogs usage
@@ -349,11 +348,9 @@ static void ExportIconsAsCode(const char *fileName);        // Export gui icons 
 
 // Auxiliar functions
 static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color color);                 // Draw icon data (one icon)
-
-static Image ImageFromIconData(unsigned int *values, int iconCount, int iconsPerLine, int padding);    // Gen image drom icon data array
-
-static unsigned char *ImageToBits(Image image);
-static Image ImageFromBits(unsigned char *bytes, int width, int height, Color color);
+static Image GenImageFromIconData(unsigned int *values, int iconCount, int iconsPerLine, int padding);  // Gen icons pack image from icon data array
+static Image GenImageFromBits(unsigned char *bytes, int width, int height, Color color);                // Gen image from bits data (packed in bytes)
+static unsigned char *ImageToBits(Image image);                                                         // Gen bits array (packed in bytes) from image data
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -363,9 +360,7 @@ int main(int argc, char *argv[])
 #if !defined(_DEBUG)
     SetTraceLogLevel(LOG_NONE);         // Disable raylib trace log messsages
 #endif
-#if defined(COMMAND_LINE_ONLY)
-    ProcessCommandLine(argc, argv);
-#else
+#if defined(VERSION_ONE)
     char inFileName[512] = { 0 };       // Input file name (required in case of drag & drop over executable)
     char outFileName[512] = { 0 };      // Output file name (required for file save/export)
 
@@ -383,15 +378,13 @@ int main(int argc, char *argv[])
                 strcpy(inFileName, argv[1]);        // Read input filename to open with gui interface
             }
         }
-#if defined(VERSION_ONE)
         else
         {
             ProcessCommandLine(argc, argv);
             return 0;
         }
-#endif      // VERSION_ONE
     }
-
+#endif      // VERSION_ONE
 #if (!defined(_DEBUG) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
     // WARNING (Windows): If program is compiled as Window application (instead of console),
     // no console is available to show output info... solution is compiling a console application
@@ -503,6 +496,8 @@ int main(int argc, char *argv[])
     // Main game loop
     while (!exitWindow)             // Detect window close button
     {
+        if (WindowShouldClose()) exitWindow = true;
+        
         // Undo icons change logic
         //----------------------------------------------------------------------------------
         // Make sure no windows are open to store changes
@@ -630,9 +625,7 @@ int main(int argc, char *argv[])
         // Basic program flow logic
         //----------------------------------------------------------------------------------
         mousePoint = GetMousePosition();    // Get mouse position each frame
-#if !defined(PLATFORM_WEB)
-        if (WindowShouldClose()) exitWindow = true;
-#endif
+
         // Show closing window on ESC
         if (IsKeyPressed(KEY_ESCAPE))
         {
@@ -642,8 +635,9 @@ int main(int argc, char *argv[])
 #endif
         }
 
+#if !defined(PLATFORM_WEB)
         if (IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_ENTER)) ToggleFullscreen();
-
+#endif
         if (IsKeyPressed(KEY_DELETE))
         {
             for (int i = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RAYGUI_ICON_SIZE, i%RAYGUI_ICON_SIZE);
@@ -825,11 +819,11 @@ int main(int argc, char *argv[])
                 //----------------------------------------------------------------------------------------
                 if (showLoadFileDialog)
                 {
-    #if defined(CUSTOM_MODAL_DIALOGS)
+#if defined(CUSTOM_MODAL_DIALOGS)
                     int result = GuiFileDialog(DIALOG_MESSAGE, "Load raygui icons file ...", inFileName, "Ok", "Just drag and drop your .rgi style file!");
-    #else
+#else
                     int result = GuiFileDialog(DIALOG_OPEN, "Load raygui icons file", inFileName, "*.rgi", "raygui Icons Files (*.rgi)");
-    #endif
+#endif
                     if (result == 1)
                     {
                         // Load gui icons data (and gui icon names for the tool)
@@ -852,11 +846,11 @@ int main(int argc, char *argv[])
                     if (inFileName[0] != '\0') strcpy(outFileName, inFileName);
                     else strcpy(outFileName, "gui_icons.rgi");
 
-    #if defined(CUSTOM_MODAL_DIALOGS)
+#if defined(CUSTOM_MODAL_DIALOGS)
                     int result = GuiFileDialog(DIALOG_TEXTINPUT, "Save raygui icons file...", outFileName, "Ok;Cancel", NULL);
-    #else
+#else
                     int result = GuiFileDialog(DIALOG_SAVE, "Save raygui icons file...", outFileName, "*.rgi", "raygui Icons Files (*.rgi)");
-    #endif
+#endif
                     if (result == 1)
                     {
                         // Save icons file
@@ -894,11 +888,11 @@ int main(int argc, char *argv[])
                         default: break;
                     }
 
-    #if defined(CUSTOM_MODAL_DIALOGS)
+#if defined(CUSTOM_MODAL_DIALOGS)
                     int result = GuiFileDialog(DIALOG_TEXTINPUT, "Export raygui icons file...", outFileName, "Ok;Cancel", NULL);
-    #else
+#else
                     int result = GuiFileDialog(DIALOG_SAVE, "Export raygui icons file...", outFileName, filters, TextFormat("File type (%s)", filters));
-    #endif
+#endif
                     if (result == 1)
                     {
                         // Export file: outFileName
@@ -914,7 +908,7 @@ int main(int argc, char *argv[])
                             {
                                 // Check for valid extension and make sure it is
                                 if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".png")) strcat(outFileName, ".png\0");
-                                Image image = ImageFromIconData(GuiGetIcons(), RAYGUI_ICON_MAX_ICONS, 16, 1);
+                                Image image = GenImageFromIconData(GuiGetIcons(), RAYGUI_ICON_MAX_ICONS, 16, 1);
                                 ExportImage(image, outFileName);
                                 UnloadImage(image);
 
@@ -948,17 +942,17 @@ int main(int argc, char *argv[])
                 {
                     strcpy(outFileName, TextFormat("%s_%ix%i.png", TextToLower(guiIconsName[selectedIcon]), RAYGUI_ICON_SIZE, RAYGUI_ICON_SIZE));
 
-                #if defined(CUSTOM_MODAL_DIALOGS)
+#if defined(CUSTOM_MODAL_DIALOGS)
                     int result = GuiFileDialog(DIALOG_TEXTINPUT, "Export raygui icon as image file...", outFileName, "Ok;Cancel", NULL);
-                #else
+#else
                     int result = GuiFileDialog(DIALOG_SAVE, "Export raygui icon as image file...", outFileName, "*.png", "Image File (*.png)");
-                #endif
+#endif
                     if (result == 1)
                     {
                         // Export file: outFileName
                         // Check for valid extension and make sure it is
                         if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".png")) strcat(outFileName, ".png\0");
-                        Image icon = ImageFromIconData(GuiGetIconData(selectedIcon), 1, 1, 0);
+                        Image icon = GenImageFromIconData(GuiGetIconData(selectedIcon), 1, 1, 0);
                         ExportImage(icon, outFileName);
                         UnloadImage(icon);
 
@@ -987,21 +981,20 @@ int main(int argc, char *argv[])
     CloseWindow();              // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
-#endif          // COMMAND_LINE_ONLY
     return 0;
 }
 
 //--------------------------------------------------------------------------------------------
 // Module functions definition
 //--------------------------------------------------------------------------------------------
-#if defined(VERSION_ONE)            // Command line
+#if defined(VERSION_ONE)
 // Show command line usage info
 static void ShowCommandLineInfo(void)
 {
     printf("\n//////////////////////////////////////////////////////////////////////////////////\n");
     printf("//                                                                              //\n");
     printf("// %s v%s - %s                //\n", toolName, toolVersion, toolDescription);
-    printf("// powered by raylib v%s and raygui v%s                                       //\n", RAYLIB_VERSION, RAYGUI_VERSION);
+    printf("// powered by raylib v%s and raygui v%s                                   //\n", RAYLIB_VERSION, RAYGUI_VERSION);
     printf("// more info and bugs-report: github.com/raylibtech/rtools                      //\n");
     printf("// feedback and support:      ray[at]raylibtech.com                             //\n");
     printf("//                                                                              //\n");
@@ -1037,9 +1030,7 @@ static void ProcessCommandLine(int argc, char *argv[])
     char outFileName[512] = { 0 };      // Output file name
     int outputFormat = 0;               // Supported output formats
 
-#if defined(COMMAND_LINE_ONLY)
     if (argc == 1) showUsageInfo = true;
-#endif
 
     // Process command line arguments
     for (int i = 1; i < argc; i++)
@@ -1102,7 +1093,7 @@ static void ProcessCommandLine(int argc, char *argv[])
         if (IsFileExtension(outFileName, ".rgi")) SaveIcons(outFileName);
         else if (IsFileExtension(outFileName, ".png"))
         {
-            Image image = ImageFromIconData(GuiGetIcons(), RAYGUI_ICON_MAX_ICONS, 16, 1);
+            Image image = GenImageFromIconData(GuiGetIcons(), RAYGUI_ICON_MAX_ICONS, 16, 1);
             ExportImage(image, outFileName);
             UnloadImage(image);
 
@@ -1114,7 +1105,7 @@ static void ProcessCommandLine(int argc, char *argv[])
 
     if (showUsageInfo) ShowCommandLineInfo();
 }
-#endif      // VERSION_ONE: Command line
+#endif      // VERSION_ONE
 
 //--------------------------------------------------------------------------------------------
 // Load/Save/Export functions
@@ -1314,7 +1305,7 @@ static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color 
 }
 
 // Gen GRAYSCALE image from and array of bits stored as int (0-BLANK, 1-WHITE)
-static Image ImageFromIconData(unsigned int *icons, int iconCount, int iconsPerLine, int padding)
+static Image GenImageFromIconData(unsigned int *icons, int iconCount, int iconsPerLine, int padding)
 {
     #define BIT_CHECK(a,b) ((a) & (1<<(b)))
 
@@ -1378,7 +1369,7 @@ static unsigned char *ImageToBits(Image image)
 
 // Generate color-alpha image from and array of bits, stored in bytes
 // NOTE: 0-BLANK, 1-color
-static Image ImageFromBits(unsigned char *bytes, int width, int height, Color color)
+static Image GenImageFromBits(unsigned char *bytes, int width, int height, Color color)
 {
     Image image = { 0 };
 
