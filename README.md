@@ -41,6 +41,17 @@ NOTE: Icon changes are previewed in real time in the same tool!
 
 Once icons have been created/edited, they can be saved as a raygui-ready icon set (.rgi), exported as an embeddable `.h` **code file** or exported as a `.png` image. Note that the `.png` contains the icons ids information in a standard chunk (`tEXt`/`zTXt`).
 
+ - raygui icon set file (`.rgi`) can be loaded by raygui using the function `GuiLoadIcons()`.
+
+ - raygui icon set code file (`.h`) can be embedded into a raygui-based application just defining:
+
+```c
+#define RAYGUI_IMPLEMENTATION
+#define RAYGUI_CUSTOM_ICONS     // Custom icons set required 
+#include "gui_icons.h"          // Custom icons set provided, generated with rGuiIcons tool
+#include "raygui.h"
+```
+
 `rGuiIcons Standalone` comes with command-line support for batch conversion. For usage help:
 
  > rguiicons.exe --help
