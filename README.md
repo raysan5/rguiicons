@@ -1,49 +1,56 @@
 <img align="left" src="logo/rguiicons_256x256.png" width=256>
 
 # rGuiIcons
-A simple and easy-to-use raygui icons editor.
+A simple and easy-to-use [raygui](https://github.com/raysan5/raygui) icons editor.
 
-Useful for tools icons customization. The best mate for [rGuiLayout](https://github.com/raysan5/rguilayout) and [rGuiStyler](https://github.com/raysan5/rguistyler) tools.
+Useful for tools icons customization. The best tool companion for [rGuiLayout](https://raylibtech.itch.io/rguilayout) and [rGuiStyler](https://github.com/raysan5/rguistyler).
 
-rGuiIcons comes in two flavours: **ZERO** (free version) and **ONE** (low-cost version). You can get them [here](https://raylibtech.itch.io/rguiicons).
+rGuiIcons can be used for free as a [WebAssembly online tool](https://raylibtech.itch.io/rguiicons) and it can also be downloaded as a **standalone tool** for _Windows_ and _Linux_ with some extra features.
 
 <br>
 
-## rGuiIcons ZERO features
+_NOTE: This tool is itended to be used with [**raygui 3.1**](https://github.com/raysan5/raygui)_
 
- - Select icons and edit pixels
+## rGuiIcons Features
+
+ - **Icon preview** in real time while editing
  - **Cut, copy, paste** icons for easy editing
- - Edit icons name id for easy use on code
- - **Load/Save icons as binary data** file (.rgi)
- - **Export icons set as an image** (.png)
- - Export individual icons as image (.png)
+ - Save and load as binary icons file `.rgi`
+ - Export icons as an embeddable **code file** (`.h`)
+ - Export icons set and individual icons as a `.png`
+ - Icon description exported as standard PNG chunks
  - **200 custom icons for reference** and basic edition
- - **Completely portable (single file)**
  
-## rGuiIcons ONE plus features
+### rGuiStyler Standalone Additional Features
 
- - **Powerful command line** for batch conversion
- - **Export icons as code file (.h)**, ready for embedding
- 
-## rGuiIcons Usage
-
-The tool is pretty intuitive and easy-to-use, just choose the icon to edit and change the pixels you want.
-Changes are previewed in real time in the same tool!
-
-Once a icon has been created/edited, just save icons set file (.rgi) or export icon set image (.png) for preview and reference.
-
-rGuiIcons ONE also allows exporting icons set as code for embedding in custom programs or any other use.
-
-**rGuiIcons ONE** comes with a powerful command line for style format conversion and edition. To view all available operation just run on command line:
-
- > rguiicons.exe --help
+ - Command-line support for `.rgi`/`.h`/`.png` batch conversion
+ - **Completely portable (single-file, no-dependencies)**
 
 ## rGuiIcons Screenshot
 
 ![rGuiIcons](screenshots/rguiicons_v100_shot01.png)
 
+## rGuiIcons Usage
+
+The tool is quite intuitive, the expected steps to follow are: 
+ 1. Choose the icon to edit from icons panel
+ 2. Edit the icon pixels in the right panel
+ 3. Select next icon for edit or export set/individual icon
+ 
+NOTE: Icon changes are previewed in real time in the same tool! 
+
+Once icons have been created/edited, they can be saved as a raygui-ready icon set (.rgi), exported as an embeddable `.h` **code file** or exported as a `.png` image. Note that the `.png` contains the icons ids information in a standard chunk (`tEXt`/`zTXt`).
+
+`rGuiIcons Standalone` comes with command-line support for batch conversion. For usage help:
+
+ > rguiicons.exe --help
+
 ## rGuiIcons License
 
-*Copyright (c) 2019-2020 raylib technologies ([@raylibtech](https://twitter.com/raylibtech)). All Rights Reserved.* Check [LICENSE](LICENSE) for details.
+`rGuiIcons` online tool can be used completely for free.
 
-In case you want a custom version of the tool, just get in touch: ray[at]raylibtech.com
+`rGuiIcons Standalone` desktop tool is distributed as freeware. 
+
+In any case, consider some donation to help the author keep working on software for games development.
+
+*Copyright (c) 2015-2021 raylib technologies ([@raylibtech](https://twitter.com/raylibtech))*
