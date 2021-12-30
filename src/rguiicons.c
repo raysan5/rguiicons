@@ -12,7 +12,9 @@
 *       NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
-*       1.5  (29-Dec-2021) Updated to raylib 4.0 and raygui 3.1
+*       1.5  (30-Dec-2021) Updated to raylib 4.0 and raygui 3.1
+*                          Add icon descriptions as PNG extra chunks
+*                          Support multiple visual styles
 *       1.0  (30-Sep-2019) First release
 *
 *   DEPENDENCIES:
@@ -734,14 +736,11 @@ int main(int argc, char *argv[])
 
             // Draw icons selection panel
             selectedIcon = GuiToggleGroup((Rectangle){ anchor01.x + 15, anchor01.y + 70, 18, 18 }, toggleIconsText, selectedIcon);
-
-            fileTypeActive = GuiComboBox((Rectangle){ anchor01.x + 15, anchor01.y + 400, 160, 25 }, "raygui Icons File (.rgi);Icons Image (.png);Icons Code (.h)", fileTypeActive);
+            fileTypeActive = GuiComboBox((Rectangle){ anchor01.x + 15, anchor01.y + 400, 160, 25 }, "Icons File (.rgi);Icons Image (.png);Icons Code (.h)", fileTypeActive);
 
             if (GuiButton((Rectangle){ anchor01.x + 185, anchor01.y + 400, 150, 25 }, "#07#Export Icons")) showExportFileDialog = true;
 
             GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "Icon Name ID:");
-
-            // NOTE: We show icon name id for selected icon
             if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 70, 260, 25 }, guiIconsName[selectedIcon], 32, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
 
             iconEditScale = (int)GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 110, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), (float)iconEditScale, 0, 16);
@@ -750,7 +749,7 @@ int main(int argc, char *argv[])
 
             // Draw selected icon at selected scale
             DrawRectangle(anchor01.x + 365, anchor01.y + 130, 256, 256, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_NORMAL)), 0.3f));
-            GuiDrawIcon(selectedIcon, (int)anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, (int)anchor01.y + 130 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
+            GuiDrawIcon(selectedIcon, (int)anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, (int)anchor01.y + 130 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)));
 
             // Draw grid (returns selected cell)
             cell = GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 130 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale }, iconEditScale, 1);
@@ -950,8 +949,20 @@ int main(int argc, char *argv[])
                             ExportImage(image, outFileName);
                             UnloadImage(image);
 
-                            // TODO: Save icons name id into PNG zTXt chunk:
-                            //SaveTextChunkPNG(TextDataPNG data, const char *fileName)
+                            // Concatenate all icons names into one string
+                            char *iconsNames = (char *)RL_CALLOC(RAYGUI_ICON_MAX_ICONS*32, 1);
+                            char *iconsNamesPtr = iconsNames;
+                            for (int i = 0, size = 0; i < RAYGUI_ICON_MAX_ICONS; i++)
+                            {
+                                size = strlen(guiIconsName[i]);
+                                memcpy(iconsNamesPtr, guiIconsName[i], size);
+                                iconsNamesPtr[size] = ';';
+                                iconsNamesPtr += (size + 1);
+                            }
+
+                            // Save icons name id into PNG zTXt chunk
+                            rpng_chunk_write_comp_text(outFileName, "Description", iconsNames);
+                            RL_FREE(iconsNames);
 
                         } break;
                         case 2: 
@@ -993,6 +1004,9 @@ int main(int argc, char *argv[])
                     Image icon = GenImageFromIconData(GuiGetIconData(selectedIcon), 1, 1, 0);
                     ExportImage(icon, outFileName);
                     UnloadImage(icon);
+
+                    // Save icon name id into PNG tEXt chunk
+                    rpng_chunk_write_text(outFileName, "Description", guiIconsName[selectedIcon]);
 
                 #if defined(PLATFORM_WEB)
                     // Download file from MEMFS (emscripten memory filesystem)
@@ -1138,8 +1152,20 @@ static void ProcessCommandLine(int argc, char *argv[])
             ExportImage(image, outFileName);
             UnloadImage(image);
 
-            // TODO: Save icons name id into PNG zTXt chunk:
-            //SaveTextChunkPNG(TextDataPNG data, const char *fileName)
+            // Concatenate all icons names into one string
+            char *iconsNames = (char *)RL_CALLOC(RAYGUI_ICON_MAX_ICONS*32, 1);
+            char *iconsNamesPtr = iconsNames;
+            for (int i = 0, size = 0; i < RAYGUI_ICON_MAX_ICONS; i++)
+            {
+                size = strlen(guiIconsName[i]);
+                memcpy(iconsNamesPtr, guiIconsName[i], size);
+                iconsNamesPtr[size] = ';';
+                iconsNamesPtr += (size + 1);
+            }
+
+            // Save icons name id into PNG zTXt chunk
+            rpng_chunk_write_comp_text(outFileName, "Description", iconsNames);
+            RL_FREE(iconsNames);
         }
         else if (IsFileExtension(outFileName, ".h")) ExportIconsAsCode(outFileName);
     }
