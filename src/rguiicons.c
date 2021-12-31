@@ -729,7 +729,7 @@ int main(int argc, char *argv[])
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
             
             // WARNING: Some windows should lock the main screen controls when shown
-            if (windowAboutState.windowActive || windowExitActive || showLoadFileDialog || showSaveFileDialog || showExportFileDialog) GuiLock();
+            if (windowAboutState.windowActive || windowExitActive || showLoadFileDialog || showSaveFileDialog || showExportFileDialog || showExportIconImageDialog) GuiLock();
 
             // GUI: Work area
             //----------------------------------------------------------------------------------
