@@ -13,7 +13,7 @@ BEGIN
       VALUE "FileDescription", "rGuiIcons - A simple and easy-to-use raygui icons editor"
       VALUE "FileVersion", "1.5"
       VALUE "InternalName", "rguiicons"
-      VALUE "LegalCopyright", "(c) 2021 raylib technologies (@raylibtech)"
+      VALUE "LegalCopyright", "(c) 2022 raylib technologies (@raylibtech)"
       //VALUE "OriginalFilename", "raylib_app.exe"
       VALUE "ProductName", "rGuiIcons"
       VALUE "ProductVersion", "1.5"
