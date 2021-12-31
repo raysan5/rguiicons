@@ -1,6 +1,7 @@
 <img align="left" src="logo/rguiicons_256x256.png" width=256>
 
 # rGuiIcons
+
 A simple and easy-to-use [raygui](https://github.com/raysan5/raygui) icons editor.
 
 Useful for tools icons customization. The best tool companion for [rGuiLayout](https://raylibtech.itch.io/rguilayout) and [rGuiStyler](https://github.com/raysan5/rguistyler).
