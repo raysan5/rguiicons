@@ -452,8 +452,8 @@ int main(int argc, char *argv[])
     bool hiDpiActive = false;
     bool prevHiDpiActive = hiDpiActive;
 
-    bool btnSaveIconPressed = false;
-    bool btnClearIconPressed = false;
+    //bool btnSaveIconPressed = false;
+    //bool btnClearIconPressed = false;
     //-----------------------------------------------------------------------------------
 
     // GUI: About Window
@@ -779,7 +779,7 @@ int main(int argc, char *argv[])
             
             // GUI: Main toolbar
             //----------------------------------------------------------------------------------
-            GuiPanel((Rectangle){ anchor01.x + 0, anchor01.y + 0, 640, 45 });
+            GuiPanel((Rectangle){ anchor01.x + 0, anchor01.y + 0, 640, 45 }, NULL);
 
             if (GuiButton((Rectangle){ anchor01.x + 10, anchor01.y + 10, 25, 25 }, "#01#")) showLoadFileDialog = true;
             if (GuiButton((Rectangle){ anchor01.x + 40, anchor01.y + 10, 25, 25 }, "#02#")) showSaveFileDialog = true;
