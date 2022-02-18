@@ -184,9 +184,9 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "CROP",
     "CROP_ALPHA",
     "SQUARE_TOGGLE",
-    "SIMMETRY",
-    "SIMMETRY_HORIZONTAL",
-    "SIMMETRY_VERTICAL",
+    "SYMMETRY",
+    "SYMMETRY_HORIZONTAL",
+    "SYMMETRY_VERTICAL",
     "LENS",
     "LENS_BIG",
     "EYE_ON",
@@ -261,12 +261,12 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "CROSS",
     "ARROW_LEFT",
     "ARROW_RIGHT",
-    "ARROW_BOTTOM",
-    "ARROW_TOP",
+    "ARROW_DOWN",
+    "ARROW_UP",
     "ARROW_LEFT_FILL",
     "ARROW_RIGHT_FILL",
-    "ARROW_BOTTOM_FILL",
-    "ARROW_TOP_FILL",
+    "ARROW_DOWN_FILL",
+    "ARROW_UP_FILL",
     "AUDIO",
     "FX",
     "WAVE",
@@ -343,7 +343,9 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "FILETYPE_HOME",
     "LAYERS_VISIBLE",
     "LAYERS",
-    "WINDOW"
+    "WINDOW",
+    "HIDPI",
+    "FILETYPE_BINARY"
 };
 
 //----------------------------------------------------------------------------------
