@@ -65,9 +65,9 @@
 #include "external/rpng.h"                  // PNG chunks management
 
 // NOTE: Some raygui elements need to be defined before including raygui
-#define RAYGUI_TEXTSPLIT_MAX_ELEMENTS     256
+#define RAYGUI_TEXTSPLIT_MAX_ITEMS        256
 #define RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE   4096
-#define RAYGUI_TOGGLEGROUP_MAX_ELEMENTS   256
+#define RAYGUI_TOGGLEGROUP_MAX_ITEMS      256
 #define RAYGUI_GRID_ALPHA                 0.2f
 #define RAYGUI_IMPLEMENTATION
 #include "external/raygui.h"                // Required for: IMGUI controls
@@ -184,9 +184,9 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "CROP",
     "CROP_ALPHA",
     "SQUARE_TOGGLE",
-    "SYMMETRY",
-    "SYMMETRY_HORIZONTAL",
-    "SYMMETRY_VERTICAL",
+    "SIMMETRY",
+    "SIMMETRY_HORIZONTAL",
+    "SIMMETRY_VERTICAL",
     "LENS",
     "LENS_BIG",
     "EYE_ON",
@@ -345,7 +345,10 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "LAYERS",
     "WINDOW",
     "HIDPI",
-    "FILETYPE_BINARY"
+    "FILETYPE_BINARY",
+    "HEX",
+    "SHIELD",
+    "FILE_NEW"
 };
 
 //----------------------------------------------------------------------------------
@@ -755,7 +758,7 @@ int main(int argc, char *argv[])
             GuiDrawIcon(selectedIcon, (int)anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, (int)anchor01.y + 130 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)));
 
             // Draw grid (returns selected cell)
-            cell = GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 130 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale }, iconEditScale, 1);
+            cell = GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 130 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale }, NULL, iconEditScale, 1);
 
             // Draw selected cell lines
             if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RAYGUI_ICON_SIZE) && (cell.y < RAYGUI_ICON_SIZE))
