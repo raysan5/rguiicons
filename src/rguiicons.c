@@ -784,14 +784,14 @@ int main(int argc, char *argv[])
             
             // GUI: Main toolbar
             //----------------------------------------------------------------------------------
-            GuiPanel((Rectangle){ anchor01.x + 0, anchor01.y + 0, 640, 45 }, NULL);
+            GuiPanel((Rectangle){ anchor01.x + 0, anchor01.y + 0, 640, 40 }, NULL);
 
-            if (GuiButton((Rectangle){ anchor01.x + 10, anchor01.y + 10, 25, 25 }, "#01#")) showLoadFileDialog = true;
-            if (GuiButton((Rectangle){ anchor01.x + 40, anchor01.y + 10, 25, 25 }, "#02#")) showSaveFileDialog = true;
-            if (GuiButton((Rectangle){ anchor01.x + 70, anchor01.y + 10, 25, 25 }, "#07#")) showExportFileDialog = true;
+            if (GuiButton((Rectangle){ anchor01.x + 12, anchor01.y + 8, 24, 24 }, "#01#")) showLoadFileDialog = true;
+            if (GuiButton((Rectangle){ anchor01.x + 12 + 24 + 4, anchor01.y + 8, 24, 24 }, "#02#")) showSaveFileDialog = true;
+            if (GuiButton((Rectangle){ anchor01.x + 12 + 48 + 8, anchor01.y + 8, 24, 24 }, "#07#")) showExportFileDialog = true;
 
             // Copy button/shortcut logic
-            if ((GuiButton((Rectangle){ anchor01.x + 115, anchor01.y + 10, 25, 25 }, "#16#")) ||
+            if ((GuiButton((Rectangle){ anchor01.x + 112, anchor01.y + 8, 24, 24 }, "#16#")) ||
                 (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C)))
             {
                 memcpy(iconData, GuiGetIconData(selectedIcon), RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
@@ -800,7 +800,7 @@ int main(int argc, char *argv[])
             }
 
             // Cut button/shortcut logic
-            if ((GuiButton((Rectangle){ anchor01.x + 145, anchor01.y + 10, 25, 25 }, "#17#")) ||
+            if ((GuiButton((Rectangle){ anchor01.x + 112 + 24 + 4, anchor01.y + 8, 24, 24 }, "#17#")) ||
                 (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_X)))
             {
                 memcpy(iconData, GuiGetIconData(selectedIcon), RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
@@ -813,7 +813,7 @@ int main(int argc, char *argv[])
             }
 
             // Paste button/shortcut logic
-            if ((GuiButton((Rectangle){ anchor01.x + 175, anchor01.y + 10, 25, 25 }, "#18#")) ||
+            if ((GuiButton((Rectangle){ anchor01.x + 112 + 48 + 8, anchor01.y + 8, 24, 24 }, "#18#")) ||
                 (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V)))
             {
                 if (iconDataToCopy)
@@ -823,14 +823,14 @@ int main(int argc, char *argv[])
                 }
             }
 
-            GuiGroupBox((Rectangle){ anchor01.x + 210, anchor01.y + 10, 25, 25 }, NULL);
-            if (iconDataToCopy) DrawIconData(iconData, anchor01.x + 210 + 4, anchor01.y + 10 + 4, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
+            GuiGroupBox((Rectangle){ anchor01.x + 112 + 64 + 12 + 8, anchor01.y + 8, 24, 24 }, NULL);
+            if (iconDataToCopy) DrawIconData(iconData, anchor01.x + 210 + 4, anchor01.y + 8 + 4, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
 #if !defined(PLATFORM_WEB)
-            hiDpiActive = GuiToggle((Rectangle){ anchor01.x + 410, anchor01.y + 10, 25, 25 }, "#199#", hiDpiActive);
+            hiDpiActive = GuiToggle((Rectangle){ anchor01.x + 410, anchor01.y + 8, 24, 24 }, "#199#", hiDpiActive);
 #endif
-            visualStyleActive = GuiComboBox((Rectangle){ anchor01.x + 440, anchor01.y + 10, 100, 25 }, "default;Jungle;Candy;Lavanda;Cyber;Bluish;Terminal", visualStyleActive);
+            visualStyleActive = GuiComboBox((Rectangle){ anchor01.x + 440, anchor01.y + 8, 100, 24 }, "default;Jungle;Candy;Lavanda;Cyber;Bluish;Terminal", visualStyleActive);
 
-            if (GuiButton((Rectangle){ anchor01.x + 550, anchor01.y + 10, 75, 25 }, "#191#ABOUT")) windowAboutState.windowActive = true;
+            if (GuiButton((Rectangle){ anchor01.x + 550, anchor01.y + 8, 80, 24 }, "#191#ABOUT")) windowAboutState.windowActive = true;
             //----------------------------------------------------------------------------------
 
             // GUI: Status bar
