@@ -153,7 +153,7 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "FILE_OPEN",
     "FILE_SAVE",
     "FILE_EXPORT",
-    "FILE_NEW",
+    "FILE_ADD",
     "FILE_DELETE",
     "FILETYPE_TEXT",
     "FILETYPE_AUDIO",
