@@ -184,9 +184,9 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "CROP",
     "CROP_ALPHA",
     "SQUARE_TOGGLE",
-    "SIMMETRY",
-    "SIMMETRY_HORIZONTAL",
-    "SIMMETRY_VERTICAL",
+    "SYMMETRY",
+    "SYMMETRY_HORIZONTAL",
+    "SYMMETRY_VERTICAL",
     "LENS",
     "LENS_BIG",
     "EYE_ON",
@@ -348,7 +348,8 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "FILETYPE_BINARY",
     "HEX",
     "SHIELD",
-    "FILE_NEW"
+    "FILE_NEW",
+    "FOLDER_ADD"
 };
 
 //----------------------------------------------------------------------------------
@@ -824,7 +825,7 @@ int main(int argc, char *argv[])
             }
 
             GuiGroupBox((Rectangle){ anchor01.x + 112 + 64 + 12 + 8, anchor01.y + 8, 24, 24 }, NULL);
-            if (iconDataToCopy) DrawIconData(iconData, anchor01.x + 210 + 4, anchor01.y + 8 + 4, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
+            if (iconDataToCopy) DrawIconData(iconData, anchor01.x + 196 + 4, anchor01.y + 8 + 4, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
 #if !defined(PLATFORM_WEB)
             hiDpiActive = GuiToggle((Rectangle){ anchor01.x + 410, anchor01.y + 8, 24, 24 }, "#199#", hiDpiActive);
 #endif
