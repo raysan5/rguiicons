@@ -57,12 +57,12 @@
 #include "raylib.h"
 
 #if defined(PLATFORM_WEB)
-    #define CUSTOM_MODAL_DIALOGS            // Force custom modal dialogs usage
-    #include <emscripten/emscripten.h>      // Emscripten library - LLVM to JavaScript compiler
+    #define CUSTOM_MODAL_DIALOGS        // Force custom modal dialogs usage
+    #include <emscripten/emscripten.h>  // Emscripten library - LLVM to JavaScript compiler
 #endif
 
 #define RPNG_IMPLEMENTATION
-#include "external/rpng.h"                  // PNG chunks management
+#include "external/rpng.h"              // PNG chunks management
 
 // NOTE: Some raygui elements need to be defined before including raygui
 #define RAYGUI_TEXTSPLIT_MAX_ITEMS        256
@@ -70,15 +70,15 @@
 #define RAYGUI_TOGGLEGROUP_MAX_ITEMS      256
 #define RAYGUI_GRID_ALPHA                 0.2f
 #define RAYGUI_IMPLEMENTATION
-#include "external/raygui.h"                // Required for: IMGUI controls
+#include "external/raygui.h"            // Required for: IMGUI controls
 
-#undef RAYGUI_IMPLEMENTATION                // Avoid including raygui implementation again
+#undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
 
 #define GUI_WINDOW_ABOUT_IMPLEMENTATION
-#include "gui_window_about.h"               // GUI: About window
+#include "gui_window_about.h"           // GUI: About window
 
 #define GUI_FILE_DIALOGS_IMPLEMENTATION
-#include "gui_file_dialogs.h"               // GUI: File Dialog
+#include "gui_file_dialogs.h"           // GUI: File Dialog
 
 // raygui embedded styles
 #include "style_jungle.h"               // raygui style: jungle
