@@ -568,7 +568,7 @@ typedef enum {
     RAYGUI_ICON_FILE_OPEN                = 5,
     RAYGUI_ICON_FILE_SAVE                = 6,
     RAYGUI_ICON_FILE_EXPORT              = 7,
-    RAYGUI_ICON_FILE_NEW                 = 8,
+    RAYGUI_ICON_FILE_ADD                 = 8,
     RAYGUI_ICON_FILE_DELETE              = 9,
     RAYGUI_ICON_FILETYPE_TEXT            = 10,
     RAYGUI_ICON_FILETYPE_AUDIO           = 11,
@@ -763,7 +763,7 @@ typedef enum {
     RAYGUI_ICON_FILETYPE_BINARY          = 200,
     RAYGUI_ICON_HEX                      = 201,
     RAYGUI_ICON_SHIELD                   = 202,
-    RAYGUI_ICON_203                      = 203,
+    RAYGUI_ICON_FILE_NEW                 = 203,
     RAYGUI_ICON_204                      = 204,
     RAYGUI_ICON_205                      = 205,
     RAYGUI_ICON_206                      = 206,
@@ -882,7 +882,7 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
     0x3ff00000, 0x201c2010, 0x20042004, 0x21042004, 0x24442284, 0x21042104, 0x20042104, 0x00003ffc,     // RAYGUI_ICON_FILE_OPEN
     0x3ff00000, 0x201c2010, 0x20042004, 0x21042004, 0x21042104, 0x22842444, 0x20042104, 0x00003ffc,     // RAYGUI_ICON_FILE_SAVE
     0x3ff00000, 0x201c2010, 0x00042004, 0x20041004, 0x20844784, 0x00841384, 0x20042784, 0x00003ffc,     // RAYGUI_ICON_FILE_EXPORT
-    0x3ff00000, 0x201c2010, 0x20042004, 0x20042004, 0x22042204, 0x22042f84, 0x20042204, 0x00003ffc,     // RAYGUI_ICON_FILE_NEW
+    0x3ff00000, 0x201c2010, 0x20042004, 0x20042004, 0x22042204, 0x22042f84, 0x20042204, 0x00003ffc,     // RAYGUI_ICON_FILE_ADD
     0x3ff00000, 0x201c2010, 0x20042004, 0x20042004, 0x25042884, 0x25042204, 0x20042884, 0x00003ffc,     // RAYGUI_ICON_FILE_DELETE
     0x3ff00000, 0x201c2010, 0x20042004, 0x20042ff4, 0x20042ff4, 0x20042ff4, 0x20042004, 0x00003ffc,     // RAYGUI_ICON_FILETYPE_TEXT
     0x3ff00000, 0x201c2010, 0x27042004, 0x244424c4, 0x26442444, 0x20642664, 0x20042004, 0x00003ffc,     // RAYGUI_ICON_FILETYPE_AUDIO
@@ -944,8 +944,8 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
     0x01000000, 0x07c00380, 0x01000100, 0x638c2008, 0x638cfbbe, 0x01002008, 0x07c00100, 0x01000380,     // RAYGUI_ICON_TARGET_MOVE_FILL
     0x01000000, 0x07c00380, 0x01000100, 0x610c2108, 0x610cfffe, 0x01002108, 0x07c00100, 0x01000380,     // RAYGUI_ICON_CURSOR_MOVE_FILL
     0x781e0000, 0x6006700e, 0x04204812, 0x00000240, 0x02400000, 0x48120420, 0x700e6006, 0x0000781e,     // RAYGUI_ICON_CURSOR_SCALE_FILL
-    0x00000000, 0x38003c00, 0x24003000, 0x01000200, 0x00400080, 0x000c0024, 0x003c001c, 0x00000000,     // RAYGUI_ICON_CURSOR_SCALE_RIGHT
-    0x00000000, 0x001c003c, 0x0024000c, 0x00800040, 0x02000100, 0x30002400, 0x3c003800, 0x00000000,     // RAYGUI_ICON_CURSOR_SCALE_LEFT
+    0x00000000, 0x38003c00, 0x24003000, 0x01000200, 0x00400080, 0x000c0024, 0x003c001c, 0x00000000,     // RAYGUI_ICON_CURSOR_SCALE_RIGHT_FILL
+    0x00000000, 0x001c003c, 0x0024000c, 0x00800040, 0x02000100, 0x30002400, 0x3c003800, 0x00000000,     // RAYGUI_ICON_CURSOR_SCALE_LEFT_FILL
     0x00000000, 0x00300020, 0x10301ff8, 0x10001020, 0x10001000, 0x10001000, 0x00001fc0, 0x00000000,     // RAYGUI_ICON_UNDO_FILL
     0x00000000, 0x0c000400, 0x0c081ff8, 0x00080408, 0x00080008, 0x00080008, 0x000003f8, 0x00000000,     // RAYGUI_ICON_REDO_FILL
     0x00000000, 0x3ffc0000, 0x20042004, 0x20002000, 0x20402000, 0x3ff02060, 0x00400060, 0x00000000,     // RAYGUI_ICON_REREDO_FILL
@@ -963,8 +963,8 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
     0x00000000, 0x20043ffc, 0x20042004, 0x20042004, 0x207c2004, 0x207c207c, 0x3ffc207c, 0x00000000,     // RAYGUI_ICON_BOX_BOTTOM_LEFT
     0x00000000, 0x20043ffc, 0x20042004, 0x207c207c, 0x207c207c, 0x20042004, 0x3ffc2004, 0x00000000,     // RAYGUI_ICON_BOX_LEFT
     0x00000000, 0x207c3ffc, 0x207c207c, 0x2004207c, 0x20042004, 0x20042004, 0x3ffc2004, 0x00000000,     // RAYGUI_ICON_BOX_TOP_LEFT
-    0x00000000, 0x20043ffc, 0x20042004, 0x23c423c4, 0x23c423c4, 0x20042004, 0x3ffc2004, 0x00000000,     // RAYGUI_ICON_BOX_CIRCLE_MASK
-    0x7ffe0000, 0x40024002, 0x47e24182, 0x4ff247e2, 0x47e24ff2, 0x418247e2, 0x40024002, 0x00007ffe,     // RAYGUI_ICON_BOX_CENTER
+    0x00000000, 0x20043ffc, 0x20042004, 0x23c423c4, 0x23c423c4, 0x20042004, 0x3ffc2004, 0x00000000,     // RAYGUI_ICON_BOX_CENTER
+    0x7ffe0000, 0x40024002, 0x47e24182, 0x4ff247e2, 0x47e24ff2, 0x418247e2, 0x40024002, 0x00007ffe,     // RAYGUI_ICON_BOX_CIRCLE_MASK
     0x7fff0000, 0x40014001, 0x40014001, 0x49555ddd, 0x4945495d, 0x400149c5, 0x40014001, 0x00007fff,     // RAYGUI_ICON_POT
     0x7ffe0000, 0x53327332, 0x44ce4cce, 0x41324332, 0x404e40ce, 0x48125432, 0x4006540e, 0x00007ffe,     // RAYGUI_ICON_ALPHA_MULTIPLY
     0x7ffe0000, 0x53327332, 0x44ce4cce, 0x41324332, 0x5c4e40ce, 0x44124432, 0x40065c0e, 0x00007ffe,     // RAYGUI_ICON_ALPHA_CLEAR
@@ -1077,7 +1077,7 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
     0x3ff00000, 0x201c2010, 0x2a842e84, 0x2e842a84, 0x2ba42004, 0x2aa42aa4, 0x20042ba4, 0x00003ffc,     // RAYGUI_ICON_FILETYPE_BINARY
     0x00000000, 0x00000000, 0x00120012, 0x4a5e4bd2, 0x485233d2, 0x00004bd2, 0x00000000, 0x00000000,     // RAYGUI_ICON_HEX
     0x01800000, 0x381c0660, 0x23c42004, 0x23c42044, 0x13c82204, 0x08101008, 0x02400420, 0x00000180,     // RAYGUI_ICON_SHIELD
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RAYGUI_ICON_203
+    0x007e0000, 0x20023fc2, 0x40227fe2, 0x400a403a, 0x400a400a, 0x400a400a, 0x4008400e, 0x00007ff8,     // RAYGUI_ICON_FILE_NEW
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RAYGUI_ICON_204
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RAYGUI_ICON_205
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RAYGUI_ICON_206
@@ -1508,7 +1508,7 @@ Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, 
 
     const float horizontalMin = hasHorizontalScrollBar? ((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)-verticalScrollBarWidth : 0) - (float)GuiGetStyle(DEFAULT, BORDER_WIDTH) : (((float)GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)-verticalScrollBarWidth : 0) - (float)GuiGetStyle(DEFAULT, BORDER_WIDTH);
     const float horizontalMax = hasHorizontalScrollBar? content.width - bounds.width + (float)verticalScrollBarWidth + GuiGetStyle(DEFAULT, BORDER_WIDTH) - (((float)GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)verticalScrollBarWidth : 0) : (float)-GuiGetStyle(DEFAULT, BORDER_WIDTH);
-    const float verticalMin = hasVerticalScrollBar? (float)-GuiGetStyle(DEFAULT, BORDER_WIDTH) : (float)-GuiGetStyle(DEFAULT, BORDER_WIDTH);
+    const float verticalMin = 0;
     const float verticalMax = hasVerticalScrollBar? content.height - bounds.height + (float)horizontalScrollBarWidth + (float)GuiGetStyle(DEFAULT, BORDER_WIDTH) : (float)-GuiGetStyle(DEFAULT, BORDER_WIDTH);
 
     // Update control
@@ -1578,7 +1578,7 @@ Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, 
     // Draw detail corner rectangle if both scroll bars are visible
     if (hasHorizontalScrollBar && hasVerticalScrollBar)
     {
-        Rectangle corner = { (GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE) ? (bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH) + 2) : (horizontalScrollBar.x + horizontalScrollBar.width + 2), verticalScrollBar.y + verticalScrollBar.height + 2, (float)horizontalScrollBarWidth - 4, (float)verticalScrollBarWidth - 4 };
+        Rectangle corner = { (GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH) + 2) : (horizontalScrollBar.x + horizontalScrollBar.width + 2), verticalScrollBar.y + verticalScrollBar.height + 2, (float)horizontalScrollBarWidth - 4, (float)verticalScrollBarWidth - 4 };
         GuiDrawRectangle(corner, 0, BLANK, Fade(GetColor(GuiGetStyle(LISTVIEW, TEXT + (state*3))), guiAlpha));
     }
 
@@ -2566,6 +2566,8 @@ float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRig
 
     // Update control
     //--------------------------------------------------------------------
+    if (value > maxValue) value = maxValue;
+
     if (state != GUI_STATE_DISABLED) progress.width = ((float)(value/(maxValue - minValue))*(float)(bounds.width - 2*GuiGetStyle(PROGRESSBAR, BORDER_WIDTH)));
     //--------------------------------------------------------------------
 
