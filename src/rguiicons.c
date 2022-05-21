@@ -1332,7 +1332,7 @@ static void ExportIconsAsCode(const char *fileName)
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
 
         fprintf(codeFile, "typedef enum {\n");
-        for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) fprintf(codeFile, "    RAYGUI_ICON_%-24s = %i,\n", (guiIconsName[i][0] != '\0')? guiIconsName[i] : TextFormat("%03i", i), i);
+        for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) fprintf(codeFile, "    ICON_%-24s = %i,\n", (guiIconsName[i][0] != '\0')? guiIconsName[i] : TextFormat("%03i", i), i);
         fprintf(codeFile, "} guiIconName;\n\n");
 
         fprintf(codeFile, "//----------------------------------------------------------------------------------\n");
@@ -1347,7 +1347,7 @@ static void ExportIconsAsCode(const char *fileName)
             fprintf(codeFile, "    ");
             for (int j = 0; j < RAYGUI_ICON_DATA_ELEMENTS; j++) fprintf(codeFile, "0x%08x, ", icon[j]);
 
-            fprintf(codeFile, "     // RAYGUI_ICON_%s\n", (guiIconsName[i][0] != '\0')? guiIconsName[i] : TextFormat("%03i", i));
+            fprintf(codeFile, "     // ICON_%s\n", (guiIconsName[i][0] != '\0')? guiIconsName[i] : TextFormat("%03i", i));
         }
         fprintf(codeFile, "};\n");
 
