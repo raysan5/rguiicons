@@ -600,7 +600,7 @@ int main(int argc, char *argv[])
         if (IsFileDropped())
         {
             int dropFileCount = 0;
-            char **droppedFiles = GetDroppedFiles(&dropFileCount);
+            char **droppedFiles = LoadDroppedFiles(&dropFileCount);
 
             if (IsFileExtension(droppedFiles[0], ".rgi"))
             {
@@ -623,7 +623,7 @@ int main(int argc, char *argv[])
             }
             else if (IsFileExtension(droppedFiles[0], ".rgs")) GuiLoadStyle(droppedFiles[0]);
 
-            ClearDroppedFiles();
+            UnloadDroppedFiles();
         }
         //----------------------------------------------------------------------------------
 
