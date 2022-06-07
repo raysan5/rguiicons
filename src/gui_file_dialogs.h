@@ -44,8 +44,8 @@
 typedef enum DialogType {
     DIALOG_OPEN_FILE = 0,
     DIALOG_OPEN_FILE_MULTI,
-    DIALOG_OPEN_FOLDER,
-    DIALOG_SAVE,
+    DIALOG_OPEN_DIRECTORY,
+    DIALOG_SAVE_FILE,
     DIALOG_MESSAGE,
     DIALOG_TEXTINPUT,
     DIALOG_OTHER
@@ -120,8 +120,10 @@ int GuiFileDialog(int dialogType, const char *title, char *fileName, const char 
 #if defined(CUSTOM_MODAL_DIALOGS)
     switch (dialogType)
     {
-        case DIALOG_OPEN: /* TODO: Load file modal dialog */ break;
-        case DIALOG_SAVE: /* TODO: Load file modal dialog */ break;
+        case DIALOG_OPEN_FILE: /* TODO: Load file modal dialog */ break;
+        case DIALOG_OPEN_FILE_MULTI: /* TODO: Load multiple files modal dialog */ break;
+        case DIALOG_OPEN_DIRECTORY: /* TODO: Load directory modal dialog */ break;
+        case DIALOG_SAVE_FILE: /* TODO: Load file modal dialog */ break;
         case DIALOG_MESSAGE: result = GuiMessageBox((Rectangle){ GetScreenWidth()/2 - 160, GetScreenHeight()/2 - 120, 320, 120 }, GuiIconText(ICON_FILE_OPEN, title), message, filters); break;
         case DIALOG_TEXTINPUT: result = GuiTextInputBox((Rectangle){ GetScreenWidth()/2 - 160, GetScreenHeight()/2 - 120, 320, 120 }, GuiIconText(ICON_FILE_SAVE, title), message, filters, fileName, 512, NULL); break;
         default: break;
@@ -131,13 +133,13 @@ int GuiFileDialog(int dialogType, const char *title, char *fileName, const char 
     const char *tempFileName = NULL;
     int filterCount = 0;
     const char **filterSplit = TextSplit(filters, ';', &filterCount);
-
+    
     switch (dialogType)
     {
         case DIALOG_OPEN_FILE: tempFileName = tinyfd_openFileDialog(title, fileName, filterCount, filterSplit, message, 0); break;
         case DIALOG_OPEN_FILE_MULTI: tempFileName = tinyfd_openFileDialog(title, fileName, filterCount, filterSplit, message, 1); break;
-        case DIALOG_OPEN_FOLDER: tempFileName = tinyfd_selectFolderDialog(title, fileName); break;
-        case DIALOG_SAVE: tempFileName = tinyfd_saveFileDialog(title, fileName, filterCount, filterSplit, message); break;
+        case DIALOG_OPEN_DIRECTORY: tempFileName = tinyfd_selectFolderDialog(title, fileName); break;
+        case DIALOG_SAVE_FILE: tempFileName = tinyfd_saveFileDialog(title, fileName, filterCount, filterSplit, message); break;
         case DIALOG_MESSAGE: result = tinyfd_messageBox(title, message, "ok", "info", 0); break;
         case DIALOG_TEXTINPUT: tempFileName = tinyfd_inputBox(title, message, ""); break;
         default: break;
