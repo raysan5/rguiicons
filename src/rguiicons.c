@@ -599,20 +599,19 @@ int main(int argc, char *argv[])
         //----------------------------------------------------------------------------------
         if (IsFileDropped())
         {
-            int dropFileCount = 0;
-            char **droppedFiles = LoadDroppedFiles(&dropFileCount);
+            FilePathList droppedFiles = LoadDroppedFiles();
 
-            if (IsFileExtension(droppedFiles[0], ".rgi"))
+            if (IsFileExtension(droppedFiles.paths[0], ".rgi"))
             {
                 // Load .rgi data into raygui icons set (and gui icon names for the tool)
-                char **tempIconsName = GuiLoadIcons(droppedFiles[0], true);
+                char **tempIconsName = GuiLoadIcons(droppedFiles.paths[0], true);
                 for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
                 free(tempIconsName);
 
-                strcpy(inFileName, droppedFiles[0]);
+                strcpy(inFileName, droppedFiles.paths[0]);
                 SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
             }
-            else if (IsFileExtension(droppedFiles[0], ".png"))
+            else if (IsFileExtension(droppedFiles.paths[0], ".png"))
             {
                 // TODO: Support icons loading from image
                 //Image image = LoadImage(droppedFiles[0]);
@@ -621,9 +620,9 @@ int main(int argc, char *argv[])
 
                 // TODO: Load icons name id from PNG zTXt chunk if available
             }
-            else if (IsFileExtension(droppedFiles[0], ".rgs")) GuiLoadStyle(droppedFiles[0]);
+            else if (IsFileExtension(droppedFiles.paths[0], ".rgs")) GuiLoadStyle(droppedFiles.paths[0]);
 
-            UnloadDroppedFiles();
+            UnloadDroppedFiles(droppedFiles);    // Unload filepaths from memory
         }
         //----------------------------------------------------------------------------------
 
@@ -866,7 +865,7 @@ int main(int argc, char *argv[])
 #if defined(CUSTOM_MODAL_DIALOGS)
                 int result = GuiFileDialog(DIALOG_MESSAGE, "Load raygui icons file ...", inFileName, "Ok", "Just drag and drop your .rgi style file!");
 #else
-                int result = GuiFileDialog(DIALOG_OPEN, "Load raygui icons file", inFileName, "*.rgi", "raygui Icons Files (*.rgi)");
+                int result = GuiFileDialog(DIALOG_OPEN_FILE, "Load raygui icons file", inFileName, "*.rgi", "raygui Icons Files (*.rgi)");
 #endif
                 if (result == 1)
                 {
@@ -893,7 +892,7 @@ int main(int argc, char *argv[])
 #if defined(CUSTOM_MODAL_DIALOGS)
                 int result = GuiFileDialog(DIALOG_TEXTINPUT, "Save raygui icons file...", outFileName, "Ok;Cancel", NULL);
 #else
-                int result = GuiFileDialog(DIALOG_SAVE, "Save raygui icons file...", outFileName, "*.rgi", "raygui Icons Files (*.rgi)");
+                int result = GuiFileDialog(DIALOG_SAVE_FILE, "Save raygui icons file...", outFileName, "*.rgi", "raygui Icons Files (*.rgi)");
 #endif
                 if (result == 1)
                 {
@@ -935,7 +934,7 @@ int main(int argc, char *argv[])
 #if defined(CUSTOM_MODAL_DIALOGS)
                 int result = GuiFileDialog(DIALOG_TEXTINPUT, "Export raygui icons file...", outFileName, "Ok;Cancel", NULL);
 #else
-                int result = GuiFileDialog(DIALOG_SAVE, "Export raygui icons file...", outFileName, filters, TextFormat("File type (%s)", filters));
+                int result = GuiFileDialog(DIALOG_SAVE_FILE, "Export raygui icons file...", outFileName, filters, TextFormat("File type (%s)", filters));
 #endif
                 if (result == 1)
                 {
@@ -1001,7 +1000,7 @@ int main(int argc, char *argv[])
 #if defined(CUSTOM_MODAL_DIALOGS)
                 int result = GuiFileDialog(DIALOG_TEXTINPUT, "Export raygui icon as image file...", outFileName, "Ok;Cancel", NULL);
 #else
-                int result = GuiFileDialog(DIALOG_SAVE, "Export raygui icon as image file...", outFileName, "*.png", "Image File (*.png)");
+                int result = GuiFileDialog(DIALOG_SAVE_FILE, "Export raygui icon as image file...", outFileName, "*.png", "Image File (*.png)");
 #endif
                 if (result == 1)
                 {
