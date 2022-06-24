@@ -61,9 +61,9 @@
 
 #define TOOL_NAME               "rGuiIcons"
 #define TOOL_SHORT_NAME         "rGI"
-#define TOOL_VERSION            "1.5"
+#define TOOL_VERSION            "2.0-dev"
 #define TOOL_DESCRIPTION        "A simple and easy-to-use raygui icons editor"
-#define TOOL_RELEASE_DATE       "Dec.2021"
+#define TOOL_RELEASE_DATE       "Jun.2022"
 #define TOOL_LOGO_COLOR         0x48c9c5ff
 
 #include "raylib.h"
