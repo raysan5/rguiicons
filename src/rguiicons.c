@@ -1,25 +1,26 @@
 /*******************************************************************************************
 *
-*   rGuiIcons v1.5 - A simple and easy-to-use raygui icons editor
+*   rGuiIcons v2.0-dev - A simple and easy-to-use raygui icons editor
 *
 *   CONFIGURATION:
-*
-*   #define VERSION_ONE
-*       Enable command-line usage and PRO features for the tool
 *
 *   #define CUSTOM_MODAL_DIALOGS
 *       Use custom raygui generated modal dialogs instead of native OS ones
 *       NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
+*       2.0-dev (Jun-2022) 
+*           - Source code relicensed to open-source
+*           - Updated to raylib 4.2 and raygui 3.2
+*           - TODO: REDESIGNED: Main toolbar, for consistency with other tools
 *       1.5  (30-Dec-2021) Updated to raylib 4.0 and raygui 3.1
 *                          Add icon descriptions as PNG extra chunks
 *                          Support multiple visual styles
 *       1.0  (30-Sep-2019) First release
 *
 *   DEPENDENCIES:
-*       raylib 4.0              - Windowing/input management and drawing
-*       raygui 3.1              - Immediate-mode GUI controls with custom styling and icons
+*       raylib 4.2              - Windowing/input management and drawing
+*       raygui 3.2              - Immediate-mode GUI controls with custom styling and icons
 *       rpng 1.0                - PNG chunks management
 *       tinyfiledialogs 3.8.8   - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *
@@ -37,13 +38,24 @@
 *       Ramon Santamaria (@raysan5):   Developer, supervisor, updater and maintainer.
 *
 *
-*   LICENSE: Propietary License
+*   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2019-2022 raylib technologies (@raylibtech). All Rights Reserved.
+*   Copyright (c) 2019-2022 raylib technologies (@raylibtech) / Ramon Santamaria (@raysan5)
 *
-*   Unauthorized copying of this file, via any medium is strictly prohibited
-*   This project is proprietary and confidential unless the owner allows
-*   usage in any other form by expresely written permission.
+*   This software is provided "as-is", without any express or implied warranty. In no event
+*   will the authors be held liable for any damages arising from the use of this software.
+*
+*   Permission is granted to anyone to use this software for any purpose, including commercial
+*   applications, and to alter it and redistribute it freely, subject to the following restrictions:
+*
+*     1. The origin of this software must not be misrepresented; you must not claim that you
+*     wrote the original software. If you use this software in a product, an acknowledgment
+*     in the product documentation would be appreciated but is not required.
+*
+*     2. Altered source versions must be plainly marked as such, and must not be misrepresented
+*     as being the original software.
+*
+*     3. This notice may not be removed or altered from any source distribution.
 *
 **********************************************************************************************/
 
@@ -81,12 +93,12 @@
 #include "gui_file_dialogs.h"           // GUI: File Dialog
 
 // raygui embedded styles
-#include "style_jungle.h"               // raygui style: jungle
-#include "style_candy.h"                // raygui style: candy
-#include "style_lavanda.h"              // raygui style: lavanda
-#include "style_cyber.h"                // raygui style: cyber
-#include "style_bluish.h"               // raygui style: bluish
-#include "style_terminal.h"             // raygui style: terminal
+#include "styles/style_jungle.h"        // raygui style: jungle
+#include "styles/style_candy.h"         // raygui style: candy
+#include "styles/style_lavanda.h"       // raygui style: lavanda
+#include "styles/style_cyber.h"         // raygui style: cyber
+#include "styles/style_bluish.h"        // raygui style: bluish
+#include "styles/style_terminal.h"      // raygui style: terminal
 
 #include <stdio.h>                      // Required for: fopen(), fclose(), fread()...
 #include <stdlib.h>                     // Required for: malloc(), free()
@@ -355,7 +367,7 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
-#if defined(VERSION_ONE)
+#if defined(PLATFORM_DESKTOP)
 // Command line functionality
 static void ShowCommandLineInfo(void);                      // Show command line usage info
 static void ProcessCommandLine(int argc, char *argv[]);     // Process command line input
@@ -383,7 +395,7 @@ int main(int argc, char *argv[])
 #if !defined(_DEBUG)
     SetTraceLogLevel(LOG_NONE);         // Disable raylib trace log messsages
 #endif
-#if defined(VERSION_ONE)
+#if defined(PLATFORM_DESKTOP)
     // Command-line usage mode
     //--------------------------------------------------------------------------------------
     if (argc > 1)
@@ -404,7 +416,7 @@ int main(int argc, char *argv[])
             return 0;
         }
     }
-#endif      // VERSION_ONE
+#endif
 #if (!defined(_DEBUG) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
     // WARNING (Windows): If program is compiled as Window application (instead of console),
     // no console is available to show output info... solution is compiling a console application
@@ -1048,7 +1060,7 @@ int main(int argc, char *argv[])
 //--------------------------------------------------------------------------------------------
 // Module functions definition
 //--------------------------------------------------------------------------------------------
-#if defined(VERSION_ONE)
+#if defined(PLATFORM_DESKTOP)
 // Show command line usage info
 static void ShowCommandLineInfo(void)
 {
@@ -1178,7 +1190,7 @@ static void ProcessCommandLine(int argc, char *argv[])
 
     if (showUsageInfo) ShowCommandLineInfo();
 }
-#endif      // VERSION_ONE
+#endif
 
 //--------------------------------------------------------------------------------------------
 // Load/Save/Export functions
@@ -1186,7 +1198,7 @@ static void ProcessCommandLine(int argc, char *argv[])
 
 // Load icons from image file
 // NOTE: Several parameters are required for proper loading
-void LoadIconsFromImage(Image image, int iconCount, int iconSize, int iconsPerLine, int padding)
+static void LoadIconsFromImage(Image image, int iconCount, int iconSize, int iconsPerLine, int padding)
 {
     int lines = iconCount/iconsPerLine;
     if (iconCount%iconsPerLine > 0) lines++;
