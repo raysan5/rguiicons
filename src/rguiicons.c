@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rGuiIcons v2.0-dev - A simple and easy-to-use raygui icons editor
+*   rGuiIcons v2.0 - A simple and easy-to-use raygui icons editor
 *
 *   CONFIGURATION:
 *
@@ -9,14 +9,13 @@
 *       NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
-*       2.0-dev (Jun-2022) 
-*           - Source code relicensed to open-source
-*           - Updated to raylib 4.2 and raygui 3.2
-*           - TODO: REDESIGNED: Main toolbar, for consistency with other tools
-*       1.5  (30-Dec-2021) Updated to raylib 4.0 and raygui 3.1
-*                          Add icon descriptions as PNG extra chunks
-*                          Support multiple visual styles
-*       1.0  (30-Sep-2019) First release
+*       2.0  (02-Oct-2022)  Source code re-licensed to open-source
+*                           Updated to raylib 4.2 and raygui 3.2
+*                           REDESIGNED: Main toolbar, for consistency with other tools
+*       1.5  (30-Dec-2021)  Updated to raylib 4.0 and raygui 3.1
+*                           Add icon descriptions as PNG extra chunks
+*                           Support multiple visual styles
+*       1.0  (30-Sep-2019)  First release
 *
 *   DEPENDENCIES:
 *       raylib 4.2              - Windowing/input management and drawing
@@ -61,20 +60,20 @@
 
 #define TOOL_NAME               "rGuiIcons"
 #define TOOL_SHORT_NAME         "rGI"
-#define TOOL_VERSION            "2.0-dev"
+#define TOOL_VERSION            "2.0"
 #define TOOL_DESCRIPTION        "A simple and easy-to-use raygui icons editor"
-#define TOOL_RELEASE_DATE       "Jun.2022"
+#define TOOL_RELEASE_DATE       "Oct.2022"
 #define TOOL_LOGO_COLOR         0x48c9c5ff
 
 #include "raylib.h"
 
 #if defined(PLATFORM_WEB)
-    #define CUSTOM_MODAL_DIALOGS        // Force custom modal dialogs usage
-    #include <emscripten/emscripten.h>  // Emscripten library - LLVM to JavaScript compiler
+    #define CUSTOM_MODAL_DIALOGS            // Force custom modal dialogs usage
+    #include <emscripten/emscripten.h>      // Emscripten library - LLVM to JavaScript compiler
 #endif
 
 #define RPNG_IMPLEMENTATION
-#include "external/rpng.h"              // PNG chunks management
+#include "external/rpng.h"              	// PNG chunks management
 
 // NOTE: Some raygui elements need to be defined before including raygui
 #define RAYGUI_TEXTSPLIT_MAX_ITEMS        256
@@ -82,23 +81,29 @@
 #define RAYGUI_TOGGLEGROUP_MAX_ITEMS      256
 #define RAYGUI_GRID_ALPHA                 0.2f
 #define RAYGUI_IMPLEMENTATION
-#include "external/raygui.h"            // Required for: IMGUI controls
+#include "raygui.h"                         // Required for: IMGUI controls
 
-#undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
+#undef RAYGUI_IMPLEMENTATION                // Avoid including raygui implementation again
 
 #define GUI_WINDOW_ABOUT_IMPLEMENTATION
-#include "gui_window_about.h"           // GUI: About window
+#include "gui_window_about.h"               // GUI: About Window
 
 #define GUI_FILE_DIALOGS_IMPLEMENTATION
-#include "gui_file_dialogs.h"           // GUI: File Dialog
+#include "gui_file_dialogs.h"               // GUI: File Dialogs
+
+#define GUI_MAIN_TOOLBAR_IMPLEMENTATION
+#include "gui_main_toolbar.h"               // GUI: Main toolbar
 
 // raygui embedded styles
-#include "styles/style_jungle.h"        // raygui style: jungle
-#include "styles/style_candy.h"         // raygui style: candy
-#include "styles/style_lavanda.h"       // raygui style: lavanda
-#include "styles/style_cyber.h"         // raygui style: cyber
-#include "styles/style_bluish.h"        // raygui style: bluish
-#include "styles/style_terminal.h"      // raygui style: terminal
+// NOTE: Defined in the same order they are listed
+#include "styles/style_jungle.h"            // raygui style: jungle
+#include "styles/style_lavanda.h"           // raygui style: lavanda
+#include "styles/style_cyber.h"             // raygui style: cyber
+#include "styles/style_terminal.h"          // raygui style: terminal
+#include "styles/style_ashes.h"             // raygui style: ashes
+#include "styles/style_bluish.h"            // raygui style: bluish
+#include "styles/style_dark.h"              // raygui style: dark
+#include "styles/style_sunny.h"             // raygui style: sunny
 
 #include <stdio.h>                      // Required for: fopen(), fclose(), fread()...
 #include <stdlib.h>                     // Required for: malloc(), free()
@@ -364,6 +369,28 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "FOLDER_ADD"
 };
 
+#define HELP_LINES_COUNT    16
+
+// Tool help info
+static const char *helpLines[HELP_LINES_COUNT] = {
+    "F1 - Show Help window",
+    "F2 - Show About window",
+    "-File Controls",
+    "LCTRL + N - New iconset file (.rgi)",
+    "LCTRL + O - Open iconset file (.rgi)",
+    "LCTRL + S - Save iconset file (.rgi)",
+    "LCTRL + E - Export iconset file",
+    "-Tool Controls",
+    "LCTRL + X,C,V - Cut, copy, paste icon",
+    "LCTRL + Z,Y - Undo/Redo icon edition",
+    "DEL - Clean current selected icon",
+    "-Tool Visuals",
+    "LEFT | RIGHT - Select style template",
+    "LCTRL + F - Toggle double screen size",
+    NULL,
+    "ESCAPE - Close Window/Exit"
+};
+
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
@@ -383,6 +410,8 @@ static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color 
 static Image GenImageFromIconData(unsigned int *values, int iconCount, int iconsPerLine, int padding);  // Gen icons pack image from icon data array
 static Image GenImageFromBits(unsigned char *bytes, int width, int height, Color color);                // Gen image from bits data (packed in bytes)
 static unsigned char *ImageToBits(Image image);                                                         // Gen bits array (packed in bytes) from image data
+
+static int GuiHelpWindow(Rectangle bounds, const char *title, const char **helpLines, int helpLinesCount); // Draw help window with the provided lines
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -404,8 +433,7 @@ int main(int argc, char *argv[])
             (strcmp(argv[1], "-h") != 0) &&
             (strcmp(argv[1], "--help") != 0))       // One argument (file dropped over executable?)
         {
-            if (IsFileExtension(argv[1], ".xx1") ||
-                IsFileExtension(argv[1], ".xx2"))
+            if (IsFileExtension(argv[1], ".rgi"))
             {
                 strcpy(inFileName, argv[1]);        // Read input filename to open with gui interface
             }
@@ -416,7 +444,7 @@ int main(int argc, char *argv[])
             return 0;
         }
     }
-#endif
+#endif  // PLATFORM_DESKTOP
 #if (!defined(_DEBUG) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)))
     // WARNING (Windows): If program is compiled as Window application (instead of console),
     // no console is available to show output info... solution is compiling a console application
@@ -427,7 +455,7 @@ int main(int argc, char *argv[])
     // GUI usage mode - Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = 640;
-    const int screenHeight = 460;
+    const int screenHeight = 428;
 
     InitWindow(screenWidth, screenHeight, TextFormat("%s v%s | %s", toolName, toolVersion, toolDescription));
     SetExitKey(0);
@@ -442,17 +470,12 @@ int main(int argc, char *argv[])
 
     Vector2 cell = { -1, -1 };  // Grid cell mouse position
     int iconEditScale = 16;     // Icon edit scale
-    
-    int visualStyleActive = 0;
-    int prevVisualStyleActive = visualStyleActive;
 
-    // GUI: Full
+
+    // GUI: Main layout
     //-----------------------------------------------------------------------------------
     Vector2 anchor01 = { 0, 0 };
-
-    int fileTypeActive = 0;
     bool iconNameIdEditMode = false;
-
     int selectedIcon = 0;
 
     // ToggleGroup() text
@@ -467,16 +490,41 @@ int main(int argc, char *argv[])
 
     toggleIconsText[RAYGUI_ICON_MAX_ICONS*6 - 1] = '\0';
 
-    bool hiDpiActive = false;
-    bool prevHiDpiActive = hiDpiActive;
 
     //bool btnSaveIconPressed = false;
     //bool btnClearIconPressed = false;
+
+    bool screenSizeActive = false;
+    bool helpWindowActive = false;      // Show window: help info 
+    bool userWindowActive = false;      // Show window: user registration
+    bool controlsWindowActive = true;   // Show window: controls
     //-----------------------------------------------------------------------------------
 
     // GUI: About Window
     //-----------------------------------------------------------------------------------
     GuiWindowAboutState windowAboutState = InitGuiWindowAbout();
+    //-----------------------------------------------------------------------------------
+
+    // GUI: Main toolbar panel (file and visualization)
+    //-----------------------------------------------------------------------------------
+    GuiMainToolbarState mainToolbarState = InitGuiMainToolbar();
+    //-----------------------------------------------------------------------------------
+
+    // GUI: Export Window
+    //-----------------------------------------------------------------------------------
+    bool exportWindowActive = false;
+       
+    int exportFormatActive = 0;         // ComboBox file type selection
+    char styleNameText[128] = "Unnamed"; // Style name text box
+    bool styleNameEditMode = false;     // Style name text box edit mode
+    bool embedFontChecked = true;       // Select to embed font into style file
+    bool styleChunkChecked = false;     // Select to embed style as a PNG chunk (rGSf)
+    //-----------------------------------------------------------------------------------
+
+    // GUI: Exit Window
+    //-----------------------------------------------------------------------------------
+    bool closeWindow = false;
+    bool exitWindowActive = false;
     //-----------------------------------------------------------------------------------
 
     // GUI: Custom file dialogs
@@ -485,13 +533,7 @@ int main(int argc, char *argv[])
     bool showSaveFileDialog = false;
     bool showExportFileDialog = false;
 
-    bool showExportIconImageDialog = false;
-    //-----------------------------------------------------------------------------------
-
-    // GUI: Exit Window
-    //-----------------------------------------------------------------------------------
-    bool exitWindow = false;
-    bool windowExitActive = false;
+    //bool showExportIconImageDialog = false;   // No need to export one single image
     //-----------------------------------------------------------------------------------
 
     // Check if an input file has been provided on command line
@@ -525,19 +567,24 @@ int main(int argc, char *argv[])
         memcpy(undoIconSet[i].values, GuiGetIcons(), RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
     }
 
-    SetTargetFPS(60);
-    //------------------------------------------------------------
+    SetTargetFPS(60);       // Set our game to run at 60 frames-per-second
+    //--------------------------------------------------------------------------------------
 
     // Main game loop
-    while (!exitWindow)             // Detect window close button
+    while (!closeWindow)    // Detect window close button
     {
-        if (WindowShouldClose()) windowExitActive = true;
-        
+        // WARNING: ASINCIFY requires this line, 
+        // it contains the call to emscripten_sleep() for PLATFORM_WEB
+        if (WindowShouldClose()) exitWindowActive = true;
+
         // Undo icons change logic
         //----------------------------------------------------------------------------------
         // Make sure no windows are open to store changes
-        if (!windowAboutState.windowActive && !windowExitActive && !showLoadFileDialog &&
-            !showSaveFileDialog && !showExportFileDialog && !showExportIconImageDialog)
+        if (!windowAboutState.windowActive && 
+            !exitWindowActive && 
+            !showLoadFileDialog &&
+            !showSaveFileDialog && 
+            !showExportFileDialog)
         {
             undoFrameCounter++;
 
@@ -638,9 +685,17 @@ int main(int argc, char *argv[])
         }
         //----------------------------------------------------------------------------------
 
-        // Keyboard shortcuts
+        // Keyboard shortcuts (+main toolbar related buttons)
         //------------------------------------------------------------------------------------
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) showLoadFileDialog = true;      // Show dialog: load icons data (.rgi)
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_N) || mainToolbarState.btnNewFilePressed)
+        {
+            // TODO: Create a new icons/tiles set
+        }
+        
+		// Show dialog: load icons data (.rgi)
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) showLoadFileDialog = true;
+
+        // Show dialog: save icons data (.rgi)
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S))
         {
             if (inFileName[0] == '\0') showSaveFileDialog = true;       // Show dialog: save icons data (.rgi)
@@ -651,16 +706,64 @@ int main(int argc, char *argv[])
                 saveChangesRequired = false;
             }
         }
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) showExportFileDialog = true;    // Show dialog: export icons data (.png, .h)
+		// Show dialog: export icons data (.png, .h)
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) showExportFileDialog = true;
 
-        if (IsKeyPressed(KEY_F1)) windowAboutState.windowActive = !windowAboutState.windowActive;
-        
+        // Cut button/shortcut logic
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_X)) || mainToolbarState.btnCutPressed)
+        {
+            memcpy(iconData, GuiGetIconData(selectedIcon), RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
+            for (int i = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RAYGUI_ICON_SIZE, i%RAYGUI_ICON_SIZE);
+
+            strcpy(iconName, guiIconsName[selectedIcon]);
+            memset(guiIconsName[selectedIcon], 0, 32);
+
+            iconDataToCopy = true;
+        }
+
+        // Copy button/shortcut logic
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C)) || mainToolbarState.btnCopyPressed)
+        {
+            memcpy(iconData, GuiGetIconData(selectedIcon), RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
+            strcpy(iconName, guiIconsName[selectedIcon]);
+            iconDataToCopy = true;
+        }
+
+        // Paste button/shortcut logic
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V)) || mainToolbarState.btnPastePressed)
+        {
+            if (iconDataToCopy)
+            {
+                GuiSetIconData(selectedIcon, iconData);
+                strcpy(guiIconsName[selectedIcon], iconName);
+            }
+        }
+
+        // Clean selected icon
+        if (IsKeyPressed(KEY_DELETE) || mainToolbarState.btnCleanPressed)
+        {
+            for (int i = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RAYGUI_ICON_SIZE, i%RAYGUI_ICON_SIZE);
+
+            memset(guiIconsName[selectedIcon], 0, 32);
+        }
+
+        // Toggle window help
+        if (IsKeyPressed(KEY_F1)) helpWindowActive = !helpWindowActive;
+
+        // Toggle window about
+        if (IsKeyPressed(KEY_F2)) windowAboutState.windowActive = !windowAboutState.windowActive;
+
+        // Toggle window registered user
+        //if (IsKeyPressed(KEY_F3)) userWindowActive = !userWindowActive;
+
         // Show closing window on ESC
         if (IsKeyPressed(KEY_ESCAPE))
         {
             if (windowAboutState.windowActive) windowAboutState.windowActive = false;
-        #if !defined(PLATFORM_WEB)
-            else windowExitActive = !windowExitActive;
+            else if (helpWindowActive) helpWindowActive = false;
+            else if (exportWindowActive) exportWindowActive = false;
+        #if defined(PLATFORM_DESKTOP)
+            else exitWindowActive = !exitWindowActive;
         #else
             else if (showLoadFileDialog) showLoadFileDialog = false;
             else if (showSaveFileDialog) showSaveFileDialog = false;
@@ -671,12 +774,43 @@ int main(int argc, char *argv[])
 #if !defined(PLATFORM_WEB)
         if (IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_ENTER)) ToggleFullscreen();
 #endif
-        if (IsKeyPressed(KEY_DELETE))
-        {
-            for (int i = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RAYGUI_ICON_SIZE, i%RAYGUI_ICON_SIZE);
+        //----------------------------------------------------------------------------------
 
-            memset(guiIconsName[selectedIcon], 0, 32);
+        // Main toolbar logic
+        //----------------------------------------------------------------------------------
+        // File options logic
+        if (mainToolbarState.btnLoadFilePressed) showLoadFileDialog = true;
+        else if (mainToolbarState.btnSaveFilePressed) showSaveFileDialog = true;
+        else if (mainToolbarState.btnExportFilePressed) exportWindowActive = true;
+
+        // Visual options logic
+        if (mainToolbarState.visualStyleActive != mainToolbarState.prevVisualStyleActive)
+        {
+            // When a new template style is selected, everything is reseted
+            GuiLoadStyleDefault();
+
+            switch (mainToolbarState.visualStyleActive)
+            {
+                case 1: GuiLoadStyleJungle(); break;
+                case 2: GuiLoadStyleLavanda(); break;
+                case 3: GuiLoadStyleCyber(); break;
+                case 4: GuiLoadStyleTerminal(); break;
+                case 5: GuiLoadStyleAshes(); break;
+                case 6: GuiLoadStyleBluish(); break;
+                case 7: GuiLoadStyleDark(); break;
+                case 8: GuiLoadStyleSunny(); break;
+                default: break;
+            }
+
+            saveChangesRequired = false;
+
+            mainToolbarState.prevVisualStyleActive = mainToolbarState.visualStyleActive;
         }
+
+        // Help options logic
+        if (mainToolbarState.btnHelpPressed) helpWindowActive = true;               // Help button logic
+        if (mainToolbarState.btnAboutPressed) windowAboutState.windowActive = true; // About window button logic
+        if (mainToolbarState.btnUserPressed) userWindowActive = true;               // User button logic
         //----------------------------------------------------------------------------------
 
         // Basic program flow logic
@@ -697,95 +831,91 @@ int main(int argc, char *argv[])
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) GuiSetIconPixel(selectedIcon, (int)cell.x, (int)cell.y);
             else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) GuiClearIconPixel(selectedIcon, (int)cell.x, (int)cell.y);
         }
-        
-        // Set new gui style if changed
-        if (visualStyleActive != prevVisualStyleActive)
-        {
-            GuiLoadStyleDefault();
-
-            switch (visualStyleActive)
-            {
-                case 1: GuiLoadStyleJungle(); break;
-                case 2: GuiLoadStyleCandy(); break;
-                case 3: GuiLoadStyleLavanda(); break;
-                case 4: GuiLoadStyleCyber(); break;
-                case 5: GuiLoadStyleBluish(); break;
-                case 6: GuiLoadStyleTerminal(); break;
-                default: break;
-            }
-
-            prevVisualStyleActive = visualStyleActive;
-        }
         //----------------------------------------------------------------------------------
 
         // Screen scale logic (x2)
         //----------------------------------------------------------------------------------
-        if (hiDpiActive != prevHiDpiActive)
+        if (screenSizeActive)
         {
-            if (hiDpiActive)
+            // Screen size x2
+            if (GetScreenWidth() < screenWidth*2)
             {
-                screenScale = 2;
                 SetWindowSize(screenWidth*2, screenHeight*2);
                 SetMouseScale(0.5f, 0.5f);
             }
-            else
+        }
+        else
+        {
+            // Screen size x1
+            if (screenWidth*2 >= GetScreenWidth())
             {
-                screenScale = 1;
                 SetWindowSize(screenWidth, screenHeight);
                 SetMouseScale(1.0f, 1.0f);
             }
-
-            prevHiDpiActive = hiDpiActive;
         }
+        //----------------------------------------------------------------------------------
+        
+        // WARNING: Some windows should lock the main screen controls when shown
+        if (windowAboutState.windowActive || 
+            helpWindowActive ||
+            userWindowActive ||
+            exitWindowActive || 
+            exportWindowActive ||
+            showLoadFileDialog || 
+            showSaveFileDialog || 
+            showExportFileDialog) GuiLock();
         //----------------------------------------------------------------------------------
 
         // Draw
         //----------------------------------------------------------------------------------
-        // Draw texture to render target (for further scaling)
+        // Render all screen to texture (for scaling)
         BeginTextureMode(target);
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-            
-            // WARNING: Some windows should lock the main screen controls when shown
-            if (windowAboutState.windowActive || windowExitActive || showLoadFileDialog || showSaveFileDialog || showExportFileDialog || showExportIconImageDialog) GuiLock();
 
-            // GUI: Work area
+            // GUI: Main toolbar panel
             //----------------------------------------------------------------------------------
-            GuiLabel((Rectangle){ anchor01.x + 15, anchor01.y + 45, 140, 25 }, "Choose Icon for Edit:");
+            GuiMainToolbar(&mainToolbarState);
+            //----------------------------------------------------------------------------------
+
+            // GUI: Main screen controls
+            //---------------------------------------------------------------------------------------------------------
+            GuiLabel((Rectangle){ anchor01.x + 15, anchor01.y + 45, 140, 25 }, "Choose icon for edit:");
 
             // Draw icons selection panel
+            //GuiSetStyle(TOGGLE, GROUP_PADDING, -1);
             selectedIcon = GuiToggleGroup((Rectangle){ anchor01.x + 15, anchor01.y + 70, 18, 18 }, toggleIconsText, selectedIcon);
-            fileTypeActive = GuiComboBox((Rectangle){ anchor01.x + 15, anchor01.y + 400, 160, 25 }, "Icons File (.rgi);Icons Image (.png);Icons Code (.h)", fileTypeActive);
-
-            if (GuiButton((Rectangle){ anchor01.x + 185, anchor01.y + 400, 150, 25 }, "#07#Export Icons")) showExportFileDialog = true;
-
-            GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "Icon Name ID:");
-            if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 70, 260, 25 }, guiIconsName[selectedIcon], 32, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
-
-            iconEditScale = (int)GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 110, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), (float)iconEditScale, 0, 16);
-            if (iconEditScale < 2) iconEditScale = 2;
-            else if (iconEditScale > 16) iconEditScale = 16;
+            
+            // Draw icon name ID text box
+            GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "Icon name ID:");
+            if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 70, 258, 25 }, guiIconsName[selectedIcon], 32, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
 
             // Draw selected icon at selected scale
-            DrawRectangle(anchor01.x + 365, anchor01.y + 130, 256, 256, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_NORMAL)), 0.3f));
-            GuiDrawIcon(selectedIcon, (int)anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, (int)anchor01.y + 130 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)));
+            DrawRectangle(anchor01.x + 365, anchor01.y + 108, 256, 256, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_NORMAL)), 0.3f));
+            GuiDrawIcon(selectedIcon, (int)anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, (int)anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)));
 
             // Draw grid (returns selected cell)
-            cell = GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 130 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale }, NULL, iconEditScale, 1);
+            cell = GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale }, NULL, iconEditScale, 1);
 
             // Draw selected cell lines
             if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RAYGUI_ICON_SIZE) && (cell.y < RAYGUI_ICON_SIZE))
             {
                 DrawRectangleLinesEx((Rectangle){ anchor01.x + 365 + iconEditScale*cell.x + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
-                                                  anchor01.y + 130 + iconEditScale*cell.y + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
+                                                  anchor01.y + 108 + iconEditScale*cell.y + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
                                                   iconEditScale + 1, iconEditScale + 1 }, 1, RED);
             }
 
-            if (GuiButton((Rectangle){ anchor01.x + 440, anchor01.y + 400, 100, 25 }, "#012#Save Image")) showExportIconImageDialog = true;
+            iconEditScale = (int)GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 376, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), (float)iconEditScale, 0, 16);
+            if (iconEditScale < 2) iconEditScale = 2;
+            else if (iconEditScale > 16) iconEditScale = 16;
+            //--------------------------------------------------------------------------------
 
-            if (GuiButton((Rectangle){ anchor01.x + 545, anchor01.y + 400, 80, 25 }, "#079#Clear"))
-            {
-                for (int i = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RAYGUI_ICON_SIZE, i%RAYGUI_ICON_SIZE);
-            }
+            // GUI: Status bar
+            //--------------------------------------------------------------------------------
+            int textPadding = GuiGetStyle(STATUSBAR, TEXT_PADDING);
+            GuiSetStyle(STATUSBAR, TEXT_PADDING, 15);
+            GuiStatusBar((Rectangle){ 0, screenHeight - 24, 351, 24 }, TextFormat("TOTAL ICONS: %i", RAYGUI_ICON_MAX_ICONS));
+            GuiStatusBar((Rectangle){ 350, screenHeight - 24, screenWidth - 350, 24 }, TextFormat("SELECTED: %i - %s", selectedIcon, guiIconsName[selectedIcon]));
+            GuiSetStyle(STATUSBAR, TEXT_PADDING, textPadding);
             //--------------------------------------------------------------------------------
             
             // NOTE: If some overlap window is open and main window is locked, we draw a background rectangle
@@ -794,81 +924,56 @@ int main(int argc, char *argv[])
             // WARNING: Before drawing the windows, we unlock them
             GuiUnlock();
             
-            // GUI: Main toolbar
-            //----------------------------------------------------------------------------------
-            GuiPanel((Rectangle){ anchor01.x + 0, anchor01.y + 0, 640, 40 }, NULL);
-
-            if (GuiButton((Rectangle){ anchor01.x + 12, anchor01.y + 8, 24, 24 }, "#01#")) showLoadFileDialog = true;
-            if (GuiButton((Rectangle){ anchor01.x + 12 + 24 + 4, anchor01.y + 8, 24, 24 }, "#02#")) showSaveFileDialog = true;
-            if (GuiButton((Rectangle){ anchor01.x + 12 + 48 + 8, anchor01.y + 8, 24, 24 }, "#07#")) showExportFileDialog = true;
-
-            // Copy button/shortcut logic
-            if ((GuiButton((Rectangle){ anchor01.x + 112, anchor01.y + 8, 24, 24 }, "#16#")) ||
-                (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C)))
-            {
-                memcpy(iconData, GuiGetIconData(selectedIcon), RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
-                strcpy(iconName, guiIconsName[selectedIcon]);
-                iconDataToCopy = true;
-            }
-
-            // Cut button/shortcut logic
-            if ((GuiButton((Rectangle){ anchor01.x + 112 + 24 + 4, anchor01.y + 8, 24, 24 }, "#17#")) ||
-                (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_X)))
-            {
-                memcpy(iconData, GuiGetIconData(selectedIcon), RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
-                for (int i = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE; i++) GuiClearIconPixel(selectedIcon, i/RAYGUI_ICON_SIZE, i%RAYGUI_ICON_SIZE);
-
-                strcpy(iconName, guiIconsName[selectedIcon]);
-                memset(guiIconsName[selectedIcon], 0, 32);
-
-                iconDataToCopy = true;
-            }
-
-            // Paste button/shortcut logic
-            if ((GuiButton((Rectangle){ anchor01.x + 112 + 48 + 8, anchor01.y + 8, 24, 24 }, "#18#")) ||
-                (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V)))
-            {
-                if (iconDataToCopy)
-                {
-                    GuiSetIconData(selectedIcon, iconData);
-                    strcpy(guiIconsName[selectedIcon], iconName);
-                }
-            }
-
-            GuiGroupBox((Rectangle){ anchor01.x + 112 + 64 + 12 + 8, anchor01.y + 8, 24, 24 }, NULL);
-            if (iconDataToCopy) DrawIconData(iconData, anchor01.x + 196 + 4, anchor01.y + 8 + 4, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
-#if !defined(PLATFORM_WEB)
-            hiDpiActive = GuiToggle((Rectangle){ anchor01.x + 410, anchor01.y + 8, 24, 24 }, "#199#", hiDpiActive);
-#endif
-            visualStyleActive = GuiComboBox((Rectangle){ anchor01.x + 440, anchor01.y + 8, 100, 24 }, "default;Jungle;Candy;Lavanda;Cyber;Bluish;Terminal", visualStyleActive);
-
-            if (GuiButton((Rectangle){ anchor01.x + 550, anchor01.y + 8, 80, 24 }, "#191#ABOUT")) windowAboutState.windowActive = true;
-            //----------------------------------------------------------------------------------
-
-            // GUI: Status bar
-            //--------------------------------------------------------------------------------
-            int textPadding = GuiGetStyle(STATUSBAR, TEXT_PADDING);
-            GuiSetStyle(STATUSBAR, TEXT_PADDING, 15);
-            GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 435, 351, 25 }, TextFormat("TOTAL ICONS: %i", RAYGUI_ICON_MAX_ICONS));
-            GuiStatusBar((Rectangle){ anchor01.x + 350, anchor01.y + 435, 290, 25 }, TextFormat("SELECTED: %i - %s", selectedIcon, guiIconsName[selectedIcon]));
-            GuiSetStyle(STATUSBAR, TEXT_PADDING, textPadding);
-            //--------------------------------------------------------------------------------
-
             // GUI: About Window
-            //--------------------------------------------------------------------------------
+            //----------------------------------------------------------------------------------------
             GuiWindowAbout(&windowAboutState);
-            //--------------------------------------------------------------------------------
+            //----------------------------------------------------------------------------------------
+
+            // GUI: Help Window
+            //----------------------------------------------------------------------------------------
+            Rectangle helpWindowBounds = { (float)screenWidth/2 - 330/2, (float)screenHeight/2 - 400.0f/2, 330, 0 };
+            if (helpWindowActive) helpWindowActive = GuiHelpWindow(helpWindowBounds, GuiIconText(ICON_HELP, TextFormat("%s Shortcuts", TOOL_NAME)), helpLines, HELP_LINES_COUNT);
+            //----------------------------------------------------------------------------------------
+
+            // GUI: Export Window
+            //----------------------------------------------------------------------------------------
+            if (exportWindowActive)
+            {
+                Rectangle messageBox = { (float)screenWidth/2 - 280/2, (float)screenHeight/2 - 196/2 - 30, 280, 196 };
+                int result = GuiMessageBox(messageBox, "#7#Export Iconset File", " ", "#7#Export Iconset");
+
+                GuiLabel((Rectangle) { messageBox.x + 12, messageBox.y + 24 + 12, 106, 24 }, "Iconset Name:");
+                if (GuiTextBox((Rectangle) { messageBox.x + 12 + 92, messageBox.y + 24 + 12, 164, 24 }, styleNameText, 128, styleNameEditMode)) styleNameEditMode = !styleNameEditMode;
+
+                GuiLabel((Rectangle){ messageBox.x + 12, messageBox.y + 12 + 48 + 8, 106, 24 }, "File Format:");
+                exportFormatActive = GuiComboBox((Rectangle){ messageBox.x + 12 + 92, messageBox.y + 12 + 48 + 8, 164, 24 }, "raygui (.rgi);Image (.png);Code (.h)", exportFormatActive);
+
+                GuiDisable();   // Font embedded by default!
+                embedFontChecked = GuiCheckBox((Rectangle) { messageBox.x + 20, messageBox.y + 48 + 56, 16, 16 }, "Embed font atlas into style", embedFontChecked);
+                GuiEnable();
+                if (exportFormatActive != 2) GuiDisable();
+                styleChunkChecked = GuiCheckBox((Rectangle){ messageBox.x + 20, messageBox.y + 72 + 32 + 24, 16, 16 }, "Embed style as rGSf chunk", styleChunkChecked);
+                GuiEnable();
+
+                if (result == 1)    // Export button pressed
+                {
+                    exportWindowActive = false;
+                    showExportFileDialog = true;
+                }
+                else if (result == 0) exportWindowActive = false;
+            }
+            //----------------------------------------------------------------------------------
 
             // GUI: Exit Window
-            //--------------------------------------------------------------------------------
-            if (windowExitActive)
+            //----------------------------------------------------------------------------------------
+            if (exitWindowActive)
             {
-                int message = GuiMessageBox((Rectangle){ screenWidth/2 - 125, screenHeight/2 - 50, 250, 100 }, TextFormat("#159#Closing %s", toolName), "Do you really want to exit?", "Yes;No");
+                int result = GuiMessageBox((Rectangle){ screenWidth/2 - 125, screenHeight/2 - 50, 250, 100 }, TextFormat("#159#Closing %s", toolName), "Do you really want to exit?", "Yes;No");
 
-                if ((message == 0) || (message == 2)) windowExitActive = false;
-                else if (message == 1) exitWindow = true;
+                if ((result == 0) || (result == 2)) exitWindowActive = false;
+                else if (result == 1) closeWindow = true;
             }
-            //--------------------------------------------------------------------------------
+            //----------------------------------------------------------------------------------------
 
             // GUI: Load File Dialog (and loading logic)
             //----------------------------------------------------------------------------------------
@@ -898,9 +1003,6 @@ int main(int argc, char *argv[])
             //----------------------------------------------------------------------------------------
             if (showSaveFileDialog)
             {
-                if (inFileName[0] != '\0') strcpy(outFileName, inFileName);
-                else strcpy(outFileName, "gui_icons.rgi");
-
 #if defined(CUSTOM_MODAL_DIALOGS)
                 int result = GuiFileDialog(DIALOG_TEXTINPUT, "Save raygui icons file...", outFileName, "Ok;Cancel", NULL);
 #else
@@ -930,12 +1032,9 @@ int main(int argc, char *argv[])
             //----------------------------------------------------------------------------------------
             if (showExportFileDialog)
             {
-                if (inFileName[0] != '\0') strcpy(outFileName, GetFileNameWithoutExt(inFileName));
-                else strcpy(outFileName, "gui_icons");
-
                 char filters[64] = { 0 };   // Consider different supported file types
 
-                switch (fileTypeActive)
+                switch (exportFormatActive)
                 {
                     case 0: strcpy(filters, "*.rgi"); strcat(outFileName, ".rgi"); break;   // Icons file (.rgi)
                     case 1: strcpy(filters, "*.png"); strcat(outFileName, ".png"); break;   // Icons image (.png)
@@ -951,7 +1050,7 @@ int main(int argc, char *argv[])
                 if (result == 1)
                 {
                     // Export file: outFileName
-                    switch (fileTypeActive)
+                    switch (exportFormatActive)
                     {
                         case 0: 
                         {
@@ -1005,9 +1104,10 @@ int main(int argc, char *argv[])
 
             // GUI: Export Icon Image Dialog (and saving logic)
             //----------------------------------------------------------------------------------------
+            /*
             if (showExportIconImageDialog)
             {
-                strcpy(outFileName, TextFormat("%s_%ix%i.png", TextToLower(guiIconsName[selectedIcon]), RAYGUI_ICON_SIZE, RAYGUI_ICON_SIZE));
+                //strcpy(outFileName, TextFormat("%s_%ix%i.png", TextToLower(guiIconsName[selectedIcon]), RAYGUI_ICON_SIZE, RAYGUI_ICON_SIZE));
 
 #if defined(CUSTOM_MODAL_DIALOGS)
                 int result = GuiFileDialog(DIALOG_TEXTINPUT, "Export raygui icon as image file...", outFileName, "Ok;Cancel", NULL);
@@ -1035,6 +1135,7 @@ int main(int argc, char *argv[])
 
                 if (result >= 0) showExportIconImageDialog = false;
             }
+            */
             //----------------------------------------------------------------------------------------
 
         EndTextureMode();
@@ -1190,10 +1291,10 @@ static void ProcessCommandLine(int argc, char *argv[])
 
     if (showUsageInfo) ShowCommandLineInfo();
 }
-#endif
+#endif      // PLATFORM_DESKTOP
 
 //--------------------------------------------------------------------------------------------
-// Load/Save/Export functions
+// Load/Save/Export data functions
 //--------------------------------------------------------------------------------------------
 
 // Load icons from image file
@@ -1473,4 +1574,28 @@ static Image GenImageFromBits(unsigned char *bytes, int width, int height, Color
     }
 
     return image;
+}
+
+// Draw help window with the provided lines
+static int GuiHelpWindow(Rectangle bounds, const char *title, const char **helpLines, int helpLinesCount)
+{
+    int nextLineY = 0;
+
+    // Calculate window height if not externally provided a desired height
+    if (bounds.height == 0) bounds.height = (float)(helpLinesCount*24 + 24);
+
+    int helpWindowActive = !GuiWindowBox(bounds, title);
+    nextLineY += (24 + 2);
+
+    for (int i = 0; i < helpLinesCount; i++)
+    {
+        if (helpLines[i] == NULL) GuiLine((Rectangle) { bounds.x, bounds.y + nextLineY, 330, 12 }, helpLines[i]);
+        else if (helpLines[i][0] == '-') GuiLine((Rectangle) { bounds.x, bounds.y + nextLineY, 330, 24 }, helpLines[i] + 1);
+        else GuiLabel((Rectangle) { bounds.x + 12, bounds.y + nextLineY, 0, 24 }, helpLines[i]);
+
+        if (helpLines[i] == NULL) nextLineY += 12;
+        else nextLineY += 24;
+    }
+
+    return helpWindowActive;
 }
