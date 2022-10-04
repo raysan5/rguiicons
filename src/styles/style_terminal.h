@@ -325,14 +325,9 @@ static void GuiLoadStyleTerminal(void)
 
     GuiSetFont(font);
 
-    // TODO: Setup a white rectangle on the font to be used on shapes drawing,
+    // Setup a white rectangle on the font to be used on shapes drawing,
     // this way we make sure all gui can be drawn on a single pass because no texture change is required
     // NOTE: Setting up this rectangle is a manual process (for the moment)
     Rectangle whiteChar = { 63, 4, 2, 2 };
     SetShapesTexture(font.texture, whiteChar);
-
-    //-----------------------------------------------------------------
-
-    // TODO: Custom user style setup: Set specific properties here (if required)
-    // i.e. Controls specific BORDER_WIDTH, TEXT_PADDING, TEXT_ALIGNMENT
 }

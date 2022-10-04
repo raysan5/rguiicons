@@ -351,9 +351,4 @@ static void GuiLoadStyleBluish(void)
     // NOTE: Setting up this rectangle is a manual process (for the moment)
     Rectangle whiteChar = { 66, 5, 2, 2 };
     SetShapesTexture(font.texture, whiteChar);
-
-    //-----------------------------------------------------------------
-
-    // TODO: Custom user style setup: Set specific properties here (if required)
-    // i.e. Controls specific BORDER_WIDTH, TEXT_PADDING, TEXT_ALIGNMENT
 }

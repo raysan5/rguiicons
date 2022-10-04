@@ -337,9 +337,4 @@ static void GuiLoadStyleCyber(void)
     // NOTE: Setting up this rectangle is a manual process (for the moment)
     Rectangle whiteChar = { 89, 9, 2, 2 };
     SetShapesTexture(font.texture, whiteChar);
-
-    //-----------------------------------------------------------------
-
-    // TODO: Custom user style setup: Set specific properties here (if required)
-    // i.e. Controls specific BORDER_WIDTH, TEXT_PADDING, TEXT_ALIGNMENT
 }
