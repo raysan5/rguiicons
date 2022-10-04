@@ -126,8 +126,8 @@ bool __stdcall FreeConsole(void);       // Close console from code (kernel32.lib
   #define LOG(...)
 #endif
 
-#define BIT_SET(a,b) ((a) |= (1<<(b)))
-#define BIT_CHECK(a,b) ((a) & (1<<(b)))
+#define RGI_BIT_SET(a,b)    ((a) |= (1<<(b)))
+#define RGI_BIT_CHECK(a,b)  ((a) & (1<<(b)))
 
 #define MAX_UNDO_LEVELS         10      // Undo levels supported for the ring buffer
 
@@ -366,7 +366,8 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "HEX",
     "SHIELD",
     "FILE_NEW",
-    "FOLDER_ADD"
+    "FOLDER_ADD",
+    "ALARM"
 };
 
 #define HELP_LINES_COUNT    16
@@ -390,6 +391,10 @@ static const char *helpLines[HELP_LINES_COUNT] = {
     NULL,
     "ESCAPE - Close Window/Exit"
 };
+
+// Backup of raygui iconset to be restored on reset
+static unsigned int backupGuiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = { 0 };
+static char backupGuiIconsName[RAYGUI_ICON_MAX_ICONS][32] = { 0 };
 
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
@@ -460,17 +465,12 @@ int main(int argc, char *argv[])
     InitWindow(screenWidth, screenHeight, TextFormat("%s v%s | %s", toolName, toolVersion, toolDescription));
     SetExitKey(0);
 
-    // General pourpose variables
-    Vector2 mousePoint = { 0.0f, 0.0f };
-
     // Create a RenderTexture2D to be used for render to texture
     RenderTexture2D target = LoadRenderTexture(screenWidth, screenHeight);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
-    int screenScale = 1;
 
     Vector2 cell = { -1, -1 };  // Grid cell mouse position
     int iconEditScale = 16;     // Icon edit scale
-
 
     // GUI: Main layout
     //-----------------------------------------------------------------------------------
@@ -490,14 +490,9 @@ int main(int argc, char *argv[])
 
     toggleIconsText[RAYGUI_ICON_MAX_ICONS*6 - 1] = '\0';
 
-
-    //bool btnSaveIconPressed = false;
-    //bool btnClearIconPressed = false;
-
     bool screenSizeActive = false;
     bool helpWindowActive = false;      // Show window: help info 
     bool userWindowActive = false;      // Show window: user registration
-    bool controlsWindowActive = true;   // Show window: controls
     //-----------------------------------------------------------------------------------
 
     // GUI: About Window
@@ -514,11 +509,11 @@ int main(int argc, char *argv[])
     //-----------------------------------------------------------------------------------
     bool exportWindowActive = false;
        
-    int exportFormatActive = 0;         // ComboBox file type selection
-    char styleNameText[128] = "Unnamed"; // Style name text box
-    bool styleNameEditMode = false;     // Style name text box edit mode
-    bool embedFontChecked = true;       // Select to embed font into style file
-    bool styleChunkChecked = false;     // Select to embed style as a PNG chunk (rGSf)
+    int exportFormatActive = 0;             // ComboBox file type selection
+    char styleNameText[128] = "Unnamed";    // Style name text box
+    bool styleNameEditMode = false;         // Style name text box edit mode
+
+    bool nameIdsChunkChecked = true;        // Select to embed style as a PNG chunk (rGSf)
     //-----------------------------------------------------------------------------------
 
     // GUI: Exit Window
@@ -566,6 +561,10 @@ int main(int argc, char *argv[])
 
         memcpy(undoIconSet[i].values, GuiGetIcons(), RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
     }
+
+    // Init raygui iconset backups
+    memcpy(backupGuiIcons, guiIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(int));
+    for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) memcpy(backupGuiIconsName[i], guiIconsName[i], strlen(guiIconsName[i]));
 
     SetTargetFPS(60);       // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -687,18 +686,25 @@ int main(int argc, char *argv[])
 
         // Keyboard shortcuts (+main toolbar related buttons)
         //------------------------------------------------------------------------------------
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_N) || mainToolbarState.btnNewFilePressed)
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_N)) || mainToolbarState.btnNewFilePressed)
         {
-            // TODO: Create a new icons/tiles set
+            // Restore original raygui iconset
+            memcpy(guiIcons, backupGuiIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(int));
+            for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) memcpy(guiIconsName[i], backupGuiIconsName[i], strlen(backupGuiIconsName[i]));
         }
         
 		// Show dialog: load icons data (.rgi)
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) showLoadFileDialog = true;
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) || mainToolbarState.btnLoadFilePressed) showLoadFileDialog = true;
 
         // Show dialog: save icons data (.rgi)
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S))
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) || mainToolbarState.btnSaveFilePressed)
         {
-            if (inFileName[0] == '\0') showSaveFileDialog = true;       // Show dialog: save icons data (.rgi)
+            if (inFileName[0] == '\0')
+            {
+                // Show dialog: save icons data (.rgi)
+                strcpy(outFileName, "iconset.rgi");
+                showSaveFileDialog = true;
+            }
             else if (saveChangesRequired)
             {
                 SaveIcons(inFileName);
@@ -707,7 +713,11 @@ int main(int argc, char *argv[])
             }
         }
 		// Show dialog: export icons data (.png, .h)
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) showExportFileDialog = true;
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) || mainToolbarState.btnExportFilePressed)
+        {
+            strcpy(outFileName, "iconset.rgi");
+            exportWindowActive = true;
+        }
 
         // Cut button/shortcut logic
         if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_X)) || mainToolbarState.btnCutPressed)
@@ -771,17 +781,27 @@ int main(int argc, char *argv[])
         #endif
         }
 
+        // Select visual style
+        if (IsKeyPressed(KEY_LEFT)) mainToolbarState.visualStyleActive--;
+        else if (IsKeyPressed(KEY_RIGHT)) mainToolbarState.visualStyleActive++;
+        if (mainToolbarState.visualStyleActive < 0) mainToolbarState.visualStyleActive = 5;
+        else if (mainToolbarState.visualStyleActive > 5) mainToolbarState.visualStyleActive = 0;
+
 #if !defined(PLATFORM_WEB)
+        // Toggle screen size (x2) mode
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_F)) screenSizeActive = !screenSizeActive;
+
+        // Toggle full screen mode
         if (IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_ENTER)) ToggleFullscreen();
 #endif
         //----------------------------------------------------------------------------------
 
         // Main toolbar logic
         //----------------------------------------------------------------------------------
-        // File options logic
-        if (mainToolbarState.btnLoadFilePressed) showLoadFileDialog = true;
-        else if (mainToolbarState.btnSaveFilePressed) showSaveFileDialog = true;
-        else if (mainToolbarState.btnExportFilePressed) exportWindowActive = true;
+        // File options logic -> Processed on key shortcuts
+        //if (mainToolbarState.btnLoadFilePressed) showLoadFileDialog = true;
+        //else if (mainToolbarState.btnSaveFilePressed) showSaveFileDialog = true;
+        //else if (mainToolbarState.btnExportFilePressed) exportWindowActive = true;
 
         // Visual options logic
         if (mainToolbarState.visualStyleActive != mainToolbarState.prevVisualStyleActive)
@@ -815,8 +835,6 @@ int main(int argc, char *argv[])
 
         // Basic program flow logic
         //----------------------------------------------------------------------------------
-        mousePoint = GetMousePosition();    // Get mouse position each frame
-
         iconEditScale += GetMouseWheelMove();
         if (iconEditScale < 2) iconEditScale = 2;
         else if (iconEditScale > 16) iconEditScale = 16;
@@ -875,6 +893,8 @@ int main(int argc, char *argv[])
             // GUI: Main toolbar panel
             //----------------------------------------------------------------------------------
             GuiMainToolbar(&mainToolbarState);
+
+            if (iconDataToCopy) DrawIconData(iconData, mainToolbarState.anchorEdit.x + 12 + 72 + 16 + 4, mainToolbarState.anchorEdit.y + 8 + 4, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
             //----------------------------------------------------------------------------------
 
             // GUI: Main screen controls
@@ -939,7 +959,7 @@ int main(int argc, char *argv[])
             //----------------------------------------------------------------------------------------
             if (exportWindowActive)
             {
-                Rectangle messageBox = { (float)screenWidth/2 - 280/2, (float)screenHeight/2 - 196/2 - 30, 280, 196 };
+                Rectangle messageBox = { (float)screenWidth/2 - 280/2, (float)screenHeight/2 - 176/2 - 30, 280, 176 };
                 int result = GuiMessageBox(messageBox, "#7#Export Iconset File", " ", "#7#Export Iconset");
 
                 GuiLabel((Rectangle) { messageBox.x + 12, messageBox.y + 24 + 12, 106, 24 }, "Iconset Name:");
@@ -948,11 +968,8 @@ int main(int argc, char *argv[])
                 GuiLabel((Rectangle){ messageBox.x + 12, messageBox.y + 12 + 48 + 8, 106, 24 }, "File Format:");
                 exportFormatActive = GuiComboBox((Rectangle){ messageBox.x + 12 + 92, messageBox.y + 12 + 48 + 8, 164, 24 }, "raygui (.rgi);Image (.png);Code (.h)", exportFormatActive);
 
-                GuiDisable();   // Font embedded by default!
-                embedFontChecked = GuiCheckBox((Rectangle) { messageBox.x + 20, messageBox.y + 48 + 56, 16, 16 }, "Embed font atlas into style", embedFontChecked);
-                GuiEnable();
-                if (exportFormatActive != 2) GuiDisable();
-                styleChunkChecked = GuiCheckBox((Rectangle){ messageBox.x + 20, messageBox.y + 72 + 32 + 24, 16, 16 }, "Embed style as rGSf chunk", styleChunkChecked);
+                if (exportFormatActive != 1) GuiDisable();
+                nameIdsChunkChecked = GuiCheckBox((Rectangle){ messageBox.x + 20, messageBox.y + 52 + 32 + 24, 16, 16 }, "Embed name IDs as zTXt chunk", nameIdsChunkChecked);
                 GuiEnable();
 
                 if (result == 1)    // Export button pressed
@@ -1004,7 +1021,8 @@ int main(int argc, char *argv[])
             if (showSaveFileDialog)
             {
 #if defined(CUSTOM_MODAL_DIALOGS)
-                int result = GuiFileDialog(DIALOG_TEXTINPUT, "Save raygui icons file...", outFileName, "Ok;Cancel", NULL);
+                //int result = GuiFileDialog(DIALOG_TEXTINPUT, "Save raygui icons file...", outFileName, "Ok;Cancel", NULL);
+                int result = GuiTextInputBox((Rectangle){ screenWidth/2 - 280/2, screenHeight/2 - 112/2 - 30, 280, 112 }, "#2#Save raygui icon file...", NULL, "#2#Save", outFileName, 512, NULL);
 #else
                 int result = GuiFileDialog(DIALOG_SAVE_FILE, "Save raygui icons file...", outFileName, "*.rgi", "raygui Icons Files (*.rgi)");
 #endif
@@ -1032,6 +1050,10 @@ int main(int argc, char *argv[])
             //----------------------------------------------------------------------------------------
             if (showExportFileDialog)
             {
+#if defined(CUSTOM_MODAL_DIALOGS)
+                //int result = GuiFileDialog(DIALOG_TEXTINPUT, "Export raygui icons file...", outFileName, "Ok;Cancel", NULL);
+                int result = GuiTextInputBox((Rectangle){ screenWidth/2 - 280/2, screenHeight/2 - 112/2 - 60, 280, 112 }, "#7#Export raygui icon file...", NULL, "#7#Export", outFileName, 512, NULL);
+#else
                 char filters[64] = { 0 };   // Consider different supported file types
 
                 switch (exportFormatActive)
@@ -1042,9 +1064,6 @@ int main(int argc, char *argv[])
                     default: break;
                 }
 
-#if defined(CUSTOM_MODAL_DIALOGS)
-                int result = GuiFileDialog(DIALOG_TEXTINPUT, "Export raygui icons file...", outFileName, "Ok;Cancel", NULL);
-#else
                 int result = GuiFileDialog(DIALOG_SAVE_FILE, "Export raygui icons file...", outFileName, filters, TextFormat("File type (%s)", filters));
 #endif
                 if (result == 1)
@@ -1066,21 +1085,23 @@ int main(int argc, char *argv[])
                             ExportImage(image, outFileName);
                             UnloadImage(image);
 
-                            // Concatenate all icons names into one string
-                            char *iconsNames = (char *)RL_CALLOC(RAYGUI_ICON_MAX_ICONS*32, 1);
-                            char *iconsNamesPtr = iconsNames;
-                            for (int i = 0, size = 0; i < RAYGUI_ICON_MAX_ICONS; i++)
+                            if (nameIdsChunkChecked)
                             {
-                                size = strlen(guiIconsName[i]);
-                                memcpy(iconsNamesPtr, guiIconsName[i], size);
-                                iconsNamesPtr[size] = ';';
-                                iconsNamesPtr += (size + 1);
+                                // Concatenate all icons names into one string
+                                char *iconsNames = (char *)RL_CALLOC(RAYGUI_ICON_MAX_ICONS*32, 1);
+                                char *iconsNamesPtr = iconsNames;
+                                for (int i = 0, size = 0; i < RAYGUI_ICON_MAX_ICONS; i++)
+                                {
+                                    size = strlen(guiIconsName[i]);
+                                    memcpy(iconsNamesPtr, guiIconsName[i], size);
+                                    iconsNamesPtr[size] = ';';
+                                    iconsNamesPtr += (size + 1);
+                                }
+
+                                // Save icons name id into PNG zTXt chunk
+                                rpng_chunk_write_comp_text(outFileName, "Description", iconsNames);
+                                RL_FREE(iconsNames);
                             }
-
-                            // Save icons name id into PNG zTXt chunk
-                            rpng_chunk_write_comp_text(outFileName, "Description", iconsNames);
-                            RL_FREE(iconsNames);
-
                         } break;
                         case 2: 
                         {
@@ -1144,7 +1165,8 @@ int main(int argc, char *argv[])
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
             // Draw render texture to screen
-            DrawTexturePro(target.texture, (Rectangle){ 0, 0, target.texture.width, -target.texture.height }, (Rectangle){ 0, 0, target.texture.width*screenScale, target.texture.height*screenScale }, (Vector2){ 0, 0 }, 0.0f, WHITE);
+            if (screenSizeActive) DrawTexturePro(target.texture, (Rectangle){ 0, 0, (float)target.texture.width, -(float)target.texture.height }, (Rectangle){ 0, 0, (float)target.texture.width*2, (float)target.texture.height*2 }, (Vector2){ 0, 0 }, 0.0f, WHITE);
+            else DrawTextureRec(target.texture, (Rectangle){ 0, 0, (float)target.texture.width, -(float)target.texture.height }, (Vector2){ 0, 0 }, WHITE);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -1202,7 +1224,7 @@ static void ProcessCommandLine(int argc, char *argv[])
 
     char inFileName[512] = { 0 };       // Input file name
     char outFileName[512] = { 0 };      // Output file name
-    int outputFormat = 0;               // Supported output formats
+    //int outputFormat = 0;               // Supported output formats
 
     if (argc == 1) showUsageInfo = true;
 
@@ -1329,7 +1351,7 @@ static void LoadIconsFromImage(Image image, int iconCount, int iconSize, int ico
             {
                 pixel = pixels[((int)icorec.y + p/iconSize)*(iconsPerLine*(iconSize + 2*padding)) + ((int)icorec.x + p%iconSize)];
 
-                if (ColorToInt(pixel) == 0xffffffff) BIT_SET(values[n*(iconSize*iconSize/32) + p/32], k);
+                if (ColorToInt(pixel) == 0xffffffff) RGI_BIT_SET(values[n*(iconSize*iconSize/32) + p/32], k);
 
                 k++;
                 if (k == 32) k = 0;
@@ -1341,8 +1363,6 @@ static void LoadIconsFromImage(Image image, int iconCount, int iconSize, int ico
 
     UnloadImageColors(pixels);
     UnloadImage(image);
-
-    // TODO: return values;
 }
 
 // Save raygui icons file (.rgi)
@@ -1474,13 +1494,13 @@ static void ExportIconsAsCode(const char *fileName)
 // Draw icon data
 static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color color)
 {
-    #define BIT_CHECK(a,b) ((a) & (1<<(b)))
+    #define RGI_BIT_CHECK(a,b) ((a) & (1<<(b)))
 
     for (int i = 0, j = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32; i++)
     {
         for (int k = 0; k < 32; k++)
         {
-            if (BIT_CHECK(data[i], k))
+            if (RGI_BIT_CHECK(data[i], k))
             {
                 DrawRectangle(x + (k%RAYGUI_ICON_SIZE)*pixelSize, y + j*pixelSize, pixelSize, pixelSize, color);
             }
@@ -1493,7 +1513,7 @@ static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color 
 // Gen GRAYSCALE image from and array of bits stored as int (0-BLANK, 1-WHITE)
 static Image GenImageFromIconData(unsigned int *icons, int iconCount, int iconsPerLine, int padding)
 {
-    #define BIT_CHECK(a,b) ((a) & (1<<(b)))
+    #define RGI_BIT_CHECK(a,b) ((a) & (1<<(b)))
 
     Image image = { 0 };
 
@@ -1518,7 +1538,7 @@ static Image GenImageFromIconData(unsigned int *icons, int iconCount, int iconsP
                 pixelX = padding + (n%iconsPerLine)*(RAYGUI_ICON_SIZE + 2*padding) + (k%RAYGUI_ICON_SIZE);
                 pixelY = padding + (n/iconsPerLine)*(RAYGUI_ICON_SIZE + 2*padding) + y;
 
-                if (BIT_CHECK(icons[n*RAYGUI_ICON_DATA_ELEMENTS + i], k)) ((unsigned char *)image.data)[pixelY*image.width + pixelX] = 0xff;    // Draw pixel WHITE
+                if (RGI_BIT_CHECK(icons[n*RAYGUI_ICON_DATA_ELEMENTS + i], k)) ((unsigned char *)image.data)[pixelY*image.width + pixelX] = 0xff;    // Draw pixel WHITE
 
                 if ((k == (RAYGUI_ICON_SIZE - 1)) || (k == 31)) y++;  // Move to next pixels line
             }
@@ -1544,7 +1564,7 @@ static unsigned char *ImageToBits(Image image)
     {
         for (int k = 0; k < 8; k++)
         {
-            if (ColorToInt(pixels[i]) >= 0x000000ff) BIT_SET(bytes[i + k], k);
+            if (ColorToInt(pixels[i]) >= 0x000000ff) RGI_BIT_SET(bytes[i + k], k);
         }
     }
 
@@ -1569,7 +1589,7 @@ static Image GenImageFromBits(unsigned char *bytes, int width, int height, Color
     {
         for (int k = 0; k < 8; k++)
         {
-            if (BIT_CHECK(bytes[i], k)) ((Color *)image.data)[i + k] = color;
+            if (RGI_BIT_CHECK(bytes[i], k)) ((Color *)image.data)[i + k] = color;
         }
     }
 
