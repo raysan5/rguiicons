@@ -10,17 +10,20 @@ rGuiIcons can be used for free as a [WebAssembly online tool](https://raylibtech
 
 <br>
 
-_NOTE: This tool is itended to be used with [**raygui 3.1**](https://github.com/raysan5/raygui)_
+_NOTE: This tool is itended to be used with [**raygui 3.2**](https://github.com/raysan5/raygui)_
 
 ## rGuiIcons Features
 
- - **Icon preview** in real time while editing
+ - **Icon editing** and preview at multiple sizes
  - **Cut, copy, paste** icons for easy editing
- - Save and load as binary icons file `.rgi`
- - Export icons as an embeddable **code file** (`.h`)
- - Export icons set and individual icons as a `.png`
- - Icon description exported as standard PNG chunks
- - **200 custom icons for reference** and basic edition
+ - **Undo/Redo** system for icon changes
+ - Save and load as binary iconset file `.rgi`
+ - Export iconset as an embeddable **code file** (`.h`)
+ - Export iconset as a `.png` black&white image
+ - Icon name ids exported as standard PNG chunk (`zTXt`)
+ - Multiple UI styles for tools reference
+ - **+200 custom icons for reference** and basic edition
+ - **Completely free and open source** 
  
 ### rGuiStyler Standalone Additional Features
 
@@ -29,7 +32,7 @@ _NOTE: This tool is itended to be used with [**raygui 3.1**](https://github.com/
 
 ## rGuiIcons Screenshot
 
-![rGuiIcons](screenshots/rguiicons_v100_shot01.png)
+![rGuiIcons](screenshots/rguiicons_v200_shot02.png)
 
 ## rGuiIcons Usage
 
@@ -49,7 +52,7 @@ Once icons have been created/edited, they can be saved as a raygui-ready icon se
 ```c
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_CUSTOM_ICONS     // Custom icons set required 
-#include "gui_icons.h"          // Custom icons set provided, generated with rGuiIcons tool
+#include "gui_iconset.h"        // Custom icons set provided, generated with rGuiIcons tool
 #include "raygui.h"
 ```
 
