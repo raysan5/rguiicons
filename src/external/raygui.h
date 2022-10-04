@@ -1999,13 +1999,13 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
 bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 {
     GuiState state = guiState;
+    Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
+
     bool pressed = false;
     int textWidth = GetTextWidth(text);
-    Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
-    int textAlignment = editMode && textWidth >= textBounds.width ? TEXT_ALIGN_RIGHT : GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT);
 
     Rectangle cursor = {
-        bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text) + 2,
+        bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + textWidth + 2,
         bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE),
         4,
         (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*2
@@ -2057,10 +2057,6 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))) pressed = true;
-
-            // Check text alignment to position cursor properly
-            if (textAlignment == TEXT_ALIGN_CENTER) cursor.x = bounds.x + GetTextWidth(text)/2 + bounds.width/2 + 1;
-            else if (textAlignment == TEXT_ALIGN_RIGHT) cursor.x = bounds.x + bounds.width - GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING) - GuiGetStyle(TEXTBOX, BORDER_WIDTH);
         }
         else
         {
@@ -2085,15 +2081,21 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
     }
     else GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK);
 
-    // in case we edit and text does not fit in the textbox show right aligned and character clipped, slower but working
-    while (editMode && textWidth >= textBounds.width && *text)
+    if (editMode)
     {
-        int bytes = 0;
-        GetCodepoint(text, &bytes);
-        text += bytes;
-        textWidth = GetTextWidth(text);
+        // In case we edit and text does not fit in the textbox,
+        // we move text pointer to a position it fits inside the text box
+        while ((textWidth >= textBounds.width) && (text[0] != '\0'))
+        {
+            int codepointSize = 0;
+            GetCodepoint(text, &codepointSize);
+            text += codepointSize;
+            textWidth = GetTextWidth(text);
+            cursor.x = textBounds.x + textWidth + 2;
+        }
     }
-    GuiDrawText(text, textBounds, textAlignment, Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
+
+    GuiDrawText(text, textBounds, GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
 
     // Draw cursor
     if (editMode) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
@@ -3107,13 +3109,13 @@ int GuiMessageBox(Rectangle bounds, const char *title, const char *message, cons
 int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, int textMaxSize, int *secretViewActive)
 {
     #if !defined(RAYGUI_TEXTINPUTBOX_BUTTON_HEIGHT)
-        #define RAYGUI_TEXTINPUTBOX_BUTTON_HEIGHT      28
+        #define RAYGUI_TEXTINPUTBOX_BUTTON_HEIGHT      24
     #endif
     #if !defined(RAYGUI_TEXTINPUTBOX_BUTTON_PADDING)
         #define RAYGUI_TEXTINPUTBOX_BUTTON_PADDING     12
     #endif
     #if !defined(RAYGUI_TEXTINPUTBOX_HEIGHT)
-        #define RAYGUI_TEXTINPUTBOX_HEIGHT             28
+        #define RAYGUI_TEXTINPUTBOX_HEIGHT             26
     #endif
 
     // Used to enable text edit mode
@@ -3793,7 +3795,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 
     textBounds.x = bounds.x + GuiGetStyle(control, BORDER_WIDTH);
     textBounds.y = bounds.y + GuiGetStyle(control, BORDER_WIDTH);
-    textBounds.width = bounds.width - 2*GuiGetStyle(control, BORDER_WIDTH);
+    textBounds.width = bounds.width - 2*GuiGetStyle(control, BORDER_WIDTH) - 2*GuiGetStyle(control, TEXT_PADDING);
     textBounds.height = bounds.height - 2*GuiGetStyle(control, BORDER_WIDTH);
 
     // Consider TEXT_PADDING properly, depends on control type and TEXT_ALIGNMENT
