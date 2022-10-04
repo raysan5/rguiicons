@@ -58,7 +58,6 @@ jobs:
         dir ${{ env.PROJECT_BUILD_PATH }}
         copy /Y ${{ env.PROJECT_BUILD_PATH }}\${{ env.PROJECT_NAME }}.exe ${{ env.PROJECT_RELEASE_PATH }}\${{ env.PROJECT_NAME }}.exe
         copy /Y ${{ env.PROJECT_NAME }}\README.md ${{ env.PROJECT_RELEASE_PATH }}\README.md
-        copy /Y ${{ env.PROJECT_NAME }}\icons\raygui_icons_default.png ${{ env.PROJECT_RELEASE_PATH }}\raygui_icons_default.png
         dir ${{ env.PROJECT_RELEASE_PATH }}
         7z a .\${{ env.PROJECT_RELEASE_PATH }}.zip .\${{ env.PROJECT_RELEASE_PATH }}
       shell: cmd
