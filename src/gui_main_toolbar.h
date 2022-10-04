@@ -192,10 +192,7 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     state->btnCutPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12, state->anchorEdit.y + 8, 24, 24 }, "#17#");             // Cut
     state->btnCopyPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 24 + 4, state->anchorEdit.y + 8, 24, 24 }, "#16#");   // Copy
     state->btnPastePressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 48 + 8, state->anchorEdit.y + 8, 24, 24 }, "#18#");  // Paste
-
     GuiGroupBox((Rectangle){ state->anchorEdit.x + 12 + 72 + 16, state->anchorEdit.y + 8, 24, 24 }, NULL);
-    // TODO: if (iconDataToCopy) DrawIconData(iconData, anchor01.x + 196 + 4, anchor01.y + 8 + 4, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
-
     state->btnCleanPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 96 + 24, state->anchorEdit.y + 8, 24, 24 }, "#079#");  // Clean
 
     // Visuals options
