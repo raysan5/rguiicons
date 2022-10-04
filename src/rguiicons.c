@@ -784,8 +784,8 @@ int main(int argc, char *argv[])
         // Select visual style
         if (IsKeyPressed(KEY_LEFT)) mainToolbarState.visualStyleActive--;
         else if (IsKeyPressed(KEY_RIGHT)) mainToolbarState.visualStyleActive++;
-        if (mainToolbarState.visualStyleActive < 0) mainToolbarState.visualStyleActive = 5;
-        else if (mainToolbarState.visualStyleActive > 5) mainToolbarState.visualStyleActive = 0;
+        if (mainToolbarState.visualStyleActive < 0) mainToolbarState.visualStyleActive = 8;
+        else if (mainToolbarState.visualStyleActive > 8) mainToolbarState.visualStyleActive = 0;
 
 #if !defined(PLATFORM_WEB)
         // Toggle screen size (x2) mode
@@ -1611,7 +1611,7 @@ static int GuiHelpWindow(Rectangle bounds, const char *title, const char **helpL
     {
         if (helpLines[i] == NULL) GuiLine((Rectangle) { bounds.x, bounds.y + nextLineY, 330, 12 }, helpLines[i]);
         else if (helpLines[i][0] == '-') GuiLine((Rectangle) { bounds.x, bounds.y + nextLineY, 330, 24 }, helpLines[i] + 1);
-        else GuiLabel((Rectangle) { bounds.x + 12, bounds.y + nextLineY, 0, 24 }, helpLines[i]);
+        else GuiLabel((Rectangle) { bounds.x + 12, bounds.y + nextLineY, bounds.width, 24 }, helpLines[i]);
 
         if (helpLines[i] == NULL) nextLineY += 12;
         else nextLineY += 24;
