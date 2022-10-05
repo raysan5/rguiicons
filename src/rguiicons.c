@@ -73,7 +73,7 @@
 #endif
 
 #define RPNG_IMPLEMENTATION
-#include "external/rpng.h"              	// PNG chunks management
+#include "external/rpng.h"                  // PNG chunks management
 
 // NOTE: Some raygui elements need to be defined before including raygui
 #define RAYGUI_TEXTSPLIT_MAX_ITEMS        256
@@ -491,7 +491,7 @@ int main(int argc, char *argv[])
     toggleIconsText[RAYGUI_ICON_MAX_ICONS*6 - 1] = '\0';
 
     bool screenSizeActive = false;
-    bool helpWindowActive = false;      // Show window: help info 
+    bool helpWindowActive = false;      // Show window: help info
     bool userWindowActive = false;      // Show window: user registration
     //-----------------------------------------------------------------------------------
 
@@ -508,7 +508,7 @@ int main(int argc, char *argv[])
     // GUI: Export Window
     //-----------------------------------------------------------------------------------
     bool exportWindowActive = false;
-       
+
     int exportFormatActive = 0;             // ComboBox file type selection
     char styleNameText[128] = "Unnamed";    // Style name text box
     bool styleNameEditMode = false;         // Style name text box edit mode
@@ -572,17 +572,17 @@ int main(int argc, char *argv[])
     // Main game loop
     while (!closeWindow)    // Detect window close button
     {
-        // WARNING: ASINCIFY requires this line, 
+        // WARNING: ASINCIFY requires this line,
         // it contains the call to emscripten_sleep() for PLATFORM_WEB
         if (WindowShouldClose()) exitWindowActive = true;
 
         // Undo icons change logic
         //----------------------------------------------------------------------------------
         // Make sure no windows are open to store changes
-        if (!windowAboutState.windowActive && 
-            !exitWindowActive && 
+        if (!windowAboutState.windowActive &&
+            !exitWindowActive &&
             !showLoadFileDialog &&
-            !showSaveFileDialog && 
+            !showSaveFileDialog &&
             !showExportFileDialog)
         {
             undoFrameCounter++;
@@ -692,8 +692,8 @@ int main(int argc, char *argv[])
             memcpy(guiIcons, backupGuiIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(int));
             for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) memcpy(guiIconsName[i], backupGuiIconsName[i], strlen(backupGuiIconsName[i]));
         }
-        
-		// Show dialog: load icons data (.rgi)
+
+        // Show dialog: load icons data (.rgi)
         if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) || mainToolbarState.btnLoadFilePressed) showLoadFileDialog = true;
 
         // Show dialog: save icons data (.rgi)
@@ -712,7 +712,7 @@ int main(int argc, char *argv[])
                 saveChangesRequired = false;
             }
         }
-		// Show dialog: export icons data (.png, .h)
+        // Show dialog: export icons data (.png, .h)
         if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) || mainToolbarState.btnExportFilePressed)
         {
             strcpy(outFileName, "iconset.rgi");
@@ -872,15 +872,15 @@ int main(int argc, char *argv[])
             }
         }
         //----------------------------------------------------------------------------------
-        
+
         // WARNING: Some windows should lock the main screen controls when shown
-        if (windowAboutState.windowActive || 
+        if (windowAboutState.windowActive ||
             helpWindowActive ||
             userWindowActive ||
-            exitWindowActive || 
+            exitWindowActive ||
             exportWindowActive ||
-            showLoadFileDialog || 
-            showSaveFileDialog || 
+            showLoadFileDialog ||
+            showSaveFileDialog ||
             showExportFileDialog) GuiLock();
         //----------------------------------------------------------------------------------
 
@@ -904,7 +904,7 @@ int main(int argc, char *argv[])
             // Draw icons selection panel
             //GuiSetStyle(TOGGLE, GROUP_PADDING, -1);
             selectedIcon = GuiToggleGroup((Rectangle){ anchor01.x + 15, anchor01.y + 70, 18, 18 }, toggleIconsText, selectedIcon);
-            
+
             // Draw icon name ID text box
             GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "Icon name ID:");
             if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 70, 258, 25 }, guiIconsName[selectedIcon], 32, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
@@ -937,13 +937,13 @@ int main(int argc, char *argv[])
             GuiStatusBar((Rectangle){ 350, screenHeight - 24, screenWidth - 350, 24 }, TextFormat("SELECTED: %i - %s", selectedIcon, guiIconsName[selectedIcon]));
             GuiSetStyle(STATUSBAR, TEXT_PADDING, textPadding);
             //--------------------------------------------------------------------------------
-            
+
             // NOTE: If some overlap window is open and main window is locked, we draw a background rectangle
             if (GuiIsLocked()) DrawRectangle(0, 0, screenWidth, screenHeight, Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), 0.85f));
-            
+
             // WARNING: Before drawing the windows, we unlock them
             GuiUnlock();
-            
+
             // GUI: About Window
             //----------------------------------------------------------------------------------------
             GuiWindowAbout(&windowAboutState);
@@ -1071,7 +1071,7 @@ int main(int argc, char *argv[])
                     // Export file: outFileName
                     switch (exportFormatActive)
                     {
-                        case 0: 
+                        case 0:
                         {
                             // Check for valid extension and make sure it is
                             if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".rgi")) strcat(outFileName, ".rgi\0");
@@ -1103,7 +1103,7 @@ int main(int argc, char *argv[])
                                 RL_FREE(iconsNames);
                             }
                         } break;
-                        case 2: 
+                        case 2:
                         {
                             // Check for valid extension and make sure it is
                             if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".h")) strcat(outFileName, ".h\0");
@@ -1160,7 +1160,7 @@ int main(int argc, char *argv[])
             //----------------------------------------------------------------------------------------
 
         EndTextureMode();
-        
+
         BeginDrawing();
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
