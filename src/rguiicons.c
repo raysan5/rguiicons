@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rGuiIcons v2.0 - A simple and easy-to-use raygui icons editor
+*   rGuiIcons v2.1 - A simple and easy-to-use raygui icons editor
 *
 *   CONFIGURATION:
 *
@@ -22,7 +22,7 @@
 *
 *   DEPENDENCIES:
 *       raylib 4.2              - Windowing/input management and drawing
-*       raygui 3.2              - Immediate-mode GUI controls with custom styling and icons
+*       raygui 3.5-dev          - Immediate-mode GUI controls with custom styling and icons
 *       rpng 1.0                - PNG chunks management
 *       tinyfiledialogs 3.8.8   - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *
