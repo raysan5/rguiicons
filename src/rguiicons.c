@@ -72,9 +72,6 @@
     #include <emscripten/emscripten.h>      // Emscripten library - LLVM to JavaScript compiler
 #endif
 
-#define RPNG_IMPLEMENTATION
-#include "external/rpng.h"                  // PNG chunks management
-
 // NOTE: Some raygui elements need to be defined before including raygui
 #define RAYGUI_TEXTSPLIT_MAX_ITEMS        256
 #define RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE   4096
@@ -87,6 +84,9 @@
 
 #define GUI_WINDOW_ABOUT_IMPLEMENTATION
 #include "gui_window_about.h"               // GUI: About Window
+
+#define GUI_WINDOW_SPONSOR_IMPLEMENTATION
+#include "gui_window_sponsor.h"             // GUI: Sponsor Window
 
 #define GUI_FILE_DIALOGS_IMPLEMENTATION
 #include "gui_file_dialogs.h"               // GUI: File Dialogs
@@ -105,10 +105,13 @@
 #include "styles/style_dark.h"              // raygui style: dark
 #include "styles/style_sunny.h"             // raygui style: sunny
 
-#include <stdio.h>                      // Required for: fopen(), fclose(), fread()...
-#include <stdlib.h>                     // Required for: malloc(), free()
-#include <string.h>                     // Required for: strcmp(), strlen()
-#include <stdio.h>                      // Required for: FILE, fopen(), fread(), fwrite(), ftell(), fseek() fclose()
+#define RPNG_IMPLEMENTATION
+#include "external/rpng.h"                  // PNG chunks management
+
+#include <stdio.h>                          // Required for: fopen(), fclose(), fread()...
+#include <stdlib.h>                         // Required for: malloc(), free()
+#include <string.h>                         // Required for: strcmp(), strlen()
+#include <stdio.h>                          // Required for: FILE, fopen(), fread(), fwrite(), ftell(), fseek() fclose()
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
@@ -120,10 +123,10 @@ bool __stdcall FreeConsole(void);       // Close console from code (kernel32.lib
 // Simple log system to avoid printf() calls if required
 // NOTE: Avoiding those calls, also avoids const strings memory usage
 #define SUPPORT_LOG_INFO
-#if defined(SUPPORT_LOG_INFO)
-  #define LOG(...) printf(__VA_ARGS__)
+#if defined(SUPPORT_LOG_INFO) && defined(_DEBUG)
+    #define LOG(...) printf(__VA_ARGS__)
 #else
-  #define LOG(...)
+    #define LOG(...)
 #endif
 
 #define RGI_BIT_SET(a,b)    ((a) |= (1<<(b)))
@@ -370,12 +373,13 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "ALARM"
 };
 
-#define HELP_LINES_COUNT    16
+#define HELP_LINES_COUNT    17
 
 // Tool help info
 static const char *helpLines[HELP_LINES_COUNT] = {
     "F1 - Show Help window",
     "F2 - Show About window",
+    "F3 - Show Sponsor window",
     "-File Controls",
     "LCTRL + N - New iconset file (.rgi)",
     "LCTRL + O - Open iconset file (.rgi)",
@@ -416,7 +420,8 @@ static Image GenImageFromIconData(unsigned int *values, int iconCount, int icons
 static Image GenImageFromBits(unsigned char *bytes, int width, int height, Color color);                // Gen image from bits data (packed in bytes)
 static unsigned char *ImageToBits(Image image);                                                         // Gen bits array (packed in bytes) from image data
 
-static int GuiHelpWindow(Rectangle bounds, const char *title, const char **helpLines, int helpLinesCount); // Draw help window with the provided lines
+// Draw help window with the provided lines
+static int GuiHelpWindow(Rectangle bounds, const char *title, const char **helpLines, int helpLinesCount);
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -499,6 +504,11 @@ int main(int argc, char *argv[])
     //-----------------------------------------------------------------------------------
     GuiWindowAboutState windowAboutState = InitGuiWindowAbout();
     //-----------------------------------------------------------------------------------
+    
+    // GUI: Sponsor Window
+    //-----------------------------------------------------------------------------------
+    GuiWindowSponsorState windowSponsorState = InitGuiWindowSponsor();
+    //-----------------------------------------------------------------------------------
 
     // GUI: Main toolbar panel (file and visualization)
     //-----------------------------------------------------------------------------------
@@ -580,6 +590,7 @@ int main(int argc, char *argv[])
         //----------------------------------------------------------------------------------
         // Make sure no windows are open to store changes
         if (!windowAboutState.windowActive &&
+            !windowSponsorState.windowActive &&
             !exitWindowActive &&
             !showLoadFileDialog &&
             !showSaveFileDialog &&
@@ -763,13 +774,14 @@ int main(int argc, char *argv[])
         // Toggle window about
         if (IsKeyPressed(KEY_F2)) windowAboutState.windowActive = !windowAboutState.windowActive;
 
-        // Toggle window registered user
-        //if (IsKeyPressed(KEY_F3)) userWindowActive = !userWindowActive;
+        // Toggle window sponsor
+        if (IsKeyPressed(KEY_F3)) windowSponsorState.windowActive = !windowSponsorState.windowActive;
 
         // Show closing window on ESC
         if (IsKeyPressed(KEY_ESCAPE))
         {
             if (windowAboutState.windowActive) windowAboutState.windowActive = false;
+            else if (windowSponsorState.windowActive) windowSponsorState.windowActive = false;
             else if (helpWindowActive) helpWindowActive = false;
             else if (exportWindowActive) exportWindowActive = false;
         #if defined(PLATFORM_DESKTOP)
@@ -828,9 +840,10 @@ int main(int argc, char *argv[])
         }
 
         // Help options logic
-        if (mainToolbarState.btnHelpPressed) helpWindowActive = true;               // Help button logic
-        if (mainToolbarState.btnAboutPressed) windowAboutState.windowActive = true; // About window button logic
-        if (mainToolbarState.btnUserPressed) userWindowActive = true;               // User button logic
+        if (mainToolbarState.btnHelpPressed) helpWindowActive = true;                   // Help button logic
+        if (mainToolbarState.btnAboutPressed) windowAboutState.windowActive = true;     // About window button logic
+        if (mainToolbarState.btnSponsorPressed) windowSponsorState.windowActive = true; // User sponsor logic
+        //if (mainToolbarState.btnUserPressed) userWindowActive = true;                 // User button logic
         //----------------------------------------------------------------------------------
 
         // Basic program flow logic
@@ -875,6 +888,7 @@ int main(int argc, char *argv[])
 
         // WARNING: Some windows should lock the main screen controls when shown
         if (windowAboutState.windowActive ||
+            windowSponsorState.windowActive ||
             helpWindowActive ||
             userWindowActive ||
             exitWindowActive ||
@@ -949,9 +963,15 @@ int main(int argc, char *argv[])
             GuiWindowAbout(&windowAboutState);
             //----------------------------------------------------------------------------------------
 
+            // GUI: Sponsor Window
+            //----------------------------------------------------------------------------------------
+            windowSponsorState.position = (Vector2){ (float)screenWidth/2 - windowSponsorState.windowWidth/2, (float)screenHeight/2 - windowSponsorState.windowHeight/2 - 20 };
+            GuiWindowSponsor(&windowSponsorState);
+            //----------------------------------------------------------------------------------------
+
             // GUI: Help Window
             //----------------------------------------------------------------------------------------
-            Rectangle helpWindowBounds = { (float)screenWidth/2 - 330/2, (float)screenHeight/2 - 400.0f/2, 330, 0 };
+            Rectangle helpWindowBounds = { (float)screenWidth/2 - 330/2, (float)screenHeight/2 - 428.0f/2, 330, 0 };
             if (helpWindowActive) helpWindowActive = GuiHelpWindow(helpWindowBounds, GuiIconText(ICON_HELP, TextFormat("%s Shortcuts", TOOL_NAME)), helpLines, HELP_LINES_COUNT);
             //----------------------------------------------------------------------------------------
 
