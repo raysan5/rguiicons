@@ -9,12 +9,15 @@
 *       NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
-*       2.0  (02-Oct-2022)  Source code re-licensed to open-source
+*       2.1  (06-Oct-2022)  ADDED: Sponsor window for tools support
+*                           Updated to raygui 3.5-dev
+*       2.0  (02-Oct-2022)  REDESIGNED: Main toolbar, for consistency with other tools
+*                           ADDED: New UI visual styles
 *                           Updated to raylib 4.2 and raygui 3.2
-*                           REDESIGNED: Main toolbar, for consistency with other tools
-*       1.5  (30-Dec-2021)  Updated to raylib 4.0 and raygui 3.1
-*                           Add icon descriptions as PNG extra chunks
-*                           Support multiple visual styles
+*                           Source code re-licensed to open-source 
+*       1.5  (30-Dec-2021)  ADDED: Icon descriptions as PNG extra chunks
+*                           ADDED: Support multiple visual styles
+*                           Updated to raylib 4.0 and raygui 3.1
 *       1.0  (30-Sep-2019)  First release
 *
 *   DEPENDENCIES:
@@ -768,13 +771,13 @@ int main(int argc, char *argv[])
             memset(guiIconsName[selectedIcon], 0, 32);
         }
 
-        // Toggle window help
+        // Toggle window: help
         if (IsKeyPressed(KEY_F1)) helpWindowActive = !helpWindowActive;
 
-        // Toggle window about
+        // Toggle window: about
         if (IsKeyPressed(KEY_F2)) windowAboutState.windowActive = !windowAboutState.windowActive;
 
-        // Toggle window sponsor
+        // Toggle window: sponsor
         if (IsKeyPressed(KEY_F3)) windowSponsorState.windowActive = !windowSponsorState.windowActive;
 
         // Show closing window on ESC
