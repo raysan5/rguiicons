@@ -1012,8 +1012,8 @@ int main(int argc, char *argv[])
                 Rectangle messageBox = { (float)screenWidth/2 - 280/2, (float)screenHeight/2 - 176/2 - 30, 280, 176 };
                 int result = GuiMessageBox(messageBox, "#7#Export Iconset File", " ", "#7#Export Iconset");
 
-                GuiLabel((Rectangle) { messageBox.x + 12, messageBox.y + 24 + 12, 106, 24 }, "Iconset Name:");
-                if (GuiTextBox((Rectangle) { messageBox.x + 12 + 92, messageBox.y + 24 + 12, 164, 24 }, styleNameText, 128, styleNameEditMode)) styleNameEditMode = !styleNameEditMode;
+                GuiLabel((Rectangle){ messageBox.x + 12, messageBox.y + 24 + 12, 106, 24 }, "Iconset Name:");
+                if (GuiTextBox((Rectangle){ messageBox.x + 12 + 92, messageBox.y + 24 + 12, 164, 24 }, styleNameText, 128, styleNameEditMode)) styleNameEditMode = !styleNameEditMode;
 
                 GuiLabel((Rectangle){ messageBox.x + 12, messageBox.y + 12 + 48 + 8, 106, 24 }, "File Format:");
                 exportFormatActive = GuiComboBox((Rectangle){ messageBox.x + 12 + 92, messageBox.y + 12 + 48 + 8, 164, 24 }, "raygui (.rgi);Image (.png);Code (.h)", exportFormatActive);
@@ -1727,9 +1727,9 @@ static int GuiHelpWindow(Rectangle bounds, const char *title, const char **helpL
 
     for (int i = 0; i < helpLinesCount; i++)
     {
-        if (helpLines[i] == NULL) GuiLine((Rectangle) { bounds.x, bounds.y + nextLineY, 330, 12 }, helpLines[i]);
-        else if (helpLines[i][0] == '-') GuiLine((Rectangle) { bounds.x, bounds.y + nextLineY, 330, 24 }, helpLines[i] + 1);
-        else GuiLabel((Rectangle) { bounds.x + 12, bounds.y + nextLineY, bounds.width, 24 }, helpLines[i]);
+        if (helpLines[i] == NULL) GuiLine((Rectangle){ bounds.x, bounds.y + nextLineY, 330, 12 }, helpLines[i]);
+        else if (helpLines[i][0] == '-') GuiLine((Rectangle){ bounds.x, bounds.y + nextLineY, 330, 24 }, helpLines[i] + 1);
+        else GuiLabel((Rectangle){ bounds.x + 12, bounds.y + nextLineY, bounds.width, 24 }, helpLines[i]);
 
         if (helpLines[i] == NULL) nextLineY += 12;
         else nextLineY += 24;
