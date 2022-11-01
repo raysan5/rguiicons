@@ -135,8 +135,9 @@ bool __stdcall FreeConsole(void);       // Close console from code (kernel32.lib
     #define LOG(...)
 #endif
 
-#define RGI_BIT_SET(a,b)    ((a) |= (1<<(b)))
-#define RGI_BIT_CHECK(a,b)  ((a) & (1<<(b)))
+#define RGI_BIT_CHECK(a,b)  ((a) &  (1u<<(b)))
+#define RGI_BIT_SET(a,b)    ((a) |= (1u<<(b)))
+#define RGI_BIT_CLEAR(a,b)  ((a) &= ~((1u)<<(b)))
 
 #define MAX_UNDO_LEVELS         10      // Undo levels supported for the ring buffer
 
@@ -1547,13 +1548,11 @@ static void ExportIconsAsCode(const char *fileName)
 // Draw selected icon from iconset
 void DrawIcon(unsigned int *iconset, int iconId, int posX, int posY, int pixelSize, Color color)
 {
-#define BIT_CHECK(a,b) ((a) & (1u<<(b)))
-
     for (int i = 0, y = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32; i++)
     {
         for (int k = 0; k < 32; k++)
         {
-            if (BIT_CHECK(iconset[iconId*RAYGUI_ICON_DATA_ELEMENTS + i], k))
+            if (RGI_BIT_CHECK(iconset[iconId*RAYGUI_ICON_DATA_ELEMENTS + i], k))
             {
                 // NOTE: We draw the icon pixel-by-pixel using rectangles
                 DrawRectangle(posX + (k%RAYGUI_ICON_SIZE)*pixelSize, posY + y*pixelSize, pixelSize, pixelSize, color);
@@ -1692,29 +1691,23 @@ void SetIconData(unsigned int *iconset, int iconId, unsigned int *data)
 // Set icon pixel value
 void SetIconPixel(unsigned int *iconset, int iconId, int x, int y)
 {
-#define BIT_SET(a,b)   ((a) |= (1u<<(b)))
-
     // This logic works for any RAYGUI_ICON_SIZE pixels icons,
     // For example, in case of 16x16 pixels, every 2 lines fit in one unsigned int data element
-    BIT_SET(iconset[iconId*RAYGUI_ICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)*RAYGUI_ICON_SIZE));
+    RGI_BIT_SET(iconset[iconId*RAYGUI_ICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)*RAYGUI_ICON_SIZE));
 }
 
 // Clear icon pixel value
 void ClearIconPixel(unsigned int *iconset, int iconId, int x, int y)
 {
-#define BIT_CLEAR(a,b) ((a) &= ~((1u)<<(b)))
-
     // This logic works for any RAYGUI_ICON_SIZE pixels icons,
     // For example, in case of 16x16 pixels, every 2 lines fit in one unsigned int data element
-    BIT_CLEAR(iconset[iconId*RAYGUI_ICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)*RAYGUI_ICON_SIZE));
+    RGI_BIT_CLEAR(iconset[iconId*RAYGUI_ICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)*RAYGUI_ICON_SIZE));
 }
 
 // Check icon pixel value
 bool CheckIconPixel(unsigned int *iconset, int iconId, int x, int y)
 {
-#define BIT_CHECK(a,b) ((a) & (1u<<(b)))
-
-    return (BIT_CHECK(iconset[iconId*8 + y/2], x + (y%2*16)));
+    return (RGI_BIT_CHECK(iconset[iconId*8 + y/2], x + (y%2*16)));
 }
 
 // Draw help window with the provided lines
