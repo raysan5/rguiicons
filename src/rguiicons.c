@@ -562,7 +562,7 @@ int main(int argc, char *argv[])
     }
 
     // Init raygui iconset for editing
-    memcpy(currentIcons, backupGuiIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(int));
+    memcpy(currentIcons, backupGuiIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
     for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) memcpy(backupGuiIconsName[i], guiIconsName[i], strlen(guiIconsName[i]));
 
     unsigned int iconData[8] = { 0 };
@@ -684,6 +684,7 @@ int main(int argc, char *argv[])
             {
                 // Load .rgi data into raygui icons set (and gui icon names for the tool)
                 char **tempIconsName = GuiLoadIcons(droppedFiles.paths[0], true);
+                memcpy(currentIcons, guiIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
                 for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
                 free(tempIconsName);
 
@@ -1040,6 +1041,7 @@ int main(int argc, char *argv[])
                 {
                     // Load gui icons data (and gui icon names for the tool)
                     char **tempIconsName = GuiLoadIcons(inFileName, true);
+                    memcpy(currentIcons, guiIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
                     for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
                     free(tempIconsName);
 
@@ -1317,6 +1319,7 @@ static void ProcessCommandLine(int argc, char *argv[])
 
         // Load input file: icons data and name ids
         char **tempIconsName = GuiLoadIcons(inFileName, true);
+        memcpy(currentIcons, guiIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
         for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
         free(tempIconsName);
 
