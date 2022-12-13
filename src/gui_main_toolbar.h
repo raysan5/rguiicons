@@ -32,8 +32,6 @@
 
 #include "raylib.h"
 
-#include <stdint.h>
-
 // WARNING: raygui implementation is expected to be defined before including this header
 
 #ifndef GUI_MAIN_TOOLBAR_H
@@ -69,12 +67,11 @@ typedef struct {
     int btnReloadStylePressed;
     int languageActive;
 
-    // Help options
+    // Info options
     bool btnHelpPressed;
     bool btnAboutPressed;
     bool btnSponsorPressed;
     bool btnUserPressed;
-    bool btnQuitPressed;
 
     // Custom variables
     // TODO.
@@ -162,10 +159,12 @@ GuiMainToolbarState InitGuiMainToolbar(void)
     state.btnAboutPressed = false;
     state.btnSponsorPressed = false;
     state.btnUserPressed = false;
-    state.btnQuitPressed = false;
-
+	
     // Custom variables
     // TODO.
+
+    // Enable tooltips by default
+    GuiEnableTooltip();
 
     return state;
 }
@@ -185,26 +184,40 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     GuiPanel((Rectangle){ state->anchorRight.x, state->anchorRight.y, 104, 40 }, NULL);
 
     // Project/File options
+    GuiSetTooltip("Create new icons project (LCTRL+N)");
     state->btnNewFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12, state->anchorFile.y + 8, 24, 24 }, "#8#");
+    GuiSetTooltip("Load icons .rgi file (LCTRL+O)");
     state->btnLoadFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 24 + 4, state->anchorFile.y + 8, 24, 24 }, "#5#");
+    GuiSetTooltip("Save icons .rgi file (LCTRL+S)");
     state->btnSaveFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 48 + 8, state->anchorFile.y + 8, 24, 24 }, "#6#");
+    GuiSetTooltip("Export icons file (LCTRL+E)");
     state->btnExportFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 72 + 12, state->anchorFile.y + 8, 24, 24 }, "#7#");
 
     // Edit options
+    GuiSetTooltip("Cut selected icon (LCTRL+X)");
     state->btnCutPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12, state->anchorEdit.y + 8, 24, 24 }, "#17#");             // Cut
+    GuiSetTooltip("Copy selected icon (LCTRL+C)");
     state->btnCopyPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 24 + 4, state->anchorEdit.y + 8, 24, 24 }, "#16#");   // Copy
+    GuiSetTooltip("Paste icon previously cut/copied (LCTRL+V)");
     state->btnPastePressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 48 + 8, state->anchorEdit.y + 8, 24, 24 }, "#18#");  // Paste
     GuiGroupBox((Rectangle){ state->anchorEdit.x + 12 + 72 + 16, state->anchorEdit.y + 8, 24, 24 }, NULL);
+    GuiSetTooltip("Clear previously cut/copied icon");
     state->btnCleanPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 96 + 24, state->anchorEdit.y + 8, 24, 24 }, "#079#");  // Clean
 
     // Visuals options
     GuiLabel((Rectangle){ state->anchorVisuals.x + 10, state->anchorVisuals.y + 8, 60, 24 }, "Style:");
+    GuiSetTooltip("Select visual UI style");
     state->visualStyleActive = GuiComboBox((Rectangle){ state->anchorVisuals.x + 8 + 48, state->anchorVisuals.y + 8, 120, 24 }, "Light;Jungle;Lavanda;Cyber;Terminal;Ashes;Bluish;Dark;Sunny", state->visualStyleActive);
 
     // Info options
+    GuiSetTooltip("Show help window (F1)");
     state->btnHelpPressed = GuiButton((Rectangle){ state->anchorRight.x + (screenWidth - state->anchorRight.x) - 12 - 72 - 8, state->anchorRight.y + 8, 24, 24 }, "#193#"); 
+    GuiSetTooltip("Show info window (F2)");
     state->btnAboutPressed = GuiButton((Rectangle){ state->anchorRight.x + (screenWidth - state->anchorRight.x) - 12 - 48 - 4, state->anchorRight.y + 8, 24, 24 }, "#191#");
+    GuiSetTooltip("Show sponsors window (F3)");
     state->btnSponsorPressed = GuiButton((Rectangle){ state->anchorRight.x + (screenWidth - state->anchorRight.x) - 12 - 24, state->anchorRight.y + 8, 24, 24 }, "#186#");
+
+    GuiSetTooltip(NULL);
 }
 
 #endif // GUI_MAIN_TOOLBAR_IMPLEMENTATION

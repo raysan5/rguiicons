@@ -9,6 +9,9 @@
 *       NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
+*       2.2  (13-Dec-2022)  ADDED: Welcome window with sponsors info
+*                           REDESIGNED: Main toolbar to add tooltips
+*                           REVIEWED: Help window implementation
 *       2.1  (06-Oct-2022)  ADDED: Multiple new icons
 *                           ADDED: Sponsor window for tools support
 *                           REDESIGN: Iconset for editing is independant of raygui iconset
