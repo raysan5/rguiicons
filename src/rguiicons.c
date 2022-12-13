@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rGuiIcons v2.1 - A simple and easy-to-use raygui icons editor
+*   rGuiIcons v2.2 - A simple and easy-to-use raygui icons editor
 *
 *   CONFIGURATION:
 *
