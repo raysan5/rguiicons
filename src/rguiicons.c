@@ -19,7 +19,7 @@
 *       2.0  (02-Oct-2022)  REDESIGNED: Main toolbar, for consistency with other tools
 *                           ADDED: New UI visual styles
 *                           Updated to raylib 4.2 and raygui 3.2
-*                           Source code re-licensed to open-source 
+*                           Source code re-licensed to open-source
 *       1.5  (30-Dec-2021)  ADDED: Icon descriptions as PNG extra chunks
 *                           ADDED: Support multiple visual styles
 *                           Updated to raylib 4.0 and raygui 3.1
@@ -421,7 +421,7 @@ static void ExportIconsAsCode(const char *fileName);        // Export gui icons 
 
 // Auxiliar functions
 void DrawIcon(unsigned int *iconset, int iconId, int posX, int posY, int pixelSize, Color color);       // Draw selected icon from iconset
-static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color color);                 // Draw one icon, icon data provided directly 
+static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color color);                 // Draw one icon, icon data provided directly
 static Image GenImageFromIconData(unsigned int *values, int iconCount, int iconsPerLine, int padding);  // Gen icons pack image from icon data array
 static Image GenImageFromBits(unsigned char *bytes, int width, int height, Color color);                // Gen image from bits data (packed in bytes)
 static unsigned char *ImageToBits(Image image);                                                         // Gen bits array (packed in bytes) from image data
@@ -522,7 +522,7 @@ int main(int argc, char *argv[])
     //-----------------------------------------------------------------------------------
     GuiWindowAboutState windowAboutState = InitGuiWindowAbout();
     //-----------------------------------------------------------------------------------
-    
+
     // GUI: Sponsor Window
     //-----------------------------------------------------------------------------------
     GuiWindowSponsorState windowSponsorState = InitGuiWindowSponsor();
@@ -972,7 +972,7 @@ int main(int argc, char *argv[])
 
             // WARNING: Before drawing the windows, we unlock them
             GuiUnlock();
-            
+
             // GUI: Help Window
             //----------------------------------------------------------------------------------------
             windowHelpState.windowBounds.x = (float)screenWidth/2 - windowHelpState.windowBounds.width/2;
