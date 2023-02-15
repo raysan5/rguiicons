@@ -159,7 +159,7 @@ GuiMainToolbarState InitGuiMainToolbar(void)
     state.btnAboutPressed = false;
     state.btnSponsorPressed = false;
     state.btnUserPressed = false;
-	
+    
     // Custom variables
     // TODO.
 
