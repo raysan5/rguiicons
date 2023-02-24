@@ -1444,22 +1444,22 @@ static bool SaveIcons(const char *fileName)
         short iconCount = RAYGUI_ICON_MAX_ICONS;
         short iconSize = RAYGUI_ICON_SIZE;
 
-        fwrite(signature, 1, 4, rgiFile);
-        fwrite(&version, 1, sizeof(short), rgiFile);
-        fwrite(&reserved, 1, sizeof(short), rgiFile);
-        fwrite(&iconCount, 1, sizeof(short), rgiFile);
-        fwrite(&iconSize, 1, sizeof(short), rgiFile);
+        fwrite(signature, sizeof(char), 4, rgiFile);
+        fwrite(&version, sizeof(short), 1, rgiFile);
+        fwrite(&reserved, sizeof(short), 1, rgiFile);
+        fwrite(&iconCount, sizeof(short), 1, rgiFile);
+        fwrite(&iconSize, sizeof(short), 1, rgiFile);
 
         for (int i = 0; i < iconCount; i++)
         {
             // Write icons name id
-            fwrite(guiIconsName[i], RAYGUI_ICON_MAX_NAME_LENGTH, 1, rgiFile);
+            fwrite(guiIconsName[i], 1, RAYGUI_ICON_MAX_NAME_LENGTH, rgiFile);
         }
 
         for (int i = 0; i < iconCount; i++)
         {
             // Write icons data
-            fwrite(GetIconData(currentIcons, i), (iconSize*iconSize/32), sizeof(unsigned int), rgiFile);
+            fwrite(GetIconData(currentIcons, i), sizeof(unsigned int), (iconSize*iconSize/32), rgiFile);
         }
 
         fclose(rgiFile);
