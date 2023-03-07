@@ -1409,7 +1409,7 @@ static void LoadIconsFromImage(Image image, int iconCount, int iconSize, int ico
 // Save raygui icons file (.rgi)
 static bool SaveIcons(const char *fileName)
 {
-    // Style File Structure (.rgi)
+    // raygui Icons File Structure (.rgi)
     // ------------------------------------------------------
     // Offset  | Size    | Type       | Description
     // ------------------------------------------------------
