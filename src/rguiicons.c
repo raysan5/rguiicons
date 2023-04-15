@@ -2,11 +2,29 @@
 *
 *   rGuiIcons v2.2 - A simple and easy-to-use raygui icons editor
 *
-*   CONFIGURATION:
+*   FEATURES:
+*       - Icon editing and preview at multiple sizes
+*       - Cut, copy, paste icons for easy editing
+*       - Undo/Redo system for icon changes
+*       - Save and load as binary iconset file .rgi
+*       - Export iconset as an embeddable code file (.h)
+*       - Export iconset as a .png black&white image
+*       - Icon name ids exported as standard PNG chunk (zTXt)
+*       - Multiple UI styles for tools reference
+*       - +200 custom icons for reference and basic edition
 *
-*   #define CUSTOM_MODAL_DIALOGS
-*       Use custom raygui generated modal dialogs instead of native OS ones
-*       NOTE: Avoids including tinyfiledialogs depencency library
+*   POSSIBLE IMPROVEMENTS:
+*       - Improvement 01
+*       - Improvement 02
+*
+*   LIMITATIONS:
+*       - Limitation 01
+*       - Limitation 02
+*
+*   CONFIGURATION:
+*       #define CUSTOM_MODAL_DIALOGS
+*           Use custom raygui generated modal dialogs instead of native OS ones
+*           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
 *       2.2  (13-Dec-2022)  ADDED: Welcome window with sponsors info
@@ -31,15 +49,17 @@
 *       rpng 1.0                - PNG chunks management
 *       tinyfiledialogs 3.9.0   - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *
-*   COMPILATION (Windows - MinGW):
+*   BUILDING:
+*     - Windows (MinGW-w64):
 *       gcc -o rguiicons.exe rguiicons.c external/tinyfiledialogs.c -s rguiicons.rc.data -Iexternal /
 *           -lraylib -lopengl32 -lgdi32 -lcomdlg32 -lole32 -std=c99 -Wall
 *
-*   COMPILATION (Linux - GCC):
+*     - Linux (GCC):
 *       gcc -o rguiicons rguiicons.c external/tinyfiledialogs.c -s -Iexternal -no-pie -D_DEFAULT_SOURCE /
 *           -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 *
-*   NOTE: On PLATFORM_ANDROID and PLATFORM_WEB file dialogs are not available
+*   ADDITIONAL NOTES: 
+*       On PLATFORM_ANDROID and PLATFORM_WEB file dialogs are not available
 *
 *   DEVELOPERS:
 *       Ramon Santamaria (@raysan5):   Developer, supervisor, updater and maintainer.
