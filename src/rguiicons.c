@@ -90,6 +90,7 @@
 #define TOOL_SHORT_NAME         "rGI"
 #define TOOL_VERSION            "2.1"
 #define TOOL_DESCRIPTION        "A simple and easy-to-use raygui icons editor"
+#define TOOL_DESCRIPTION_BREAK  "A simple and easy-to-use raygui\nicons editor"
 #define TOOL_RELEASE_DATE       "Oct.2022"
 #define TOOL_LOGO_COLOR         0x48c9c5ff
 
