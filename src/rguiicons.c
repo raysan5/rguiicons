@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rGuiIcons v2.2 - A simple and easy-to-use raygui icons editor
+*   rGuiIcons v2.3 - A simple and easy-to-use raygui icons editor
 *
 *   FEATURES:
 *       - Icon editing and preview at multiple sizes
@@ -27,27 +27,34 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
+*       2.3  (xx-May-2023)  REVIEWED: Regenerated tool imagery
+*                           Updated to raylib 4.5 and raygui 3.6
+*
 *       2.2  (13-Dec-2022)  ADDED: Welcome window with sponsors info
 *                           REDESIGNED: Main toolbar to add tooltips
 *                           REVIEWED: Help window implementation
+*
 *       2.1  (06-Oct-2022)  ADDED: Multiple new icons
 *                           ADDED: Sponsor window for tools support
 *                           REDESIGN: Iconset for editing is independant of raygui iconset
 *                           Updated to raylib 4.5-dev and raygui 3.5-dev
+*
 *       2.0  (02-Oct-2022)  REDESIGNED: Main toolbar, for consistency with other tools
 *                           ADDED: New UI visual styles
 *                           Updated to raylib 4.2 and raygui 3.2
 *                           Source code re-licensed to open-source
+*
 *       1.5  (30-Dec-2021)  ADDED: Icon descriptions as PNG extra chunks
 *                           ADDED: Support multiple visual styles
 *                           Updated to raylib 4.0 and raygui 3.1
+*
 *       1.0  (30-Sep-2019)  First release
 *
 *   DEPENDENCIES:
-*       raylib 4.5          - Windowing/input management and drawing
-*       raygui 3.5              - Immediate-mode GUI controls with custom styling and icons
+*       raylib 4.6-dev          - Windowing/input management and drawing
+*       raygui 3.6-dev          - Immediate-mode GUI controls with custom styling and icons
 *       rpng 1.0                - PNG chunks management
-*       tinyfiledialogs 3.9.0   - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
+*       tinyfiledialogs 3.12.0  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *
 *   BUILDING:
 *     - Windows (MinGW-w64):
@@ -88,10 +95,10 @@
 
 #define TOOL_NAME               "rGuiIcons"
 #define TOOL_SHORT_NAME         "rGI"
-#define TOOL_VERSION            "2.1"
+#define TOOL_VERSION            "2.3"
 #define TOOL_DESCRIPTION        "A simple and easy-to-use raygui icons editor"
 #define TOOL_DESCRIPTION_BREAK  "A simple and easy-to-use raygui\nicons editor"
-#define TOOL_RELEASE_DATE       "Oct.2022"
+#define TOOL_RELEASE_DATE       "May.2023"
 #define TOOL_LOGO_COLOR         0x48c9c5ff
 
 #include "raylib.h"
