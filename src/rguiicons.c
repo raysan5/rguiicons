@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rGuiIcons v2.3 - A simple and easy-to-use raygui icons editor
+*   rGuiIcons v3.0 - A simple and easy-to-use raygui icons editor
 *
 *   FEATURES:
 *       - Icon editing and preview at multiple sizes
@@ -27,8 +27,9 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
-*       2.3  (xx-May-2023)  REVIEWED: Regenerated tool imagery
-*                           Updated to raylib 4.5 and raygui 3.6
+*       3.0  (xx-May-2023)  ADDED: Support macOS builds (x86_64 + arm64)
+*                           REDESIGNED: Using raygui 4.0-dev
+*                           REVIEWED: Regenerated tool imagery
 *
 *       2.2  (13-Dec-2022)  ADDED: Welcome window with sponsors info
 *                           REDESIGNED: Main toolbar to add tooltips
@@ -52,9 +53,9 @@
 *
 *   DEPENDENCIES:
 *       raylib 4.6-dev          - Windowing/input management and drawing
-*       raygui 3.6              - Immediate-mode GUI controls with custom styling and icons
+*       raygui 4.0-dev          - Immediate-mode GUI controls with custom styling and icons
 *       rpng 1.0                - PNG chunks management
-*       tinyfiledialogs 3.12.0  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
+*       tinyfiledialogs 3.13.1  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *
 *   BUILDING:
 *     - Windows (MinGW-w64):
@@ -95,7 +96,7 @@
 
 #define TOOL_NAME               "rGuiIcons"
 #define TOOL_SHORT_NAME         "rGI"
-#define TOOL_VERSION            "2.3"
+#define TOOL_VERSION            "3.0"
 #define TOOL_DESCRIPTION        "A simple and easy-to-use raygui icons editor"
 #define TOOL_DESCRIPTION_BREAK  "A simple and easy-to-use raygui\nicons editor"
 #define TOOL_RELEASE_DATE       "May.2023"
@@ -893,15 +894,20 @@ int main(int argc, char *argv[])
         if (iconEditScale < 2) iconEditScale = 2;
         else if (iconEditScale > 16) iconEditScale = 16;
 
-        // Security check to avoid cells out of limits
-        if (cell.x > (RAYGUI_ICON_SIZE - 1)) cell.x = RAYGUI_ICON_SIZE - 1;
-        if (cell.y > (RAYGUI_ICON_SIZE - 1)) cell.y = RAYGUI_ICON_SIZE - 1;
+        bool mouseHoverCells = CheckCollisionPointRec(GetMousePosition(), (Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale });
 
-        // Icon painting mouse logic
-        if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RAYGUI_ICON_SIZE) && (cell.y < RAYGUI_ICON_SIZE))
+        if (mouseHoverCells)
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) SetIconPixel(currentIcons, selectedIcon, (int)cell.x, (int)cell.y);
-            else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) ClearIconPixel(currentIcons, selectedIcon, (int)cell.x, (int)cell.y);
+            // Security check to avoid cells out of limits
+            if (cell.x > (RAYGUI_ICON_SIZE - 1)) cell.x = RAYGUI_ICON_SIZE - 1;
+            if (cell.y > (RAYGUI_ICON_SIZE - 1)) cell.y = RAYGUI_ICON_SIZE - 1;
+
+            // Icon painting mouse logic
+            if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RAYGUI_ICON_SIZE) && (cell.y < RAYGUI_ICON_SIZE))
+            {
+                if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) SetIconPixel(currentIcons, selectedIcon, (int)cell.x, (int)cell.y);
+                else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) ClearIconPixel(currentIcons, selectedIcon, (int)cell.x, (int)cell.y);
+            }
         }
         //----------------------------------------------------------------------------------
 
@@ -959,7 +965,7 @@ int main(int argc, char *argv[])
             // NOTE: We point raygui icons pointer to current iconset to be used on drawing (instead of the internal one)
             //GuiSetStyle(TOGGLE, GROUP_PADDING, -1);
             guiIconsPtr = currentIcons;
-            selectedIcon = GuiToggleGroup((Rectangle){ anchor01.x + 15, anchor01.y + 70, 18, 18 }, toggleIconsText, selectedIcon);
+            GuiToggleGroup((Rectangle){ anchor01.x + 15, anchor01.y + 70, 18, 18 }, toggleIconsText, &selectedIcon);
             guiIconsPtr = backupGuiIcons;
 
             // Draw icon name ID text box
@@ -971,17 +977,21 @@ int main(int argc, char *argv[])
             DrawIcon(currentIcons, selectedIcon, (int)anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, (int)anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)));
 
             // Draw grid (returns selected cell)
-            cell = GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale }, NULL, iconEditScale, 1);
+            GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale }, NULL, iconEditScale, 1, &cell);
 
-            // Draw selected cell lines
-            if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RAYGUI_ICON_SIZE) && (cell.y < RAYGUI_ICON_SIZE))
+            if (mouseHoverCells)
             {
-                DrawRectangleLinesEx((Rectangle){ anchor01.x + 365 + iconEditScale*cell.x + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
-                                                  anchor01.y + 108 + iconEditScale*cell.y + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
-                                                  iconEditScale + 1, iconEditScale + 1 }, 1, RED);
+                // Draw selected cell lines
+                if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RAYGUI_ICON_SIZE) && (cell.y < RAYGUI_ICON_SIZE))
+                {
+                    DrawRectangleLinesEx((Rectangle){ anchor01.x + 365 + iconEditScale*cell.x + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
+                                                      anchor01.y + 108 + iconEditScale*cell.y + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
+                                                      iconEditScale + 1, iconEditScale + 1 }, 1, RED);
+                }
             }
 
-            iconEditScale = (int)GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 376, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), (float)iconEditScale, 0, 16);
+            GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 376, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), &iconEditScale, 0, 16);
+            iconEditScale = (float)(int)iconEditScale;
             if (iconEditScale < 2) iconEditScale = 2;
             else if (iconEditScale > 16) iconEditScale = 16;
             //--------------------------------------------------------------------------------
@@ -1033,10 +1043,10 @@ int main(int argc, char *argv[])
                 if (GuiTextBox((Rectangle){ messageBox.x + 12 + 92, messageBox.y + 24 + 12, 164, 24 }, styleNameText, 128, styleNameEditMode)) styleNameEditMode = !styleNameEditMode;
 
                 GuiLabel((Rectangle){ messageBox.x + 12, messageBox.y + 12 + 48 + 8, 106, 24 }, "File Format:");
-                exportFormatActive = GuiComboBox((Rectangle){ messageBox.x + 12 + 92, messageBox.y + 12 + 48 + 8, 164, 24 }, "raygui (.rgi);Image (.png);Code (.h)", exportFormatActive);
+                GuiComboBox((Rectangle){ messageBox.x + 12 + 92, messageBox.y + 12 + 48 + 8, 164, 24 }, "raygui (.rgi);Image (.png);Code (.h)", &exportFormatActive);
 
                 if (exportFormatActive != 1) GuiDisable();
-                nameIdsChunkChecked = GuiCheckBox((Rectangle){ messageBox.x + 20, messageBox.y + 52 + 32 + 24, 16, 16 }, "Embed name IDs as zTXt chunk", nameIdsChunkChecked);
+                GuiCheckBox((Rectangle){ messageBox.x + 20, messageBox.y + 52 + 32 + 24, 16, 16 }, "Embed name IDs as zTXt chunk", &nameIdsChunkChecked);
                 GuiEnable();
 
                 if (result == 1)    // Export button pressed
