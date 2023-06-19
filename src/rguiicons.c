@@ -13,13 +13,13 @@
 *       - Multiple UI styles for tools reference
 *       - +200 custom icons for reference and basic edition
 *
-*   POSSIBLE IMPROVEMENTS:
-*       - Improvement 01
-*       - Improvement 02
-*
 *   LIMITATIONS:
 *       - Limitation 01
 *       - Limitation 02
+*
+*   POSSIBLE IMPROVEMENTS:
+*       - Improvement 01
+*       - Improvement 02
 *
 *   CONFIGURATION:
 *       #define CUSTOM_MODAL_DIALOGS
