@@ -27,8 +27,8 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
-*       3.0  (xx-May-2023)  ADDED: Support macOS builds (x86_64 + arm64)
-*                           REDESIGNED: Using raygui 4.0-dev
+*       3.0  (xx-Sep-2023)  ADDED: Support macOS builds (x86_64 + arm64)
+*                           REDESIGNED: Using raygui 4.0    
 *                           REVIEWED: Regenerated tool imagery
 *
 *       2.2  (13-Dec-2022)  ADDED: Welcome window with sponsors info
@@ -53,9 +53,9 @@
 *
 *   DEPENDENCIES:
 *       raylib 4.6-dev          - Windowing/input management and drawing
-*       raygui 4.0-dev          - Immediate-mode GUI controls with custom styling and icons
-*       rpng 1.0                - PNG chunks management
-*       tinyfiledialogs 3.13.1  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
+*       raygui 4.0              - Immediate-mode GUI controls with custom styling and icons
+*       rpng 1.1                - PNG chunks management
+*       tinyfiledialogs 3.13.3  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *
 *   BUILDING:
 *     - Windows (MinGW-w64):
