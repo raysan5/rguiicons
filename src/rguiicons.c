@@ -27,9 +27,13 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
-*       3.0  (xx-Sep-2023)  ADDED: Support macOS builds (x86_64 + arm64)
-*                           REDESIGNED: Using raygui 4.0    
+*       3.0  (20-Sep-2023)  ADDED: Support macOS builds (x86_64 + arm64)
+*                           ADDED: New icons for code/text editor tools
+*                           REVIEWED: CUBE_* icons aspect for 3d
+*                           REVIEWED: UI lock when some window shown
+*                           REVIEWED: Disabled sponsors window at launch
 *                           REVIEWED: Regenerated tool imagery
+*                           UPDATED: Using raygui 4.0 and latest raylib 4.6-dev
 *
 *       2.2  (13-Dec-2022)  ADDED: Welcome window with sponsors info
 *                           REDESIGNED: Main toolbar to add tooltips
@@ -99,7 +103,7 @@
 #define TOOL_VERSION            "3.0"
 #define TOOL_DESCRIPTION        "A simple and easy-to-use raygui icons editor"
 #define TOOL_DESCRIPTION_BREAK  "A simple and easy-to-use raygui\nicons editor"
-#define TOOL_RELEASE_DATE       "May.2023"
+#define TOOL_RELEASE_DATE       "Sep.2023"
 #define TOOL_LOGO_COLOR         0x48c9c5ff
 
 #include "raylib.h"
@@ -426,7 +430,10 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "BREAKPOINT_OFF",
     "BURGER_MENU",
     "CASE_SENSITIVE",
-    "REG_EXP"
+    "REG_EXP",
+    "FOLDER",
+    "FILE",
+    "TEMPO"
 };
 
 // Keep a pointer to original gui iconset as backup
@@ -533,7 +540,8 @@ int main(int argc, char *argv[])
     }
 
     toggleIconsText[RAYGUI_ICON_MAX_ICONS*6 - 1] = '\0';
-
+    
+    bool mouseHoverCells = false;
     bool screenSizeActive = false;
     //-----------------------------------------------------------------------------------
 
@@ -887,26 +895,41 @@ int main(int argc, char *argv[])
         if (mainToolbarState.btnAboutPressed) windowAboutState.windowActive = true;     // About window button logic
         if (mainToolbarState.btnSponsorPressed) windowSponsorState.windowActive = true; // User sponsor logic
         //----------------------------------------------------------------------------------
+        
+        // WARNING: Some windows should lock the main screen controls when shown
+        if (windowHelpState.windowActive ||
+            windowAboutState.windowActive ||
+            windowSponsorState.windowActive ||
+            windowExitActive ||
+            windowExportActive ||
+            showLoadFileDialog ||
+            showSaveFileDialog ||
+            showExportFileDialog) GuiLock();
+        //----------------------------------------------------------------------------------
 
         // Basic program flow logic
         //----------------------------------------------------------------------------------
-        iconEditScale += GetMouseWheelMove();
-        if (iconEditScale < 2) iconEditScale = 2;
-        else if (iconEditScale > 16) iconEditScale = 16;
-
-        bool mouseHoverCells = CheckCollisionPointRec(GetMousePosition(), (Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale });
-
-        if (mouseHoverCells)
+        if (!GuiIsLocked())
         {
-            // Security check to avoid cells out of limits
-            if (cell.x > (RAYGUI_ICON_SIZE - 1)) cell.x = RAYGUI_ICON_SIZE - 1;
-            if (cell.y > (RAYGUI_ICON_SIZE - 1)) cell.y = RAYGUI_ICON_SIZE - 1;
+            iconEditScale += GetMouseWheelMove();
+            if (iconEditScale < 2) iconEditScale = 2;
+            else if (iconEditScale > 16) iconEditScale = 16;
+        
 
-            // Icon painting mouse logic
-            if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RAYGUI_ICON_SIZE) && (cell.y < RAYGUI_ICON_SIZE))
+            mouseHoverCells = CheckCollisionPointRec(GetMousePosition(), (Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale });
+
+            if (mouseHoverCells)
             {
-                if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) SetIconPixel(currentIcons, selectedIcon, (int)cell.x, (int)cell.y);
-                else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) ClearIconPixel(currentIcons, selectedIcon, (int)cell.x, (int)cell.y);
+                // Security check to avoid cells out of limits
+                if (cell.x > (RAYGUI_ICON_SIZE - 1)) cell.x = RAYGUI_ICON_SIZE - 1;
+                if (cell.y > (RAYGUI_ICON_SIZE - 1)) cell.y = RAYGUI_ICON_SIZE - 1;
+
+                // Icon painting mouse logic
+                if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RAYGUI_ICON_SIZE) && (cell.y < RAYGUI_ICON_SIZE))
+                {
+                    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) SetIconPixel(currentIcons, selectedIcon, (int)cell.x, (int)cell.y);
+                    else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) ClearIconPixel(currentIcons, selectedIcon, (int)cell.x, (int)cell.y);
+                }
             }
         }
         //----------------------------------------------------------------------------------
@@ -931,17 +954,6 @@ int main(int argc, char *argv[])
                 SetMouseScale(1.0f, 1.0f);
             }
         }
-        //----------------------------------------------------------------------------------
-
-        // WARNING: Some windows should lock the main screen controls when shown
-        if (windowHelpState.windowActive ||
-            windowAboutState.windowActive ||
-            windowSponsorState.windowActive ||
-            windowExitActive ||
-            windowExportActive ||
-            showLoadFileDialog ||
-            showSaveFileDialog ||
-            showExportFileDialog) GuiLock();
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -990,8 +1002,9 @@ int main(int argc, char *argv[])
                 }
             }
 
-            GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 376, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), &iconEditScale, 0, 16);
-            iconEditScale = (float)(int)iconEditScale;
+            float iconEditScaleF = (float)iconEditScale;
+            GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 376, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), &iconEditScaleF, 0.0f, 16.0f);
+            iconEditScale = (int)iconEditScaleF;
             if (iconEditScale < 2) iconEditScale = 2;
             else if (iconEditScale > 16) iconEditScale = 16;
             //--------------------------------------------------------------------------------
@@ -1592,7 +1605,7 @@ void DrawIcon(unsigned int *iconset, int iconId, int posX, int posY, int pixelSi
 // Draw one icon directly providing the full icon data
 static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color color)
 {
-    #define RGI_BIT_CHECK(a,b) ((a) & (1<<(b)))
+    //#define RGI_BIT_CHECK(a,b) ((a) & (1<<(b)))
 
     for (int i = 0, j = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32; i++)
     {
@@ -1612,7 +1625,7 @@ static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color 
 // Gen GRAYSCALE image from and array of bits stored as int (0-BLANK, 1-WHITE)
 static Image GenImageFromIconData(unsigned int *icons, int iconCount, int iconsPerLine, int padding)
 {
-    #define RGI_BIT_CHECK(a,b) ((a) & (1<<(b)))
+    //#define RGI_BIT_CHECK(a,b) ((a) & (1<<(b)))
 
     Image image = { 0 };
 
