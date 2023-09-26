@@ -10,7 +10,7 @@ rGuiIcons can be used for free as a [WebAssembly online tool](https://raylibtech
 
 <br>
 
-_NOTE: This tool is intended to be used with [**raygui 3.2**](https://github.com/raysan5/raygui)_
+**NOTE: Latest `rGuiIcons 3.0` release is intended to be used with [`raygui 4.0`](https://github.com/raysan5/raygui/releases/tag/4.0) release.**
 
 ## rGuiIcons Features
 
