@@ -540,7 +540,7 @@ int main(int argc, char *argv[])
     }
 
     toggleIconsText[RAYGUI_ICON_MAX_ICONS*6 - 1] = '\0';
-    
+
     bool mouseHoverCells = false;
     bool screenSizeActive = false;
     //-----------------------------------------------------------------------------------
@@ -895,7 +895,7 @@ int main(int argc, char *argv[])
         if (mainToolbarState.btnAboutPressed) windowAboutState.windowActive = true;     // About window button logic
         if (mainToolbarState.btnSponsorPressed) windowSponsorState.windowActive = true; // User sponsor logic
         //----------------------------------------------------------------------------------
-        
+
         // WARNING: Some windows should lock the main screen controls when shown
         if (windowHelpState.windowActive ||
             windowAboutState.windowActive ||
@@ -914,7 +914,7 @@ int main(int argc, char *argv[])
             iconEditScale += GetMouseWheelMove();
             if (iconEditScale < 2) iconEditScale = 2;
             else if (iconEditScale > 16) iconEditScale = 16;
-        
+
 
             mouseHoverCells = CheckCollisionPointRec(GetMousePosition(), (Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale });
 
