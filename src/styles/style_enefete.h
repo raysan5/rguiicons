@@ -2,7 +2,7 @@
 //                                                                              //
 // StyleAsCode exporter v2.0 - Style data exported as a values array            //
 //                                                                              //
-// USAGE: On init call: GuiLoadStyleSunny();                                   //
+// USAGE: On init call: GuiLoadStyleEnefete();                                   //
 //                                                                              //
 // more info and bugs-report:  github.com/raysan5/raygui                        //
 // feedback and support:       ray[at]raylibtech.com                            //
@@ -11,51 +11,35 @@
 //                                                                              //
 //////////////////////////////////////////////////////////////////////////////////
 
-#define SUNNY_STYLE_PROPS_COUNT  33
+#define ENEFETE_STYLE_PROPS_COUNT  17
 
-// Custom style name: Sunny
-static const GuiStyleProp sunnyStyleProps[SUNNY_STYLE_PROPS_COUNT] = {
-    { 0, 0, 0x9c760aff },    // DEFAULT_BORDER_COLOR_NORMAL 
-    { 0, 1, 0x594006ff },    // DEFAULT_BASE_COLOR_NORMAL 
-    { 0, 2, 0xf6d519ff },    // DEFAULT_TEXT_COLOR_NORMAL 
-    { 0, 3, 0xf6ee89ff },    // DEFAULT_BORDER_COLOR_FOCUSED 
-    { 0, 4, 0xf5f3d1ff },    // DEFAULT_BASE_COLOR_FOCUSED 
-    { 0, 5, 0xf4cd19ff },    // DEFAULT_TEXT_COLOR_FOCUSED 
-    { 0, 6, 0xf7e580ff },    // DEFAULT_BORDER_COLOR_PRESSED 
-    { 0, 7, 0xf7f2c1ff },    // DEFAULT_BASE_COLOR_PRESSED 
-    { 0, 8, 0x52470aff },    // DEFAULT_TEXT_COLOR_PRESSED 
-    { 0, 9, 0xc0be92ff },    // DEFAULT_BORDER_COLOR_DISABLED 
-    { 0, 10, 0xd3d3a1ff },    // DEFAULT_BASE_COLOR_DISABLED 
-    { 0, 11, 0xbcbc89ff },    // DEFAULT_TEXT_COLOR_DISABLED 
+// Custom style name: Enefete
+static const GuiStyleProp enefeteStyleProps[ENEFETE_STYLE_PROPS_COUNT] = {
+    { 0, 0, 0x1980d5ff },    // DEFAULT_BORDER_COLOR_NORMAL 
+    { 0, 1, 0x4df3ebff },    // DEFAULT_BASE_COLOR_NORMAL 
+    { 0, 2, 0x103e60ff },    // DEFAULT_TEXT_COLOR_NORMAL 
+    { 0, 3, 0xe7e2f7ff },    // DEFAULT_BORDER_COLOR_FOCUSED 
+    { 0, 4, 0x23d4ddff },    // DEFAULT_BASE_COLOR_FOCUSED 
+    { 0, 5, 0xf1f1f1ff },    // DEFAULT_TEXT_COLOR_FOCUSED 
+    { 0, 6, 0x6413a6ff },    // DEFAULT_BORDER_COLOR_PRESSED 
+    { 0, 7, 0xea66d9ff },    // DEFAULT_BASE_COLOR_PRESSED 
+    { 0, 8, 0x9f00bbff },    // DEFAULT_TEXT_COLOR_PRESSED 
+    { 0, 9, 0x4b909eff },    // DEFAULT_BORDER_COLOR_DISABLED 
+    { 0, 10, 0x73c7d0ff },    // DEFAULT_BASE_COLOR_DISABLED 
+    { 0, 11, 0x448894ff },    // DEFAULT_TEXT_COLOR_DISABLED 
     { 0, 16, 0x00000010 },    // DEFAULT_TEXT_SIZE 
     { 0, 17, 0x00000000 },    // DEFAULT_TEXT_SPACING 
-    { 0, 18, 0x725706ff },    // DEFAULT_LINE_COLOR 
-    { 0, 19, 0xf0be4bff },    // DEFAULT_BACKGROUND_COLOR 
+    { 0, 18, 0x1d3f6cff },    // DEFAULT_LINE_COLOR 
+    { 0, 19, 0x29c9e5ff },    // DEFAULT_BACKGROUND_COLOR 
     { 0, 20, 0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
-    { 1, 2, 0x504506ff },    // LABEL_TEXT_COLOR_NORMAL 
-    { 1, 5, 0xfdeb9bff },    // LABEL_TEXT_COLOR_FOCUSED 
-    { 1, 8, 0xf5e8a4ff },    // LABEL_TEXT_COLOR_PRESSED 
-    { 2, 2, 0xebc21fff },    // BUTTON_TEXT_COLOR_NORMAL 
-    { 3, 2, 0xebc21fff },    // TOGGLE_TEXT_COLOR_NORMAL 
-    { 4, 2, 0x81700fff },    // SLIDER_TEXT_COLOR_NORMAL 
-    { 4, 5, 0xf4e49aff },    // SLIDER_TEXT_COLOR_FOCUSED 
-    { 7, 2, 0xebc21fff },    // COMBOBOX_TEXT_COLOR_NORMAL 
-    { 8, 2, 0xefd87bff },    // DROPDOWNBOX_TEXT_COLOR_NORMAL 
-    { 8, 5, 0xd4b219ff },    // DROPDOWNBOX_TEXT_COLOR_FOCUSED 
-    { 9, 2, 0x7a680bff },    // TEXTBOX_TEXT_COLOR_NORMAL 
-    { 9, 5, 0xad931fff },    // TEXTBOX_TEXT_COLOR_FOCUSED 
-    { 10, 2, 0x62570eff },    // VALUEBOX_TEXT_COLOR_NORMAL 
-    { 10, 5, 0xf2df88ff },    // VALUEBOX_TEXT_COLOR_FOCUSED 
-    { 12, 2, 0xf4e798ff },    // LISTVIEW_TEXT_COLOR_NORMAL 
-    { 15, 2, 0xebc21fff },    // STATUSBAR_TEXT_COLOR_NORMAL 
 };
 
 // WARNING: This style uses a custom font: "GenericMobileSystemNuevo.ttf" (size: 16, spacing: 0)
 
-#define SUNNY_STYLE_FONT_ATLAS_COMP_SIZE 2462
+#define ENEFETE_STYLE_FONT_ATLAS_COMP_SIZE 2462
 
 // Font atlas image pixels data: DEFLATE compressed
-static unsigned char sunnyFontData[SUNNY_STYLE_FONT_ATLAS_COMP_SIZE] = { 0xed,
+static unsigned char enefeteFontData[ENEFETE_STYLE_FONT_ATLAS_COMP_SIZE] = { 0xed,
     0xdd, 0x59, 0xb2, 0xeb, 0x34, 0x10, 0x00, 0x50, 0x6d, 0x83, 0xfd, 0xef, 0x8d, 0x6d, 0x88, 0xa2, 0x28, 0x0a, 0xb8, 0x8f,
     0x58, 0x52, 0x77, 0xcb, 0x53, 0x0e, 0xa7, 0xf8, 0xb9, 0x7e, 0x49, 0x6c, 0xd9, 0x6d, 0x0d, 0xb6, 0x5a, 0xbd, 0x01, 0x00,
     0x00, 0x00, 0x5f, 0xef, 0xcf, 0xff, 0xfe, 0xff, 0x6f, 0xff, 0xb7, 0xe5, 0x78, 0xdb, 0xdf, 0xff, 0x62, 0xb4, 0xa5, 0x7f,
@@ -182,7 +166,7 @@ static unsigned char sunnyFontData[SUNNY_STYLE_FONT_ATLAS_COMP_SIZE] = { 0xed,
     0x0f };
 
 // Font glyphs rectangles data (on atlas)
-static const Rectangle sunnyFontRecs[189] = {
+static const Rectangle enefeteFontRecs[189] = {
     { 4, 4, 4 , 16 },
     { 16, 4, 2 , 10 },
     { 26, 4, 5 , 3 },
@@ -376,7 +360,7 @@ static const Rectangle sunnyFontRecs[189] = {
 
 // Font glyphs info data
 // NOTE: No glyphs.image data provided
-static const GlyphInfo sunnyFontGlyphs[189] = {
+static const GlyphInfo enefeteFontGlyphs[189] = {
     { 32, 0, 12, 4, { 0 }},
     { 33, 0, 2, 3, { 0 }},
     { 34, 0, 2, 6, { 0 }},
@@ -568,20 +552,20 @@ static const GlyphInfo sunnyFontGlyphs[189] = {
     { 255, 0, 2, 7, { 0 }},
 };
 
-// Style loading function: Sunny
-static void GuiLoadStyleSunny(void)
+// Style loading function: Enefete
+static void GuiLoadStyleEnefete(void)
 {
     // Load style properties provided
     // NOTE: Default properties are propagated
-    for (int i = 0; i < SUNNY_STYLE_PROPS_COUNT; i++)
+    for (int i = 0; i < ENEFETE_STYLE_PROPS_COUNT; i++)
     {
-        GuiSetStyle(sunnyStyleProps[i].controlId, sunnyStyleProps[i].propertyId, sunnyStyleProps[i].propertyValue);
+        GuiSetStyle(enefeteStyleProps[i].controlId, enefeteStyleProps[i].propertyId, enefeteStyleProps[i].propertyValue);
     }
 
     // Custom font loading
     // NOTE: Compressed font image data (DEFLATE), it requires DecompressData() function
-    int sunnyFontDataSize = 0;
-    unsigned char *data = DecompressData(sunnyFontData, SUNNY_STYLE_FONT_ATLAS_COMP_SIZE, &sunnyFontDataSize);
+    int enefeteFontDataSize = 0;
+    unsigned char *data = DecompressData(enefeteFontData, ENEFETE_STYLE_FONT_ATLAS_COMP_SIZE, &enefeteFontDataSize);
     Image imFont = { data, 512, 256, 1, 2 };
 
     Font font = { 0 };
@@ -595,12 +579,12 @@ static void GuiLoadStyleSunny(void)
     // Copy char recs data from global fontRecs
     // NOTE: Required to avoid issues if trying to free font
     font.recs = (Rectangle *)RAYGUI_MALLOC(font.glyphCount*sizeof(Rectangle));
-    memcpy(font.recs, sunnyFontRecs, font.glyphCount*sizeof(Rectangle));
+    memcpy(font.recs, enefeteFontRecs, font.glyphCount*sizeof(Rectangle));
 
     // Copy font char info data from global fontChars
     // NOTE: Required to avoid issues if trying to free font
     font.glyphs = (GlyphInfo *)RAYGUI_MALLOC(font.glyphCount*sizeof(GlyphInfo));
-    memcpy(font.glyphs, sunnyFontGlyphs, font.glyphCount*sizeof(GlyphInfo));
+    memcpy(font.glyphs, enefeteFontGlyphs, font.glyphCount*sizeof(GlyphInfo));
 
     GuiSetFont(font);
 

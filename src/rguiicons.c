@@ -140,15 +140,18 @@
 
 // raygui embedded styles
 // NOTE: Included in the same order as selector
-#define MAX_GUI_STYLES_AVAILABLE   9        // NOTE: Included light style
+#define MAX_GUI_STYLES_AVAILABLE   12       // NOTE: Included light style
 #include "styles/style_jungle.h"            // raygui style: jungle
+#include "styles/style_candy.h"             // raygui style: candy
 #include "styles/style_lavanda.h"           // raygui style: lavanda
 #include "styles/style_cyber.h"             // raygui style: cyber
 #include "styles/style_terminal.h"          // raygui style: terminal
 #include "styles/style_ashes.h"             // raygui style: ashes
 #include "styles/style_bluish.h"            // raygui style: bluish
 #include "styles/style_dark.h"              // raygui style: dark
+#include "styles/style_cherry.h"            // raygui style: cherry
 #include "styles/style_sunny.h"             // raygui style: sunny
+#include "styles/style_enefete.h"           // raygui style: enefete
 
 #define RPNG_IMPLEMENTATION
 #include "external/rpng.h"                  // PNG chunks management
@@ -875,13 +878,16 @@ int main(int argc, char *argv[])
             switch (mainToolbarState.visualStyleActive)
             {
                 case 1: GuiLoadStyleJungle(); break;
-                case 2: GuiLoadStyleLavanda(); break;
-                case 3: GuiLoadStyleCyber(); break;
-                case 4: GuiLoadStyleTerminal(); break;
-                case 5: GuiLoadStyleAshes(); break;
-                case 6: GuiLoadStyleBluish(); break;
-                case 7: GuiLoadStyleDark(); break;
-                case 8: GuiLoadStyleSunny(); break;
+                case 2: GuiLoadStyleCandy(); break;
+                case 3: GuiLoadStyleLavanda(); break;
+                case 4: GuiLoadStyleCyber(); break;
+                case 5: GuiLoadStyleTerminal(); break;
+                case 6: GuiLoadStyleAshes(); break;
+                case 7: GuiLoadStyleBluish(); break;
+                case 8: GuiLoadStyleDark(); break;
+                case 9: GuiLoadStyleCherry(); break;
+                case 10: GuiLoadStyleSunny(); break;
+                case 11: GuiLoadStyleEnefete(); break;
                 default: break;
             }
 
