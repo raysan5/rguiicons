@@ -213,6 +213,10 @@ static const char *toolName = TOOL_NAME;
 static const char *toolVersion = TOOL_VERSION;
 static const char *toolDescription = TOOL_DESCRIPTION;
 
+// NOTE: Max length depends on OS, in Windows MAX_PATH = 256
+static char inFileName[512] = { 0 };        // Input file name (required in case of drag & drop over executable)
+static char outFileName[512] = { 0 };       // Output file name (required for file save/export)
+
 static bool saveChangesRequired = false;    // Flag to notice save changes are required
 
 // Icons name id text
@@ -477,9 +481,6 @@ static bool CheckIconPixel(unsigned int *iconset, int iconId, int x, int y);    
 //------------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-    char inFileName[512] = { 0 };       // Input file name (required in case of drag & drop over executable)
-    char outFileName[512] = { 0 };      // Output file name (required for file save/export)
-
 #if !defined(_DEBUG)
     SetTraceLogLevel(LOG_NONE);         // Disable raylib trace log messsages
 #endif
@@ -628,6 +629,8 @@ int main(int argc, char *argv[])
 
         memcpy(undoIconSet[i].values, currentIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
     }
+
+    int styleFrameCounter = 0;
 
     SetTargetFPS(60);       // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -864,10 +867,9 @@ int main(int argc, char *argv[])
 
         // Main toolbar logic
         //----------------------------------------------------------------------------------
-        // File options logic -> Processed on key shortcuts
-        //if (mainToolbarState.btnLoadFilePressed) showLoadFileDialog = true;
-        //else if (mainToolbarState.btnSaveFilePressed) showSaveFileDialog = true;
-        //else if (mainToolbarState.btnExportFilePressed) windowExportActive = true;
+        //styleFrameCounter++;
+        //if ((styleFrameCounter%120) == 0) mainToolbarState.visualStyleActive++;
+        //if (mainToolbarState.visualStyleActive > 11) mainToolbarState.visualStyleActive = 0;
 
         // Visual options logic
         if (mainToolbarState.visualStyleActive != mainToolbarState.prevVisualStyleActive)
@@ -1319,10 +1321,6 @@ static void ProcessCommandLine(int argc, char *argv[])
 {
     // CLI required variables
     bool showUsageInfo = false;         // Toggle command line usage info
-
-    char inFileName[512] = { 0 };       // Input file name
-    char outFileName[512] = { 0 };      // Output file name
-    //int outputFormat = 0;               // Supported output formats
 
     if (argc == 1) showUsageInfo = true;
 
