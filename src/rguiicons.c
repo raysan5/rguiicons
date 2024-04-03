@@ -1592,7 +1592,10 @@ static void ExportIconsAsCode(const char *fileName)
 
             fprintf(codeFile, "     // ICON_%s\n", (guiIconsName[i][0] != '\0')? guiIconsName[i] : TextFormat("%03i", i));
         }
-        fprintf(codeFile, "};\n");
+        fprintf(codeFile, "};\n\n");
+
+        fprintf(codeFile, "// NOTE: We keep a pointer to the current icons array\n");
+        fprintf(codeFile, "static unsigned int *guiIconsPtr = guiIcons;\n");
 
         fclose(codeFile);
     }
