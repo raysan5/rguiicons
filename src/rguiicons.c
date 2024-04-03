@@ -27,6 +27,11 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
+*       3.1  (03-Apr-2024)  ADDED: Report Issue/Features window (Open GitHub)
+*                           ADDED: New icons: WARNING, HELP_BOX, INFO_BOX
+*                           REMOVED: Sponsors window
+*                           UPDATED: Using raygui 4.1-dev and latest raylib 5.1-dev
+* 
 *       3.0  (20-Sep-2023)  ADDED: Support macOS builds (x86_64 + arm64)
 *                           ADDED: New icons for code/text editor tools
 *                           REVIEWED: CUBE_* icons aspect for 3d
@@ -131,9 +136,6 @@
 
 #define GUI_WINDOW_ABOUT_IMPLEMENTATION
 #include "gui_window_about.h"               // GUI: About Window
-
-#define GUI_WINDOW_SPONSOR_IMPLEMENTATION
-#include "gui_window_sponsor.h"             // GUI: Sponsor Window
 
 #define GUI_FILE_DIALOGS_IMPLEMENTATION
 #include "gui_file_dialogs.h"               // GUI: File Dialogs
@@ -440,7 +442,10 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "REG_EXP",
     "FOLDER",
     "FILE",
-    "TEMPO"
+    "TEMPO",
+    "WARNING",
+    "HELP_BOX",
+    "INFO_BOX"
 };
 
 // Keep a pointer to original gui iconset as backup
@@ -564,14 +569,14 @@ int main(int argc, char *argv[])
     GuiWindowAboutState windowAboutState = InitGuiWindowAbout();
     //-----------------------------------------------------------------------------------
 
-    // GUI: Sponsor Window
+    // GUI: Issue Window
     //-----------------------------------------------------------------------------------
-    GuiWindowSponsorState windowSponsorState = InitGuiWindowSponsor();
+    bool showIssueReportWindow = false;
     //-----------------------------------------------------------------------------------
 
     // GUI: Export Window
     //-----------------------------------------------------------------------------------
-    bool windowExportActive = false;
+    bool showExportWindow = false;
 
     int exportFormatActive = 0;             // ComboBox file type selection
     char styleNameText[128] = "Unnamed";    // Style name text box
@@ -583,7 +588,7 @@ int main(int argc, char *argv[])
     // GUI: Exit Window
     //-----------------------------------------------------------------------------------
     bool closeWindow = false;
-    bool windowExitActive = false;
+    bool showExitWindow = false;
     //-----------------------------------------------------------------------------------
 
     // GUI: Custom file dialogs
@@ -640,15 +645,15 @@ int main(int argc, char *argv[])
     {
         // WARNING: ASINCIFY requires this line,
         // it contains the call to emscripten_sleep() for PLATFORM_WEB
-        if (WindowShouldClose()) windowExitActive = true;
+        if (WindowShouldClose()) showExitWindow = true;
 
         // Undo icons change logic
         //----------------------------------------------------------------------------------
         // Make sure no windows are open to store changes
         if (!windowHelpState.windowActive &&
             !windowAboutState.windowActive &&
-            !windowSponsorState.windowActive &&
-            !windowExitActive &&
+            !showIssueReportWindow &&
+            !showExitWindow &&
             !showLoadFileDialog &&
             !showSaveFileDialog &&
             !showExportFileDialog)
@@ -784,7 +789,7 @@ int main(int argc, char *argv[])
         if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) || mainToolbarState.btnExportFilePressed)
         {
             strcpy(outFileName, "iconset.rgi");
-            windowExportActive = true;
+            showExportWindow = true;
         }
 
         // Cut button/shortcut logic
@@ -832,17 +837,17 @@ int main(int argc, char *argv[])
         if (IsKeyPressed(KEY_F2)) windowAboutState.windowActive = !windowAboutState.windowActive;
 
         // Toggle window: sponsor
-        if (IsKeyPressed(KEY_F3)) windowSponsorState.windowActive = !windowSponsorState.windowActive;
+        if (IsKeyPressed(KEY_F3)) showIssueReportWindow = !showIssueReportWindow;
 
         // Show closing window on ESC
         if (IsKeyPressed(KEY_ESCAPE))
         {
             if (windowHelpState.windowActive) windowHelpState.windowActive = false;
             else if (windowAboutState.windowActive) windowAboutState.windowActive = false;
-            else if (windowSponsorState.windowActive) windowSponsorState.windowActive = false;
-            else if (windowExportActive) windowExportActive = false;
+            else if (showIssueReportWindow) showIssueReportWindow = false;
+            else if (showExportWindow) showExportWindow = false;
         #if defined(PLATFORM_DESKTOP)
-            else windowExitActive = !windowExitActive;
+            else showExitWindow = !showExitWindow;
         #else
             else if (showLoadFileDialog) showLoadFileDialog = false;
             else if (showSaveFileDialog) showSaveFileDialog = false;
@@ -901,15 +906,15 @@ int main(int argc, char *argv[])
         // Help options logic
         if (mainToolbarState.btnHelpPressed) windowHelpState.windowActive = true;       // Help button logic
         if (mainToolbarState.btnAboutPressed) windowAboutState.windowActive = true;     // About window button logic
-        if (mainToolbarState.btnSponsorPressed) windowSponsorState.windowActive = true; // User sponsor logic
+        if (mainToolbarState.btnIssuePressed) showIssueReportWindow = true;            // Issue Report logic
         //----------------------------------------------------------------------------------
 
         // WARNING: Some windows should lock the main screen controls when shown
         if (windowHelpState.windowActive ||
             windowAboutState.windowActive ||
-            windowSponsorState.windowActive ||
-            windowExitActive ||
-            windowExportActive ||
+            showIssueReportWindow ||
+            showExitWindow ||
+            showExportWindow ||
             showLoadFileDialog ||
             showSaveFileDialog ||
             showExportFileDialog) GuiLock();
@@ -1046,16 +1051,25 @@ int main(int argc, char *argv[])
             GuiWindowAbout(&windowAboutState);
             //----------------------------------------------------------------------------------------
 
-            // GUI: Sponsor Window
+            // GUI: Report Issue Window
             //----------------------------------------------------------------------------------------
-            windowSponsorState.windowBounds.x = (float)screenWidth/2 - windowSponsorState.windowBounds.width/2;
-            windowSponsorState.windowBounds.y = (float)screenHeight/2 - windowSponsorState.windowBounds.height/2;
-            GuiWindowSponsor(&windowSponsorState);
+            if (showIssueReportWindow)
+            {
+                Rectangle messageBox = { (float)screenWidth/2 - 280/2, (float)screenHeight/2 - 130/2 - 30, 280, 130 };
+                int result = GuiMessageBox(messageBox, "#220#Report Issue", "Do you want to report any issue or\nfeature request for this program?", "#186#Report on GitHub");
+
+                if (result == 1)    // Report issue pressed
+                {
+                    OpenURL("https://github.com/raysan5/rguiicons/issues");
+                    showIssueReportWindow = false;
+                }
+                else if (result == 0) showIssueReportWindow = false;
+            }
             //----------------------------------------------------------------------------------------
 
             // GUI: Export Window
             //----------------------------------------------------------------------------------------
-            if (windowExportActive)
+            if (showExportWindow)
             {
                 Rectangle messageBox = { (float)screenWidth/2 - 280/2, (float)screenHeight/2 - 176/2 - 30, 280, 176 };
                 int result = GuiMessageBox(messageBox, "#7#Export Iconset File", " ", "#7#Export Iconset");
@@ -1072,20 +1086,20 @@ int main(int argc, char *argv[])
 
                 if (result == 1)    // Export button pressed
                 {
-                    windowExportActive = false;
+                    showExportWindow = false;
                     showExportFileDialog = true;
                 }
-                else if (result == 0) windowExportActive = false;
+                else if (result == 0) showExportWindow = false;
             }
             //----------------------------------------------------------------------------------
 
             // GUI: Exit Window
             //----------------------------------------------------------------------------------------
-            if (windowExitActive)
+            if (showExitWindow)
             {
                 int result = GuiMessageBox((Rectangle){ screenWidth/2 - 125, screenHeight/2 - 50, 250, 100 }, TextFormat("#159#Closing %s", toolName), "Do you really want to exit?", "Yes;No");
 
-                if ((result == 0) || (result == 2)) windowExitActive = false;
+                if ((result == 0) || (result == 2)) showExitWindow = false;
                 else if (result == 1) closeWindow = true;
             }
             //----------------------------------------------------------------------------------------
