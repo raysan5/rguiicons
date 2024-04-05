@@ -1055,8 +1055,9 @@ int main(int argc, char *argv[])
             //----------------------------------------------------------------------------------------
             if (showIssueReportWindow)
             {
-                Rectangle messageBox = { (float)screenWidth/2 - 280/2, (float)screenHeight/2 - 130/2 - 30, 280, 130 };
-                int result = GuiMessageBox(messageBox, "#220#Report Issue", "Do you want to report any issue or\nfeature request for this program?", "#186#Report on GitHub");
+                Rectangle messageBox = { (float)screenWidth/2 - 300/2, (float)screenHeight/2 - 190/2 - 20, 300, 190 };
+                int result = GuiMessageBox(messageBox, "#220#Report Issue", 
+                    "Do you want to report any issue or\nfeature request for this program?\n\ngithub.com/raysan5/rguiicons", "#186#Report on GitHub");
 
                 if (result == 1)    // Report issue pressed
                 {
