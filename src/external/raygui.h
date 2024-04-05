@@ -3735,9 +3735,9 @@ int GuiMessageBox(Rectangle bounds, const char *title, const char *message, cons
     int textWidth = GetTextWidth(message) + 2;
 
     Rectangle textBounds = { 0 };
-    textBounds.x = bounds.x + bounds.width/2 - textWidth/2;
+    textBounds.x = bounds.x + RAYGUI_MESSAGEBOX_BUTTON_PADDING;
     textBounds.y = bounds.y + RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT + RAYGUI_MESSAGEBOX_BUTTON_PADDING;
-    textBounds.width = (float)textWidth;
+    textBounds.width = bounds.width - RAYGUI_MESSAGEBOX_BUTTON_PADDING*2;
     textBounds.height = bounds.height - RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT - 3*RAYGUI_MESSAGEBOX_BUTTON_PADDING - RAYGUI_MESSAGEBOX_BUTTON_HEIGHT;
 
     // Draw control
