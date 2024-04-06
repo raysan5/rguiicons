@@ -1595,7 +1595,7 @@ static void ExportIconsAsCode(const char *fileName)
         }
         fprintf(codeFile, "};\n\n");
 
-        fprintf(codeFile, "// NOTE: We keep a pointer to the current icons array\n");
+        fprintf(codeFile, "// NOTE: A pointer to the current icons array should be defined\n");
         fprintf(codeFile, "static unsigned int *guiIconsPtr = guiIcons;\n");
 
         fclose(codeFile);
