@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rGuiIcons v3.0 - A simple and easy-to-use raygui icons editor
+*   rGuiIcons v3.1 - A simple and easy-to-use raygui icons editor
 *
 *   FEATURES:
 *       - Icon editing and preview at multiple sizes
@@ -27,10 +27,11 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
-*       3.1  (03-Apr-2024)  ADDED: Report Issue/Features window (Open GitHub)
+*       3.1  (06-Apr-2024)  ADDED: Report Issue/Features window (Open GitHub)
 *                           ADDED: New icons: WARNING, HELP_BOX, INFO_BOX
 *                           REMOVED: Sponsors window
-*                           UPDATED: Using raygui 4.1-dev and latest raylib 5.1-dev
+*                           REVIEWED: Main toolbar and help window
+*                           UPDATED: Using raylib 5.1-dev and raygui 4.1-dev
 * 
 *       3.0  (20-Sep-2023)  ADDED: Support macOS builds (x86_64 + arm64)
 *                           ADDED: New icons for code/text editor tools
@@ -38,7 +39,7 @@
 *                           REVIEWED: UI lock when some window shown
 *                           REVIEWED: Disabled sponsors window at launch
 *                           REVIEWED: Regenerated tool imagery
-*                           UPDATED: Using raygui 4.0 and latest raylib 4.6-dev
+*                           UPDATED: Using raylib 4.6-dev and raygui 4.0
 *
 *       2.2  (13-Dec-2022)  ADDED: Welcome window with sponsors info
 *                           REDESIGNED: Main toolbar to add tooltips
@@ -61,8 +62,8 @@
 *       1.0  (30-Sep-2019)  First release
 *
 *   DEPENDENCIES:
-*       raylib 4.6-dev          - Windowing/input management and drawing
-*       raygui 4.0              - Immediate-mode GUI controls with custom styling and icons
+*       raylib 5.1-dev          - Windowing/input management and drawing
+*       raygui 4.1-dev          - Immediate-mode GUI controls with custom styling and icons
 *       rpng 1.1                - PNG chunks management
 *       tinyfiledialogs 3.13.3  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *
@@ -105,10 +106,10 @@
 
 #define TOOL_NAME               "rGuiIcons"
 #define TOOL_SHORT_NAME         "rGI"
-#define TOOL_VERSION            "3.0"
+#define TOOL_VERSION            "3.1"
 #define TOOL_DESCRIPTION        "A simple and easy-to-use raygui icons editor"
 #define TOOL_DESCRIPTION_BREAK  "A simple and easy-to-use raygui\nicons editor"
-#define TOOL_RELEASE_DATE       "Sep.2023"
+#define TOOL_RELEASE_DATE       "Apr.2024"
 #define TOOL_LOGO_COLOR         0x48c9c5ff
 
 #include "raylib.h"
@@ -569,7 +570,7 @@ int main(int argc, char *argv[])
     GuiWindowAboutState windowAboutState = InitGuiWindowAbout();
     //-----------------------------------------------------------------------------------
 
-    // GUI: Issue Window
+    // GUI: Issue Report Window
     //-----------------------------------------------------------------------------------
     bool showIssueReportWindow = false;
     //-----------------------------------------------------------------------------------
@@ -906,7 +907,7 @@ int main(int argc, char *argv[])
         // Help options logic
         if (mainToolbarState.btnHelpPressed) windowHelpState.windowActive = true;       // Help button logic
         if (mainToolbarState.btnAboutPressed) windowAboutState.windowActive = true;     // About window button logic
-        if (mainToolbarState.btnIssuePressed) showIssueReportWindow = true;            // Issue Report logic
+        if (mainToolbarState.btnIssuePressed) showIssueReportWindow = true;             // Issue report window button logic
         //----------------------------------------------------------------------------------
 
         // WARNING: Some windows should lock the main screen controls when shown
@@ -1051,7 +1052,7 @@ int main(int argc, char *argv[])
             GuiWindowAbout(&windowAboutState);
             //----------------------------------------------------------------------------------------
 
-            // GUI: Report Issue Window
+            // GUI: Issue Report Window
             //----------------------------------------------------------------------------------------
             if (showIssueReportWindow)
             {
