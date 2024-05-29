@@ -465,7 +465,7 @@ static void ProcessCommandLine(int argc, char *argv[]);     // Process command l
 
 // Load/Save/Export data functions
 static void LoadIconsFromImage(Image image, int iconCount, int iconSize, int iconsPerLine, int padding); // Load icons from image file
-static bool SaveIcons(const char *fileName);                // Save raygui icons file (.rgi)
+static int SaveIcons(const char *fileName);                 // Save raygui icons file (.rgi)
 static void ExportIconsAsCode(const char *fileName);        // Export gui icons as code (.h)
 
 // Auxiliar functions
@@ -480,7 +480,6 @@ static void SetIconData(unsigned int *iconset, int iconId, unsigned int *data); 
 static void SetIconPixel(unsigned int *iconset, int iconId, int x, int y);       // Set icon pixel value
 static void ClearIconPixel(unsigned int *iconset, int iconId, int x, int y);     // Clear icon pixel value
 static bool CheckIconPixel(unsigned int *iconset, int iconId, int x, int y);     // Check icon pixel value
-
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -1479,7 +1478,7 @@ static void LoadIconsFromImage(Image image, int iconCount, int iconSize, int ico
 }
 
 // Save raygui icons file (.rgi)
-static bool SaveIcons(const char *fileName)
+static int SaveIcons(const char *fileName)
 {
     // raygui Icons File Structure (.rgi)
     // ------------------------------------------------------
@@ -1505,7 +1504,7 @@ static bool SaveIcons(const char *fileName)
     //   ...   | K       | unsigned int | Icon Data
     // }
 
-    bool result = false;
+    int result = -1;
     FILE *rgiFile = fopen(fileName, "wb");
 
     if (rgiFile != NULL)
@@ -1535,7 +1534,7 @@ static bool SaveIcons(const char *fileName)
         }
 
         fclose(rgiFile);
-        result = true;
+        result = 0;
     }
 
     return result;
