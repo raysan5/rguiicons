@@ -607,7 +607,7 @@ int main(int argc, char *argv[])
         for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
         free(tempIconsName);
 
-        SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
+        SetWindowTitle(TextFormat("%s v%s | File: %s", toolName, toolVersion, GetFileName(inFileName)));
     }
 
     // Init raygui iconset for editing
@@ -678,7 +678,7 @@ int main(int argc, char *argv[])
                     // Set a '*' mark on loaded file name to notice save requirement
                     if ((inFileName[0] != '\0') && !saveChangesRequired)
                     {
-                        SetWindowTitle(TextFormat("%s v%s - %s*", toolName, toolVersion, GetFileName(inFileName)));
+                        SetWindowTitle(TextFormat("%s v%s | File: %s*", toolName, toolVersion, GetFileName(inFileName)));
                         saveChangesRequired = true;
                     }
                 }
@@ -740,7 +740,7 @@ int main(int argc, char *argv[])
                 free(tempIconsName);
 
                 strcpy(inFileName, droppedFiles.paths[0]);
-                SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
+                SetWindowTitle(TextFormat("%s v%s | File: %s", toolName, toolVersion, GetFileName(inFileName)));
             }
             else if (IsFileExtension(droppedFiles.paths[0], ".png"))
             {
@@ -781,7 +781,7 @@ int main(int argc, char *argv[])
             else if (saveChangesRequired)
             {
                 SaveIcons(inFileName);
-                SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
+                SetWindowTitle(TextFormat("%s v%s | File: %s", toolName, toolVersion, GetFileName(inFileName)));
                 saveChangesRequired = false;
             }
         }
@@ -1122,7 +1122,7 @@ int main(int argc, char *argv[])
                     for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) { strcpy(guiIconsName[i], tempIconsName[i]); free(tempIconsName[i]); }
                     free(tempIconsName);
 
-                    SetWindowTitle(TextFormat("%s v%s - %s", toolName, toolVersion, GetFileName(inFileName)));
+                    SetWindowTitle(TextFormat("%s v%s | File: %s", toolName, toolVersion, GetFileName(inFileName)));
                     saveChangesRequired = false;
                 }
 
