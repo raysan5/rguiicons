@@ -32,7 +32,7 @@
 *                           REMOVED: Sponsors window
 *                           REVIEWED: Main toolbar and help window
 *                           UPDATED: Using raylib 5.1-dev and raygui 4.1-dev
-* 
+*
 *       3.0  (20-Sep-2023)  ADDED: Support macOS builds (x86_64 + arm64)
 *                           ADDED: New icons for code/text editor tools
 *                           REVIEWED: CUBE_* icons aspect for 3d
@@ -62,10 +62,10 @@
 *       1.0  (30-Sep-2019)  First release
 *
 *   DEPENDENCIES:
-*       raylib 5.1-dev          - Windowing/input management and drawing
-*       raygui 4.1-dev          - Immediate-mode GUI controls with custom styling and icons
+*       raylib 5.5-dev          - Windowing/input management and drawing
+*       raygui 4.5-dev          - Immediate-mode GUI controls with custom styling and icons
 *       rpng 1.1                - PNG chunks management
-*       tinyfiledialogs 3.13.3  - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
+*       tinyfiledialogs 3.18    - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
 *
 *   BUILDING:
 *     - Windows (MinGW-w64):
@@ -785,7 +785,7 @@ int main(int argc, char *argv[])
                 saveChangesRequired = false;
             }
         }
-        
+
         // Show dialog: export icons data (.png, .h)
         if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) || mainToolbarState.btnExportFilePressed)
         {
@@ -1056,7 +1056,7 @@ int main(int argc, char *argv[])
             if (showIssueReportWindow)
             {
                 Rectangle messageBox = { (float)screenWidth/2 - 300/2, (float)screenHeight/2 - 190/2 - 20, 300, 190 };
-                int result = GuiMessageBox(messageBox, "#220#Report Issue", 
+                int result = GuiMessageBox(messageBox, "#220#Report Issue",
                     "Do you want to report any issue or\nfeature request for this program?\n\ngithub.com/raysan5/rguiicons", "#186#Report on GitHub");
 
                 if (result == 1)    // Report issue pressed
