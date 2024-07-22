@@ -1,18 +1,14 @@
-<img align="left" src="logo/rguiicons_256x256.png" width=256>
-
-# rGuiIcons
+# `rGuiIcons`
 
 A simple and easy-to-use [raygui](https://github.com/raysan5/raygui) icons editor.
 
 Useful for tools icons customization. The best tool companion for [rGuiLayout](https://raylibtech.itch.io/rguilayout) and [rGuiStyler](https://github.com/raysan5/rguistyler).
 
-rGuiIcons can be used for free as a [WebAssembly online tool](https://raylibtech.itch.io/rguiicons) and it can also be downloaded as a **standalone tool** for _Windows_ and _Linux_ with some extra features.
-
-<br>
+`rGuiIcons` can be used for free as a [WebAssembly online tool](https://raylibtech.itch.io/rguiicons) and it can also be downloaded as a **standalone tool** for _Windows_ and _Linux_ with some extra features.
 
 **NOTE: Latest `rGuiIcons 3.0` release is intended to be used with [`raygui 4.0`](https://github.com/raysan5/raygui/releases/tag/4.0) release.**
 
-## rGuiIcons Features
+## Features
 
  - **Icon editing** and preview at multiple sizes
  - **Cut, copy, paste** icons for easy editing
@@ -23,18 +19,15 @@ rGuiIcons can be used for free as a [WebAssembly online tool](https://raylibtech
  - Icon name ids exported as standard PNG chunk (`zTXt`)
  - Multiple UI styles for tools reference
  - **+200 custom icons for reference** and basic edition
- - **Completely free and open source** 
- 
-### rGuiStyler Standalone Additional Features
-
  - Command-line support for `.rgi`/`.h`/`.png` batch conversion
  - **Completely portable (single-file, no-dependencies)**
+ - **Free and open source** 
 
-## rGuiIcons Screenshot
+## Screenshot
 
 ![rGuiIcons](screenshots/rguiicons_v200_shot02.png)
 
-## rGuiIcons Usage
+## Usage
 
 The tool is quite intuitive, the expected steps to follow are: 
  1. Choose the icon to edit from icons panel
@@ -60,7 +53,7 @@ Once icons have been created/edited, they can be saved as a raygui-ready icon se
 
  > rguiicons.exe --help
 
-## rGuiIcons License
+## License
 
 `rGuiIcons` source code is distributed as **open source**, licensed under an unmodified [zlib/libpng license](LICENSE). 
 
