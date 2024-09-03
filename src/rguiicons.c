@@ -469,7 +469,7 @@ static int SaveIcons(const char *fileName);                 // Save raygui icons
 static void ExportIconsAsCode(const char *fileName);        // Export gui icons as code (.h)
 
 // Auxiliar functions
-void DrawIcon(unsigned int *iconset, int iconId, int posX, int posY, int pixelSize, Color color);       // Draw selected icon from iconset
+static void DrawIcon(unsigned int *iconset, int iconId, int posX, int posY, int pixelSize, Color color); // Draw selected icon from iconset
 static void DrawIconData(unsigned int *data, int x, int y, int pixelSize, Color color);                 // Draw one icon, icon data provided directly
 static Image GenImageFromIconData(unsigned int *values, int iconCount, int iconsPerLine, int padding);  // Gen icons pack image from icon data array
 static Image GenImageFromBits(unsigned char *bytes, int width, int height, Color color);                // Gen image from bits data (packed in bytes)
@@ -1607,7 +1607,7 @@ static void ExportIconsAsCode(const char *fileName)
 //--------------------------------------------------------------------------------------------
 
 // Draw selected icon from iconset
-void DrawIcon(unsigned int *iconset, int iconId, int posX, int posY, int pixelSize, Color color)
+static void DrawIcon(unsigned int *iconset, int iconId, int posX, int posY, int pixelSize, Color color)
 {
     for (int i = 0, y = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32; i++)
     {
