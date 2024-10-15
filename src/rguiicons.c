@@ -1110,7 +1110,7 @@ int main(int argc, char *argv[])
             if (showLoadFileDialog)
             {
 #if defined(CUSTOM_MODAL_DIALOGS)
-                int result = GuiFileDialog(DIALOG_MESSAGE, "Load raygui icons file ...", inFileName, "Ok", "Just drag and drop your .rgi style file!");
+                int result = GuiFileDialog(DIALOG_MESSAGE, "Load raygui icons file", inFileName, "Ok", "Just drag and drop your .rgi style file!");
 #else
                 int result = GuiFileDialog(DIALOG_OPEN_FILE, "Load raygui icons file", inFileName, "*.rgi", "raygui Icons Files (*.rgi)");
 #endif
