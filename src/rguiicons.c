@@ -85,7 +85,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2019-2024 raylib technologies (@raylibtech) / Ramon Santamaria (@raysan5)
+*   Copyright (c) 2019-2025 raylib technologies (@raylibtech) / Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -1309,7 +1309,7 @@ static void ShowCommandLineInfo(void)
     printf("// more info and bugs-report: github.com/raylibtech/rtools                      //\n");
     printf("// feedback and support:      ray[at]raylibtech.com                             //\n");
     printf("//                                                                              //\n");
-    printf("// Copyright (c) 2019-2024 raylib technologies (@raylibtech)                    //\n");
+    printf("// Copyright (c) 2019-2025 raylib technologies (@raylibtech)                    //\n");
     printf("//                                                                              //\n");
     printf("//////////////////////////////////////////////////////////////////////////////////\n\n");
 
@@ -1554,7 +1554,7 @@ static void ExportIconsAsCode(const char *fileName)
         fprintf(codeFile, "// more info and bugs-report:  github.com/raysan5/raygui                        //\n");
         fprintf(codeFile, "// feedback and support:       ray[at]raylibtech.com                            //\n");
         fprintf(codeFile, "//                                                                              //\n");
-        fprintf(codeFile, "// Copyright (c) 2019-2024 raylib technologies (@raylibtech)                    //\n");
+        fprintf(codeFile, "// Copyright (c) 2019-2025 raylib technologies (@raylibtech)                    //\n");
         fprintf(codeFile, "//                                                                              //\n");
         fprintf(codeFile, "//////////////////////////////////////////////////////////////////////////////////\n\n");
 
