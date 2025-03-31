@@ -446,7 +446,18 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "TEMPO",
     "WARNING",
     "HELP_BOX",
-    "INFO_BOX"
+    "INFO_BOX",
+    "PRIORITY",
+    "LAYERS_ISO",
+    "LAYERS2",
+    "MLAYERS",
+    "MAPS",
+    "HOT",
+    "LABEL",
+    "NAME_ID",
+    "SLICING",
+    "MANUAL_CONTROL",
+    "COLLISION",
 };
 
 // Keep a pointer to original gui iconset as backup
@@ -975,13 +986,6 @@ int main(int argc, char *argv[])
         BeginTextureMode(target);
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
-            // GUI: Main toolbar panel
-            //----------------------------------------------------------------------------------
-            GuiMainToolbar(&mainToolbarState);
-
-            if (iconDataToCopy) DrawIconData(iconData, mainToolbarState.anchorEdit.x + 12 + 72 + 16 + 4, mainToolbarState.anchorEdit.y + 8 + 4, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
-            //----------------------------------------------------------------------------------
-
             // GUI: Main screen controls
             //---------------------------------------------------------------------------------------------------------
             GuiLabel((Rectangle){ anchor01.x + 15, anchor01.y + 45, 140, 25 }, "Choose icon for edit:");
@@ -1021,6 +1025,12 @@ int main(int argc, char *argv[])
             if (iconEditScale < 2) iconEditScale = 2;
             else if (iconEditScale > 16) iconEditScale = 16;
             //--------------------------------------------------------------------------------
+
+            // GUI: Main toolbar panel
+            //----------------------------------------------------------------------------------
+            GuiMainToolbar(&mainToolbarState);
+            if (iconDataToCopy) DrawIconData(iconData, mainToolbarState.anchorEdit.x + 12 + 72 + 16 + 4, mainToolbarState.anchorEdit.y + 8 + 4, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
+            //----------------------------------------------------------------------------------
 
             // GUI: Status bar
             //--------------------------------------------------------------------------------
