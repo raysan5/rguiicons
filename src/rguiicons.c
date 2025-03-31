@@ -143,7 +143,7 @@
 
 // raygui embedded styles
 // NOTE: Included in the same order as selector
-#define MAX_GUI_STYLES_AVAILABLE   12       // NOTE: Included light style
+#define MAX_GUI_STYLES_AVAILABLE   14       // NOTE: Included light style
 #include "styles/style_jungle.h"            // raygui style: jungle
 #include "styles/style_candy.h"             // raygui style: candy
 #include "styles/style_lavanda.h"           // raygui style: lavanda
@@ -155,6 +155,8 @@
 #include "styles/style_cherry.h"            // raygui style: cherry
 #include "styles/style_sunny.h"             // raygui style: sunny
 #include "styles/style_enefete.h"           // raygui style: enefete
+#include "styles/style_amber.h"             // raygui style: amber
+#include "styles/style_genesis.h"           // raygui style: genesis
 
 #define RPNG_IMPLEMENTATION
 #include "external/rpng.h"                  // PNG chunks management
@@ -907,6 +909,8 @@ int main(int argc, char *argv[])
                 case 9: GuiLoadStyleCherry(); break;
                 case 10: GuiLoadStyleSunny(); break;
                 case 11: GuiLoadStyleEnefete(); break;
+                case 12: GuiLoadStyleAmber(); break;
+                case 13: GuiLoadStyleGenesis(); break;
                 default: break;
             }
 
