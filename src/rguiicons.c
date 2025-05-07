@@ -850,7 +850,7 @@ int main(int argc, char *argv[])
         // Toggle window: about
         if (IsKeyPressed(KEY_F2)) windowAboutState.windowActive = !windowAboutState.windowActive;
 
-        // Toggle window: sponsor
+        // Toggle window: report issue
         if (IsKeyPressed(KEY_F3)) showIssueReportWindow = !showIssueReportWindow;
 
         // Show closing window on ESC
