@@ -673,7 +673,7 @@ int main(int argc, char *argv[])
         {
             undoFrameCounter++;
 
-            // Every 120 frames we check if current layout has changed and record a new undo state
+            // Every 120 frames we check if current state has changed and record a new undo state
             if (undoFrameCounter >= 120)
             {
                 if (memcmp(undoIconSet[currentUndoIndex].values, currentIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int)) != 0)
