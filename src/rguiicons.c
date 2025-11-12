@@ -460,6 +460,22 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "SLICING",
     "MANUAL_CONTROL",
     "COLLISION",
+    "CIRCLE_ADD",
+    "CIRCLE_ADD_FILL",
+    "CIRCLE_WARNING",
+    "CIRCLE_WARNING_FILL",
+    "BOX_MORE",
+    "BOX_MORE_FILL",
+    "BOX_MINUS",
+    "BOX_MINUS_FILL",
+    "UNION",
+    "INTERSECTION",
+    "DIFFERENCE",
+    "SPHERE",
+    "CYLINDER",
+    "CONE",
+    "ELLIPSOID",
+    "CAPSULE"
 };
 
 // Keep a pointer to original gui iconset as backup
@@ -869,12 +885,6 @@ int main(int argc, char *argv[])
         #endif
         }
 
-        // Select visual style
-        if (IsKeyPressed(KEY_LEFT)) mainToolbarState.visualStyleActive--;
-        else if (IsKeyPressed(KEY_RIGHT)) mainToolbarState.visualStyleActive++;
-        if (mainToolbarState.visualStyleActive < 0) mainToolbarState.visualStyleActive = MAX_GUI_STYLES_AVAILABLE - 1;
-        else if (mainToolbarState.visualStyleActive > (MAX_GUI_STYLES_AVAILABLE - 1)) mainToolbarState.visualStyleActive = 0;
-
 #if !defined(PLATFORM_WEB)
         // Toggle screen size (x2) mode
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_F)) screenSizeActive = !screenSizeActive;
@@ -1103,6 +1113,8 @@ int main(int argc, char *argv[])
                 {
                     showExportWindow = false;
                     showExportFileDialog = true;
+
+                    strcpy(outFileName, GetFileNameWithoutExt(styleNameText));
                 }
                 else if (result == 0) showExportWindow = false;
             }
