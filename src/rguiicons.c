@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rGuiIcons v3.1 - A simple and easy-to-use raygui icons editor
+*   rGuiIcons v3.2 - A simple and easy-to-use raygui icons editor
 *
 *   FEATURES:
 *       - Icon editing and preview at multiple sizes
@@ -62,7 +62,7 @@
 *       1.0  (30-Sep-2019)  First release
 *
 *   DEPENDENCIES:
-*       raylib 5.5-dev          - Windowing/input management and drawing
+*       raylib 5.6-dev          - Windowing/input management and drawing
 *       raygui 4.5-dev          - Immediate-mode GUI controls with custom styling and icons
 *       rpng 1.5                - PNG chunks management
 *       tinyfiledialogs 3.20    - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs
@@ -106,10 +106,10 @@
 
 #define TOOL_NAME               "rGuiIcons"
 #define TOOL_SHORT_NAME         "rGI"
-#define TOOL_VERSION            "3.1"
+#define TOOL_VERSION            "3.2"
 #define TOOL_DESCRIPTION        "A simple and easy-to-use raygui icons editor"
 #define TOOL_DESCRIPTION_BREAK  "A simple and easy-to-use raygui\nicons editor"
-#define TOOL_RELEASE_DATE       "Apr.2024"
+#define TOOL_RELEASE_DATE       "Nov.2025"
 #define TOOL_LOGO_COLOR         0x48c9c5ff
 
 #include "raylib.h"
