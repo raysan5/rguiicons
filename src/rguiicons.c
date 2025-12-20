@@ -1114,7 +1114,7 @@ int main(int argc, char *argv[])
                     showExportWindow = false;
                     showExportFileDialog = true;
 
-                    strcpy(outFileName, GetFileNameWithoutExt(styleNameText));
+                    strncpy(outFileName, GetFileNameWithoutExt(styleNameText), 256 - 1);
                 }
                 else if (result == 0) showExportWindow = false;
             }
