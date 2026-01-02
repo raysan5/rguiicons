@@ -63,4 +63,4 @@ Once icons have been created/edited, they can be saved as a raygui-ready icon se
 
 In any case, consider some donation to help the author keep working on software for games development.
 
-*Copyright (c) 2019-2025 raylib technologies ([@raylibtech](https://github.com/raylibtech)) / Ramon Santamaria ([@raysan5](https://github.com/raysan5))*
+*Copyright (c) 2019-2026 raylib technologies ([@raylibtech](https://github.com/raylibtech)) / Ramon Santamaria ([@raysan5](https://github.com/raysan5))*
