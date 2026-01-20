@@ -689,7 +689,7 @@ int main(int argc, char *argv[])
         {
             undoFrameCounter++;
 
-            // Every 120 frames we check if current state has changed and record a new undo state
+            // Every 120 frames checking if current state has changed and record a new undo state
             if (undoFrameCounter >= 120)
             {
                 if (memcmp(undoIconSet[currentUndoIndex].values, currentIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int)) != 0)
@@ -1005,7 +1005,7 @@ int main(int argc, char *argv[])
             GuiLabel((Rectangle){ anchor01.x + 15, anchor01.y + 45, 140, 25 }, "Choose icon for edit:");
 
             // Draw icons selection panel
-            // NOTE: We point raygui icons pointer to current iconset to be used on drawing (instead of the internal one)
+            // NOTE: raygui icons pointer points to current iconset to be used on drawing (instead of the internal one)
             //GuiSetStyle(TOGGLE, GROUP_PADDING, -1);
             guiIconsPtr = currentIcons;
             GuiToggleGroup((Rectangle){ anchor01.x + 15, anchor01.y + 70, 18, 18 }, toggleIconsText, &selectedIcon);
@@ -1055,10 +1055,10 @@ int main(int argc, char *argv[])
             GuiSetStyle(STATUSBAR, TEXT_PADDING, textPadding);
             //--------------------------------------------------------------------------------
 
-            // NOTE: If some overlap window is open and main window is locked, we draw a background rectangle
+            // NOTE: If some overlap window is open and main window is locked, draw a background rectangle
             if (GuiIsLocked()) DrawRectangle(0, 0, screenWidth, screenHeight, Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), 0.85f));
 
-            // WARNING: Before drawing the windows, we unlock them
+            // WARNING: Before drawing the windows, unlock them
             GuiUnlock();
 
             // GUI: Help Window
