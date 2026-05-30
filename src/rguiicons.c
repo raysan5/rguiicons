@@ -125,7 +125,7 @@
 #define RAYGUI_TOGGLEGROUP_MAX_ITEMS      256
 #define RAYGUI_GRID_ALPHA                 0.2f
 #define RAYGUI_IMPLEMENTATION
-#include "raygui.h"                         // Required for: IMGUI controls
+#include "external/raygui.h"                // Required for: immediate-mode gui controls
 
 #undef RAYGUI_IMPLEMENTATION                // Avoid including raygui implementation again
 
