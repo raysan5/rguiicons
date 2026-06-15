@@ -576,7 +576,7 @@ typedef enum {
     DROPDOWNBOX,
     TEXTBOX,        // Used also for: TEXTBOXMULTI
     VALUEBOX,
-    CONTROL11,
+    TABBAR,
     LISTVIEW,
     COLORPICKER,
     SCROLLBAR,
@@ -698,8 +698,8 @@ typedef enum {
     SPINNER_BUTTON_SPACING,     // Spinner buttons separation
 } GuiValueBoxProperty;
 
-// Control11
-//typedef enum { } GuiControl11Property;
+// TabBar
+//typedef enum { } GuiTabBarProperty;
 
 // ListView
 typedef enum {
@@ -1158,7 +1158,7 @@ typedef enum {
 // NOTE 2: A different icon set could be loaded over this array using GuiLoadIcons(),
 // but loaded icons set must be same RAYGUI_ICON_SIZE and no more than RAYGUI_ICON_MAX_ICONS
 //
-// guiIcons size is by default: 256*(16*16/32) = 2048*4 = 8192 bytes = 8 KB
+// guiIcons size is by default: 512*(16*16/32) = 16384 bytes = 16 KB
 //----------------------------------------------------------------------------------
 static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_NONE
@@ -4903,7 +4903,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
     // Offset  | Size    | Type       | Description
     // ------------------------------------------------------
     // 0       | 4       | char       | Signature: "rGI "
-    // 4       | 2       | short      | Version: 100, 500 (raygui 5.0)
+    // 4       | 2       | short      | Version: 100
     // 6       | 2       | short      | reserved
 
     // 8       | 2       | short      | Num icons (N)
@@ -5130,7 +5130,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
         case SLIDER:
         case CHECKBOX:
         case VALUEBOX:
-        case CONTROL11:
+        case TABBAR:
             // TODO: More special cases (label on side): SLIDER, CHECKBOX, VALUEBOX, SPINNER
         default:
         {
