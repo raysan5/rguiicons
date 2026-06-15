@@ -1169,7 +1169,9 @@ int main(int argc, char *argv[])
             //--------------------------------------------------------------------------------
             int textPadding = GuiGetStyle(STATUSBAR, TEXT_PADDING);
             GuiSetStyle(STATUSBAR, TEXT_PADDING, 15);
-            GuiStatusBar((Rectangle){ 0, screenHeight - 24, screenWidth - 280 + 1, 24 }, TextFormat("TOTAL ICONS: %i", RAYGUI_ICON_MAX_ICONS));
+            GuiStatusBar((Rectangle){ 0, screenHeight - 24, screenWidth - 640 + 1, 24 }, TextFormat("TOTAL ICONS: %i [%i bytes]", RAYGUI_ICON_MAX_ICONS,
+                RAYGUI_ICON_MAX_ICONS*8*sizeof(unsigned int)));
+            GuiStatusBar((Rectangle){ screenWidth - 640, screenHeight - 24, 640 + 1, 24 }, TextFormat("ICON INFO: 16x16 pixels (1bpp) [%i bytes]", 8*sizeof(unsigned int)));
             GuiStatusBar((Rectangle){ screenWidth - 280, screenHeight - 24, 280, 24 }, TextFormat("SELECTED: %i - %s", selectedIcon, guiIconsName[selectedIcon]));
             GuiSetStyle(STATUSBAR, TEXT_PADDING, textPadding);
             //--------------------------------------------------------------------------------
