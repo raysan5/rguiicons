@@ -51,6 +51,7 @@ typedef struct {
     bool btnLoadFilePressed;
     bool btnSaveFilePressed;
     bool btnExportFilePressed;
+    bool btnReloadSetPressed;
 
     // Editor options
     bool btnCutPressed;
@@ -59,7 +60,12 @@ typedef struct {
     bool btnCleanPressed;
 
     // Tool options
-    //...
+    bool btnUndoPressed;
+    bool btnRedoPressed;
+
+    bool btnFlipHPressed;
+    bool btnFlipVPressed;
+    bool btnRotatePressed;
 
     // Visual options
     int visualStyleActive;
@@ -127,7 +133,7 @@ GuiMainToolbarState InitGuiMainToolbar(void)
 
     // Anchors for panels
     state.anchorFile = (Vector2){ 0, 0 };
-    state.anchorEdit = (Vector2){ state.anchorFile.x + 132 - 1, 0 };
+    state.anchorEdit = (Vector2){ state.anchorFile.x + 168 - 1, 0 };
     state.anchorTools = (Vector2){ state.anchorEdit.x + 168 - 1, 0 };
     state.anchorVisuals = (Vector2){ 0, 0 };    // Anchor right, depends on screen width
     state.anchorRight = (Vector2){ 0, 0 };      // Anchor right, depends on screen width
@@ -137,6 +143,7 @@ GuiMainToolbarState InitGuiMainToolbar(void)
     state.btnLoadFilePressed = false;
     state.btnSaveFilePressed = false;
     state.btnExportFilePressed = false;
+    state.btnReloadSetPressed = false;
 
     // Edit options
     state.btnCutPressed = false;
@@ -145,7 +152,12 @@ GuiMainToolbarState InitGuiMainToolbar(void)
     state.btnCleanPressed = false;
 
     // Tool options
-    //...
+    state.btnUndoPressed = false;
+    state.btnRedoPressed = false;
+
+    state.btnFlipHPressed = false;
+    state.btnFlipVPressed = false;
+    state.btnRotatePressed = false;
 
     // Visuals options
     state.visualStyleActive = 0;
@@ -169,10 +181,10 @@ GuiMainToolbarState InitGuiMainToolbar(void)
 void GuiMainToolbar(GuiMainToolbarState *state)
 {
     // Toolbar panels
-    state->anchorRight.x = (float)GetScreenWidth() - 104;       // Update right-anchor panel
+    state->anchorRight.x = (float)GetRenderWidth() - 104;       // Update right-anchor panel
     state->anchorVisuals.x = state->anchorRight.x - 208 + 1;    // Update right-anchor panel
 
-    GuiPanel((Rectangle){ state->anchorFile.x, state->anchorFile.y, 132, 40 }, NULL);
+    GuiPanel((Rectangle){ state->anchorFile.x, state->anchorFile.y, 232, 40 }, NULL);
     GuiPanel((Rectangle){ state->anchorEdit.x, state->anchorEdit.y, 168, 40 }, NULL);
     GuiPanel((Rectangle){ state->anchorTools.x, state->anchorTools.y, state->anchorVisuals.x - state->anchorTools.x + 1, 40 }, NULL);
     GuiPanel((Rectangle){ state->anchorVisuals.x, state->anchorVisuals.y, 208, 40 }, NULL);
@@ -187,17 +199,31 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     state->btnSaveFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 48 + 8, state->anchorFile.y + 8, 24, 24 }, "#6#");
     GuiSetTooltip("Export icons file (LCTRL+E)");
     state->btnExportFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 72 + 12, state->anchorFile.y + 8, 24, 24 }, "#7#");
+    GuiSetTooltip("Reload default raygui icon set");
+    state->btnReloadSetPressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 96 + 24, state->anchorFile.y + 8, 24, 24 }, "#61#");
 
     // Edit options
     GuiSetTooltip("Cut selected icon (LCTRL+X)");
-    state->btnCutPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12, state->anchorEdit.y + 8, 24, 24 }, "#17#");             // Cut
+    state->btnCutPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12, state->anchorEdit.y + 8, 24, 24 }, "#17#"); // Cut
     GuiSetTooltip("Copy selected icon (LCTRL+C)");
-    state->btnCopyPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 24 + 4, state->anchorEdit.y + 8, 24, 24 }, "#16#");   // Copy
+    state->btnCopyPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 24 + 4, state->anchorEdit.y + 8, 24, 24 }, "#16#"); // Copy
     GuiSetTooltip("Paste icon previously cut/copied (LCTRL+V)");
-    state->btnPastePressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 48 + 8, state->anchorEdit.y + 8, 24, 24 }, "#18#");  // Paste
+    state->btnPastePressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 48 + 8, state->anchorEdit.y + 8, 24, 24 }, "#18#"); // Paste
     GuiGroupBox((Rectangle){ state->anchorEdit.x + 12 + 72 + 16, state->anchorEdit.y + 8, 24, 24 }, NULL);
     GuiSetTooltip("Clear previously cut/copied icon");
-    state->btnCleanPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 96 + 24, state->anchorEdit.y + 8, 24, 24 }, "#079#");  // Clean
+    state->btnCleanPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 96 + 24, state->anchorEdit.y + 8, 24, 24 }, "#079#"); // Clean
+
+    // Tool options
+    GuiSetTooltip("Undo icon edit (LCTRL+Z)");
+    state->btnUndoPressed = GuiButton((Rectangle){ state->anchorTools.x + 12, state->anchorTools.y + 8, 24, 24 }, "#72#"); // Undo
+    GuiSetTooltip("Redo icon edit (LCTRL+Y)");
+    state->btnRedoPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 24 + 4, state->anchorTools.y + 8, 24, 24 }, "#73#"); // Redo
+    GuiSetTooltip("Flip icon horizontally");
+    state->btnFlipHPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 48 + 20, state->anchorTools.y + 8, 24, 24 }, "#40#"); // FlipH
+    GuiSetTooltip("Flip icon vertically");
+    state->btnFlipVPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 72 + 24, state->anchorTools.y + 8, 24, 24 }, "#41#"); // FlipV
+    GuiSetTooltip("Rotate icon clockwise 90");
+    state->btnRotatePressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 96 + 28, state->anchorTools.y + 8, 24, 24 }, "#60#"); // Rotate
 
     // Visuals options
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_RIGHT);
@@ -211,11 +237,11 @@ void GuiMainToolbar(GuiMainToolbarState *state)
 
     // Info options
     GuiSetTooltip("Show help window (F1)");
-    state->btnHelpPressed = GuiButton((Rectangle){ state->anchorRight.x + (GetScreenWidth() - state->anchorRight.x) - 12 - 72 - 8, state->anchorRight.y + 8, 24, 24 }, "#221#");
+    state->btnHelpPressed = GuiButton((Rectangle){ state->anchorRight.x + (GetRenderWidth() - state->anchorRight.x) - 12 - 72 - 8, state->anchorRight.y + 8, 24, 24 }, "#221#");
     GuiSetTooltip("Show info window (F2)");
-    state->btnAboutPressed = GuiButton((Rectangle){ state->anchorRight.x + (GetScreenWidth() - state->anchorRight.x) - 12 - 48 - 4, state->anchorRight.y + 8, 24, 24 }, "#222#");
+    state->btnAboutPressed = GuiButton((Rectangle){ state->anchorRight.x + (GetRenderWidth() - state->anchorRight.x) - 12 - 48 - 4, state->anchorRight.y + 8, 24, 24 }, "#222#");
     GuiSetTooltip("Report an issue (F3)");
-    state->btnIssuePressed = GuiButton((Rectangle){ state->anchorRight.x + (GetScreenWidth() - state->anchorRight.x) - 12 - 24, state->anchorRight.y + 8, 24, 24 }, "#220#");
+    state->btnIssuePressed = GuiButton((Rectangle){ state->anchorRight.x + (GetRenderWidth() - state->anchorRight.x) - 12 - 24, state->anchorRight.y + 8, 24, 24 }, "#220#");
 
     GuiSetTooltip(NULL);
 }

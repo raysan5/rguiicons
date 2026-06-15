@@ -1,25 +1,27 @@
 /*******************************************************************************************
 *
-*   rGuiIcons v3.2 - A simple and easy-to-use raygui icons editor
+*   rGuiIcons v4.0 - A simple and easy-to-use raygui icons editor
 *
 *   FEATURES:
 *       - Icon editing and preview at multiple sizes
 *       - Cut, copy, paste icons for easy editing
 *       - Undo/Redo system for icon changes
+*       - Edit icon tools: flip and rotate 
+*       - Define icon name (up to 32 characters)
 *       - Save and load as binary iconset file .rgi
 *       - Export iconset as an embeddable code file (.h)
 *       - Export iconset as a .png black&white image
 *       - Icon name ids exported as standard PNG chunk (zTXt)
 *       - Multiple UI styles for tools reference
-*       - +200 custom icons for reference and basic edition
+*       - +256 custom icons for reference and basic edition
 *
 *   LIMITATIONS:
-*       - Limitation 01
-*       - Limitation 02
+*       - Limited to 16x16 pixels 1bpp icons
+*       - Icon data exported as 8x32bit unsigned int
 *
 *   POSSIBLE IMPROVEMENTS:
-*       - Improvement 01
-*       - Improvement 02
+*       - Support color palettes, other than 1bpp
+*       - Export data in other byte formats
 *
 *   CONFIGURATION:
 *       #define CUSTOM_MODAL_DIALOGS
@@ -28,7 +30,13 @@
 *
 *   VERSIONS HISTORY:
 *       4.0  (xx-Jun-2026)  ADDED: Support up to 512 icons, aligned with raygui 5.0
-*                           REVIEWED: Added new UI styles
+*                           ADDED: New icon edit tools: flipH, flipV, rotate
+*                           ADDED: Button to reload default raygui icon set
+*                           ADDED: Icon hex view, with button to copy to clipboard
+*                           REVIEWED: New button creates and empty icon set
+*                           REVIEWED: Main toolbar to add buttons for edit options
+*                           REVIEWED: Status bar to show more info
+*                           REVIEWED: Added new UI styles: Amber, Genesis
 *                           REVIEWED: Full UI to accomodate more icons
 *                           UPDATED: Using raylib 6.1-dev and raygui 5.0-dev
 * 
@@ -558,7 +566,7 @@ int main(int argc, char *argv[])
     // GUI usage mode - Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = 944;
-    const int screenHeight = 428;
+    const int screenHeight = 460;
 
     InitWindow(screenWidth, screenHeight, TextFormat("%s v%s | %s", toolName, toolVersion, toolDescription));
     SetExitKey(0);
@@ -589,7 +597,8 @@ int main(int argc, char *argv[])
     toggleIconsText[RAYGUI_ICON_MAX_ICONS*6 - 1] = '\0';
 
     bool mouseHoverCells = false;
-    bool screenSizeActive = false;
+    bool screenSizeDouble = false;
+    bool requestScreenSizeToggle = false;
     //-----------------------------------------------------------------------------------
 
     // GUI: Main toolbar panel (file and visualization)
@@ -726,7 +735,7 @@ int main(int argc, char *argv[])
         else undoFrameCounter = 120;
 
         // Recover previous layout state from buffer
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Z))
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Z)) || mainToolbarState.btnUndoPressed)
         {
             if (currentUndoIndex != firstUndoIndex)
             {
@@ -742,7 +751,7 @@ int main(int argc, char *argv[])
         }
 
         // Recover next layout state from buffer
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Y))
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Y)) || mainToolbarState.btnRedoPressed)
         {
             if (currentUndoIndex != lastUndoIndex)
             {
@@ -798,7 +807,14 @@ int main(int argc, char *argv[])
         //------------------------------------------------------------------------------------
         if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_N)) || mainToolbarState.btnNewFilePressed)
         {
-            // Restore original raygui iconset
+            // Create new empty icon pack
+            memset(currentIcons, 0, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(int));
+            for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) memset(guiIconsName[i], 0, 32);
+        }
+
+        if (mainToolbarState.btnReloadSetPressed)
+        {
+            // Reload original raygui icon set
             memcpy(currentIcons, backupGuiIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(int));
             for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) memcpy(guiIconsName[i], backupGuiIconsName[i], strlen(backupGuiIconsName[i]));
         }
@@ -858,6 +874,67 @@ int main(int argc, char *argv[])
                 SetIconData(currentIcons, selectedIcon, iconData);
                 strcpy(guiIconsName[selectedIcon], iconName);
             }
+        }
+
+        // Flip icon horizontally
+        if (mainToolbarState.btnFlipHPressed)
+        {
+            for (int i = 0; i < RAYGUI_ICON_SIZE/2; i++)
+            {
+                unsigned int x = currentIcons[selectedIcon*RAYGUI_ICON_DATA_ELEMENTS + i];
+
+                unsigned short r0 = x & 0xFFFF;
+                r0 = ((r0 & 0x5555) << 1) | ((r0 >> 1) & 0x5555);
+                r0 = ((r0 & 0x3333) << 2) | ((r0 >> 2) & 0x3333);
+                r0 = ((r0 & 0x0F0F) << 4) | ((r0 >> 4) & 0x0F0F);
+                r0 = (r0 << 8) | (r0 >> 8);
+
+                unsigned short r1 = x >> 16;
+                r1 = ((r1 & 0x5555) << 1) | ((r1 >> 1) & 0x5555);
+                r1 = ((r1 & 0x3333) << 2) | ((r1 >> 2) & 0x3333);
+                r1 = ((r1 & 0x0F0F) << 4) | ((r1 >> 4) & 0x0F0F);
+                r1 = (r1 << 8) | (r1 >> 8);
+
+                currentIcons[selectedIcon*RAYGUI_ICON_DATA_ELEMENTS + i] = (r1 << 16) | r0;
+            }
+        }
+
+        // Flip icon vertically
+        if (mainToolbarState.btnFlipVPressed)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                unsigned int temp = currentIcons[selectedIcon*RAYGUI_ICON_DATA_ELEMENTS + i];
+                currentIcons[selectedIcon*RAYGUI_ICON_DATA_ELEMENTS + i] = (currentIcons[selectedIcon*RAYGUI_ICON_DATA_ELEMENTS + 7 - i] << 16) | (currentIcons[selectedIcon*RAYGUI_ICON_DATA_ELEMENTS + 7 - i] >> 16);
+                currentIcons[selectedIcon*RAYGUI_ICON_DATA_ELEMENTS + 7 - i] = (temp << 16) | (temp >> 16);
+            }
+        }
+
+        // Rotate icon 90� clockwise
+        if (mainToolbarState.btnRotatePressed)
+        {
+            unsigned int rotatedIcon[8] = { 0 };
+
+            for (int y = 0; y < 16; y++)
+            {
+                unsigned int src = currentIcons[selectedIcon*RAYGUI_ICON_DATA_ELEMENTS + (y >> 1)];
+                unsigned short row = (y & 1)? (src >> 16) : (src & 0xFFFF);
+
+                for (int x = 0; x < 16; x++)
+                {
+                    if (row & (1u << (15 - x)))
+                    {
+                        int nx = y;
+                        int ny = 15 - x;
+
+                        if (ny & 1) rotatedIcon[ny >> 1] |= (1u << (15 - nx)) << 16;
+                        else rotatedIcon[ny >> 1] |= (1u << (15 - nx));
+                    }
+                }
+            }
+
+            for (int i = 0; i < 8; i++)
+                currentIcons[selectedIcon*RAYGUI_ICON_DATA_ELEMENTS + i] = rotatedIcon[i];
         }
 
         // Clean selected icon
@@ -962,7 +1039,8 @@ int main(int argc, char *argv[])
             if (iconEditScale < 2) iconEditScale = 2;
             else if (iconEditScale > 16) iconEditScale = 16;
 
-            mouseHoverCells = CheckCollisionPointRec(GetMousePosition(), (Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale });
+            mouseHoverCells = CheckCollisionPointRec(GetMousePosition(), 
+                (Rectangle){ anchor01.x + 672 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale });
 
             if (mouseHoverCells)
             {
@@ -1027,7 +1105,7 @@ int main(int argc, char *argv[])
             DrawRectangle(anchor01.x + 672, anchor01.y + 108, 256, 256, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_NORMAL)), 0.3f));
             DrawIcon(currentIcons, selectedIcon, (int)anchor01.x + 672 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, (int)anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)));
 
-            // Draw grid (returns selected cell)
+            // Draw grid
             GuiGrid((Rectangle){ anchor01.x + 672 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, 
                 RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale }, NULL, iconEditScale, 1, &cell);
 
@@ -1038,10 +1116,11 @@ int main(int argc, char *argv[])
                 {
                     DrawRectangleLinesEx((Rectangle){ anchor01.x + 672 + iconEditScale*cell.x + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
                                                       anchor01.y + 108 + iconEditScale*cell.y + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
-                                                      iconEditScale + 1, iconEditScale + 1 }, 1, RED);
+                                                      iconEditScale + 1, iconEditScale + 1 }, 1, RED); //GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_FOCUSED)));
                 }
             }
 
+            // Draw editor zool slider
             float iconEditScaleF = (float)iconEditScale;
             GuiSliderBar((Rectangle){ anchor01.x + 720, anchor01.y + 376, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), &iconEditScaleF, 0.0f, 16.0f);
             iconEditScale = (int)iconEditScaleF;
