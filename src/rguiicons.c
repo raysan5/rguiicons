@@ -910,7 +910,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        // Rotate icon 90� clockwise
+        // Rotate icon 90 degrees clockwise
         if (mainToolbarState.btnRotatePressed)
         {
             unsigned int rotatedIcon[8] = { 0 };
