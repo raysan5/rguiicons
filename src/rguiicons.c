@@ -1126,6 +1126,37 @@ int main(int argc, char *argv[])
             iconEditScale = (int)iconEditScaleF;
             if (iconEditScale < 2) iconEditScale = 2;
             else if (iconEditScale > 16) iconEditScale = 16;
+
+            // Draw selected icon data
+            GuiLabel((Rectangle){ 12, 400, 80, 24 }, "ICON DATA:");
+            GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+            for (int j = 0; j < RAYGUI_ICON_SIZE/2; j++)
+                GuiTextBox((Rectangle){ 12 + 76 + j*96, 400, 92, 24 }, TextFormat("0x%08x", currentIcons[selectedIcon*RAYGUI_ICON_DATA_ELEMENTS + j]), 256, false);
+            GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+            if (GuiButton((Rectangle){ 12 + 76 + RAYGUI_ICON_SIZE/2*96, 400, 74, 24 }, "#16#Copy"))
+            {
+                // Copy to clipboard the hex values of the icon
+                char iconHexText[90] = { 0 };
+                for (int j = 0; j < RAYGUI_ICON_SIZE/2; j++) sprintf(iconHexText + j*11, "0x%08x ", currentIcons[selectedIcon*RAYGUI_ICON_DATA_ELEMENTS + j]);
+                SetClipboardText(iconHexText);
+            }
+            /*
+            // Trying to draw bits array as rectangles --> too long!
+            for (int j = 0, y = 0; j < RAYGUI_ICON_SIZE/2; j++)
+            {
+                for (int i = 0; i < 32; i++)
+                {
+                    if (RGI_BIT_CHECK(currentIcons[selectedIcon*RAYGUI_ICON_DATA_ELEMENTS + j], i))
+                    {
+                        // NOTE: Drawing the icon pixel-by-pixel using rectangles
+                        DrawRectangle(90 + j*(8*32 + 2) + i*8, 408 + y*12, 8, 8, GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)));
+                    }
+                    else DrawRectangleLines(90 + j*(8*32 + 2) + i*8, 408 + y*12, 8, 8, GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)));
+
+                    if (i == 31) y++;
+                }
+            }
+            */
             //--------------------------------------------------------------------------------
 
             // GUI: Main toolbar panel
