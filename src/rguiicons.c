@@ -27,6 +27,11 @@
 *           NOTE: Avoids including tinyfiledialogs depencency library
 *
 *   VERSIONS HISTORY:
+*       4.0  (xx-Jun-2026)  ADDED: Support up to 512 icons, aligned with raygui 5.0
+*                           REVIEWED: Added new UI styles
+*                           REVIEWED: Full UI to accomodate more icons
+*                           UPDATED: Using raylib 6.1-dev and raygui 5.0-dev
+* 
 *       3.1  (06-Apr-2024)  ADDED: Report Issue/Features window (Open GitHub)
 *                           ADDED: New icons: WARNING, HELP_BOX, INFO_BOX
 *                           REMOVED: Sponsors window
@@ -106,10 +111,10 @@
 
 #define TOOL_NAME               "rGuiIcons"
 #define TOOL_SHORT_NAME         "rGI"
-#define TOOL_VERSION            "3.2"
+#define TOOL_VERSION            "4.0"
 #define TOOL_DESCRIPTION        "A simple and easy-to-use raygui icons editor"
 #define TOOL_DESCRIPTION_BREAK  "A simple and easy-to-use raygui\nicons editor"
-#define TOOL_RELEASE_DATE       "Nov.2025"
+#define TOOL_RELEASE_DATE       "Jun.2026"
 #define TOOL_LOGO_COLOR         0x48c9c5ff
 
 #include "raylib.h"
@@ -120,9 +125,6 @@
 #endif
 
 // NOTE: Some raygui elements need to be defined before including raygui
-#define RAYGUI_TEXTSPLIT_MAX_ITEMS        256
-#define RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE   4096
-#define RAYGUI_TOGGLEGROUP_MAX_ITEMS      256
 #define RAYGUI_GRID_ALPHA                 0.2f
 #define RAYGUI_IMPLEMENTATION
 #include "external/raygui.h"                // Required for: immediate-mode gui controls
@@ -475,7 +477,14 @@ static char guiIconsName[RAYGUI_ICON_MAX_ICONS][32] = {
     "CYLINDER",
     "CONE",
     "ELLIPSOID",
-    "CAPSULE"
+    "CAPSULE",
+    "FILETYPE_FONT",
+    "FILETYPE_3D",
+    "FILETYPE_CODE_XML",
+    "FILETYPE_CODE_C",
+    "FILETYPE_CODE_PYTHON",
+    "FILETYPE_CODE_JS",
+    "FILETYPE_ICON"
 };
 
 // Keep a pointer to original gui iconset as backup
@@ -548,7 +557,7 @@ int main(int argc, char *argv[])
 
     // GUI usage mode - Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 640;
+    const int screenWidth = 944;
     const int screenHeight = 428;
 
     InitWindow(screenWidth, screenHeight, TextFormat("%s v%s | %s", toolName, toolVersion, toolDescription));
@@ -573,8 +582,8 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++)
     {
-        if ((i + 1)%16 == 0) strncpy(toggleIconsText + 6*i, TextFormat("#%03i#\n", i), 6);
-        else strncpy(toggleIconsText + 6*i, TextFormat("#%03i#;", i), 6);
+        if ((i + 1)%32 == 0) memcpy(toggleIconsText + 6*i, TextFormat("#%03i#\n", i), 6);
+        else memcpy(toggleIconsText + 6*i, TextFormat("#%03i#;", i), 6);
     }
 
     toggleIconsText[RAYGUI_ICON_MAX_ICONS*6 - 1] = '\0';
@@ -586,6 +595,7 @@ int main(int argc, char *argv[])
     // GUI: Main toolbar panel (file and visualization)
     //-----------------------------------------------------------------------------------
     GuiMainToolbarState mainToolbarState = InitGuiMainToolbar();
+    mainToolbarState.visualStyleActive = 13;
     //-----------------------------------------------------------------------------------
 
     // GUI: Help Window
@@ -663,8 +673,6 @@ int main(int argc, char *argv[])
 
         memcpy(undoIconSet[i].values, currentIcons, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
     }
-
-    int styleFrameCounter = 0;
 
     SetTargetFPS(60);       // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -1012,29 +1020,30 @@ int main(int argc, char *argv[])
             guiIconsPtr = backupGuiIcons;
 
             // Draw icon name ID text box
-            GuiLabel((Rectangle){ anchor01.x + 365, anchor01.y + 45, 126, 25 }, "Icon name ID:");
-            if (GuiTextBox((Rectangle){ anchor01.x + 365, anchor01.y + 70, 258, 25 }, guiIconsName[selectedIcon], 32, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
+            GuiLabel((Rectangle){ anchor01.x + 672, anchor01.y + 45, 126, 25 }, "Icon name ID:");
+            if (GuiTextBox((Rectangle){ anchor01.x + 672, anchor01.y + 70, 258, 25 }, guiIconsName[selectedIcon], 32, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
 
             // Draw selected icon at selected scale
-            DrawRectangle(anchor01.x + 365, anchor01.y + 108, 256, 256, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_NORMAL)), 0.3f));
-            DrawIcon(currentIcons, selectedIcon, (int)anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, (int)anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)));
+            DrawRectangle(anchor01.x + 672, anchor01.y + 108, 256, 256, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_NORMAL)), 0.3f));
+            DrawIcon(currentIcons, selectedIcon, (int)anchor01.x + 672 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, (int)anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)));
 
             // Draw grid (returns selected cell)
-            GuiGrid((Rectangle){ anchor01.x + 365 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale }, NULL, iconEditScale, 1, &cell);
+            GuiGrid((Rectangle){ anchor01.x + 672 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, 
+                RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale }, NULL, iconEditScale, 1, &cell);
 
             if (mouseHoverCells)
             {
                 // Draw selected cell lines
                 if ((cell.x >= 0) && (cell.y >= 0) && (cell.x < RAYGUI_ICON_SIZE) && (cell.y < RAYGUI_ICON_SIZE))
                 {
-                    DrawRectangleLinesEx((Rectangle){ anchor01.x + 365 + iconEditScale*cell.x + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
+                    DrawRectangleLinesEx((Rectangle){ anchor01.x + 672 + iconEditScale*cell.x + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
                                                       anchor01.y + 108 + iconEditScale*cell.y + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
                                                       iconEditScale + 1, iconEditScale + 1 }, 1, RED);
                 }
             }
 
             float iconEditScaleF = (float)iconEditScale;
-            GuiSliderBar((Rectangle){ anchor01.x + 410, anchor01.y + 376, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), &iconEditScaleF, 0.0f, 16.0f);
+            GuiSliderBar((Rectangle){ anchor01.x + 720, anchor01.y + 376, 180, 10 }, "ZOOM:", TextFormat("x%i", iconEditScale), &iconEditScaleF, 0.0f, 16.0f);
             iconEditScale = (int)iconEditScaleF;
             if (iconEditScale < 2) iconEditScale = 2;
             else if (iconEditScale > 16) iconEditScale = 16;
@@ -1050,8 +1059,8 @@ int main(int argc, char *argv[])
             //--------------------------------------------------------------------------------
             int textPadding = GuiGetStyle(STATUSBAR, TEXT_PADDING);
             GuiSetStyle(STATUSBAR, TEXT_PADDING, 15);
-            GuiStatusBar((Rectangle){ 0, screenHeight - 24, 351, 24 }, TextFormat("TOTAL ICONS: %i", RAYGUI_ICON_MAX_ICONS));
-            GuiStatusBar((Rectangle){ 350, screenHeight - 24, screenWidth - 350, 24 }, TextFormat("SELECTED: %i - %s", selectedIcon, guiIconsName[selectedIcon]));
+            GuiStatusBar((Rectangle){ 0, screenHeight - 24, screenWidth - 280 + 1, 24 }, TextFormat("TOTAL ICONS: %i", RAYGUI_ICON_MAX_ICONS));
+            GuiStatusBar((Rectangle){ screenWidth - 280, screenHeight - 24, 280, 24 }, TextFormat("SELECTED: %i - %s", selectedIcon, guiIconsName[selectedIcon]));
             GuiSetStyle(STATUSBAR, TEXT_PADDING, textPadding);
             //--------------------------------------------------------------------------------
 
@@ -1511,7 +1520,7 @@ static int SaveIcons(const char *fileName)
     // Offset  | Size    | Type       | Description
     // ------------------------------------------------------
     // 0       | 4       | char       | Signature: "rGI "
-    // 4       | 2       | short      | Version: 100
+    // 4       | 2       | short      | Version: 100, 500 (raygui 5.0)
     // 6       | 2       | short      | reserved
 
     // 8       | 2       | short      | Num icons (N)
@@ -1535,8 +1544,10 @@ static int SaveIcons(const char *fileName)
 
     if (rgiFile != NULL)
     {
+        // WARNING: Version 500 is aligned with raygui 5.0, 
+        // up to 512 icons vs 256 on previous versions
         char signature[5] = "rGI ";
-        short version = 100;
+        short version = 500;            
         short reserved = 0;
         short iconCount = RAYGUI_ICON_MAX_ICONS;
         short iconSize = RAYGUI_ICON_SIZE;
