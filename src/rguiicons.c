@@ -972,7 +972,7 @@ int main(int argc, char *argv[])
 
 #if !defined(PLATFORM_WEB)
         // Toggle screen size (x2) mode
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_F)) screenSizeActive = !screenSizeActive;
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_F)) requestScreenSizeToggle = true;
 
         // Toggle full screen mode
         if (IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_ENTER)) ToggleFullscreen();
@@ -1060,23 +1060,38 @@ int main(int argc, char *argv[])
 
         // Screen scale logic (x2)
         //----------------------------------------------------------------------------------
-        if (screenSizeActive)
+        if (requestScreenSizeToggle)
         {
-            // Screen size x2
-            if (GetScreenWidth() < screenWidth*2)
+            screenSizeDouble = !screenSizeDouble;
+
+            if (screenSizeDouble)
             {
-                SetWindowSize(screenWidth*2, screenHeight*2);
-                SetMouseScale(0.5f, 0.5f);
+                // Screen size x2
+                if (GetScreenWidth() < screenWidth*2)
+                {
+                    SetWindowSize(screenWidth*2, screenHeight*2);
+                    SetMouseScale(0.5f, 0.5f);
+
+                    int monitorWidth = GetMonitorWidth(GetCurrentMonitor());
+                    int monitorHeight = GetMonitorHeight(GetCurrentMonitor());
+                    SetWindowPosition(monitorWidth/2 - screenWidth, monitorHeight/2 - screenHeight);
+                }
             }
-        }
-        else
-        {
-            // Screen size x1
-            if (screenWidth*2 >= GetScreenWidth())
+            else
             {
-                SetWindowSize(screenWidth, screenHeight);
-                SetMouseScale(1.0f, 1.0f);
+                // Screen size x1
+                if (screenWidth*2 >= GetScreenWidth())
+                {
+                    SetWindowSize(screenWidth, screenHeight);
+                    SetMouseScale(1.0f, 1.0f);
+
+                    int monitorWidth = GetMonitorWidth(GetCurrentMonitor());
+                    int monitorHeight = GetMonitorHeight(GetCurrentMonitor());
+                    SetWindowPosition(monitorWidth/2 - screenWidth/2, monitorHeight/2 - screenHeight/2);
+                }
             }
+
+            requestScreenSizeToggle = false;
         }
         //----------------------------------------------------------------------------------
 
@@ -1427,7 +1442,7 @@ int main(int argc, char *argv[])
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
             // Draw render texture to screen
-            if (screenSizeActive) DrawTexturePro(target.texture, (Rectangle){ 0, 0, (float)target.texture.width, -(float)target.texture.height }, (Rectangle){ 0, 0, (float)target.texture.width*2, (float)target.texture.height*2 }, (Vector2){ 0, 0 }, 0.0f, WHITE);
+            if (screenSizeDouble) DrawTexturePro(target.texture, (Rectangle){ 0, 0, (float)target.texture.width, -(float)target.texture.height }, (Rectangle){ 0, 0, (float)target.texture.width*2, (float)target.texture.height*2 }, (Vector2){ 0, 0 }, 0.0f, WHITE);
             else DrawTextureRec(target.texture, (Rectangle){ 0, 0, (float)target.texture.width, -(float)target.texture.height }, (Vector2){ 0, 0 }, WHITE);
 
         EndDrawing();
