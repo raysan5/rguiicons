@@ -6,7 +6,7 @@
 *       - Icon editing and preview at multiple sizes
 *       - Cut, copy, paste icons for easy editing
 *       - Undo/Redo system for icon changes
-*       - Edit icon tools: flip and rotate 
+*       - Edit icon tools: flip and rotate
 *       - Define icon name (up to 32 characters)
 *       - Save and load as binary iconset file .rgi
 *       - Export iconset as an embeddable code file (.h)
@@ -39,7 +39,7 @@
 *                           REVIEWED: Added new UI styles: Amber, Genesis
 *                           REVIEWED: Full UI to accomodate more icons
 *                           UPDATED: Using raylib 6.1-dev and raygui 5.0-dev
-* 
+*
 *       3.1  (06-Apr-2024)  ADDED: Report Issue/Features window (Open GitHub)
 *                           ADDED: New icons: WARNING, HELP_BOX, INFO_BOX
 *                           REMOVED: Sponsors window
@@ -153,18 +153,17 @@
 
 // raygui embedded styles
 // NOTE: Included in the same order as selector
-#define MAX_GUI_STYLES_AVAILABLE   14       // NOTE: Included light style
 #include "styles/style_jungle.h"            // raygui style: jungle
-#include "styles/style_candy.h"             // raygui style: candy
+//#include "styles/style_candy.h"             // raygui style: candy
 #include "styles/style_lavanda.h"           // raygui style: lavanda
 #include "styles/style_cyber.h"             // raygui style: cyber
 #include "styles/style_terminal.h"          // raygui style: terminal
-#include "styles/style_ashes.h"             // raygui style: ashes
-#include "styles/style_bluish.h"            // raygui style: bluish
+//#include "styles/style_ashes.h"             // raygui style: ashes
+//#include "styles/style_bluish.h"            // raygui style: bluish
 #include "styles/style_dark.h"              // raygui style: dark
-#include "styles/style_cherry.h"            // raygui style: cherry
-#include "styles/style_sunny.h"             // raygui style: sunny
-#include "styles/style_enefete.h"           // raygui style: enefete
+//#include "styles/style_cherry.h"            // raygui style: cherry
+//#include "styles/style_sunny.h"             // raygui style: sunny
+//#include "styles/style_enefete.h"           // raygui style: enefete
 #include "styles/style_amber.h"             // raygui style: amber
 #include "styles/style_genesis.h"           // raygui style: genesis
 
@@ -604,7 +603,7 @@ int main(int argc, char *argv[])
     // GUI: Main toolbar panel (file and visualization)
     //-----------------------------------------------------------------------------------
     GuiMainToolbarState mainToolbarState = InitGuiMainToolbar();
-    mainToolbarState.visualStyleActive = 13;
+    mainToolbarState.visualStyleActive = 7;
     //-----------------------------------------------------------------------------------
 
     // GUI: Help Window
@@ -809,7 +808,7 @@ int main(int argc, char *argv[])
         {
             // Create new empty icon pack
             memset(currentIcons, 0, RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS*sizeof(int));
-            for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) memset(guiIconsName[i], 0, 32);
+            for (int i = 0; i < RAYGUI_ICON_MAX_ICONS; i++) memset(guiIconsName[i], 0, RAYGUI_ICON_MAX_NAME_LENGTH);
         }
 
         if (mainToolbarState.btnReloadSetPressed)
@@ -853,7 +852,7 @@ int main(int argc, char *argv[])
             for (int i = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE; i++) ClearIconPixel(currentIcons, selectedIcon, i/RAYGUI_ICON_SIZE, i%RAYGUI_ICON_SIZE);
 
             strcpy(iconName, guiIconsName[selectedIcon]);
-            memset(guiIconsName[selectedIcon], 0, 32);
+            memset(guiIconsName[selectedIcon], 0, RAYGUI_ICON_MAX_NAME_LENGTH);
 
             iconDataToCopy = true;
         }
@@ -873,6 +872,86 @@ int main(int argc, char *argv[])
             {
                 SetIconData(currentIcons, selectedIcon, iconData);
                 strcpy(guiIconsName[selectedIcon], iconName);
+            }
+        }
+
+        // Move selected icon up on the list
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_UP)) || mainToolbarState.btnMoveUpPressed)
+        {
+            if (selectedIcon >= 32) // Second line in the grid or bigger
+            {
+                int movePosition = selectedIcon - 32;
+                unsigned int tmpIconData[8] = { 0 };
+                char tmpIconName[32] = { 0 };
+                memcpy(tmpIconData, GetIconData(currentIcons, movePosition), RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
+                strcpy(tmpIconName, guiIconsName[movePosition]);
+
+                SetIconData(currentIcons, movePosition, GetIconData(currentIcons, selectedIcon));
+                SetIconData(currentIcons, selectedIcon, tmpIconData);
+                strcpy(guiIconsName[movePosition], guiIconsName[selectedIcon]);
+                strcpy(guiIconsName[selectedIcon], tmpIconName);
+
+                selectedIcon = movePosition;
+            }
+        }
+
+        // Move selected icon down on the list
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_DOWN)) || mainToolbarState.btnMoveDownPressed)
+        {
+            if (selectedIcon < (RAYGUI_ICON_MAX_ICONS - 32)) // Last line in the grid or smaller
+            {
+                int movePosition = selectedIcon + 32;
+                unsigned int tmpIconData[8] = { 0 };
+                char tmpIconName[32] = { 0 };
+                memcpy(tmpIconData, GetIconData(currentIcons, movePosition), RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
+                strcpy(tmpIconName, guiIconsName[movePosition]);
+
+                SetIconData(currentIcons, movePosition, GetIconData(currentIcons, selectedIcon));
+                SetIconData(currentIcons, selectedIcon, tmpIconData);
+                strcpy(guiIconsName[movePosition], guiIconsName[selectedIcon]);
+                strcpy(guiIconsName[selectedIcon], tmpIconName);
+
+                selectedIcon = movePosition;
+            }
+        }
+
+        // Move selected icon left on the list
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_LEFT)) || mainToolbarState.btnMoveLeftPressed)
+        {
+            if (selectedIcon > 0)
+            {
+                int movePosition = selectedIcon - 1;
+                unsigned int tmpIconData[8] = { 0 };
+                char tmpIconName[32] = { 0 };
+                memcpy(tmpIconData, GetIconData(currentIcons, movePosition), RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
+                strcpy(tmpIconName, guiIconsName[movePosition]);
+
+                SetIconData(currentIcons, movePosition, GetIconData(currentIcons, selectedIcon));
+                SetIconData(currentIcons, selectedIcon, tmpIconData);
+                strcpy(guiIconsName[movePosition], guiIconsName[selectedIcon]);
+                strcpy(guiIconsName[selectedIcon], tmpIconName);
+
+                selectedIcon = movePosition;
+            }
+        }
+
+        // Move selected icon right on the list
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_RIGHT)) || mainToolbarState.btnMoveRightPressed)
+        {
+            if (selectedIcon < RAYGUI_ICON_MAX_ICONS)
+            {
+                int movePosition = selectedIcon + 1;
+                unsigned int tmpIconData[8] = { 0 };
+                char tmpIconName[32] = { 0 };
+                memcpy(tmpIconData, GetIconData(currentIcons, movePosition), RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
+                strcpy(tmpIconName, guiIconsName[movePosition]);
+
+                SetIconData(currentIcons, movePosition, GetIconData(currentIcons, selectedIcon));
+                SetIconData(currentIcons, selectedIcon, tmpIconData);
+                strcpy(guiIconsName[movePosition], guiIconsName[selectedIcon]);
+                strcpy(guiIconsName[selectedIcon], tmpIconName);
+
+                selectedIcon = movePosition;
             }
         }
 
@@ -942,7 +1021,7 @@ int main(int argc, char *argv[])
         {
             for (int i = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE; i++) ClearIconPixel(currentIcons, selectedIcon, i/RAYGUI_ICON_SIZE, i%RAYGUI_ICON_SIZE);
 
-            memset(guiIconsName[selectedIcon], 0, 32);
+            memset(guiIconsName[selectedIcon], 0, RAYGUI_ICON_MAX_NAME_LENGTH);
         }
 
         // Toggle window: help
@@ -994,18 +1073,18 @@ int main(int argc, char *argv[])
             switch (mainToolbarState.visualStyleActive)
             {
                 case 1: GuiLoadStyleJungle(); break;
-                case 2: GuiLoadStyleCandy(); break;
-                case 3: GuiLoadStyleLavanda(); break;
-                case 4: GuiLoadStyleCyber(); break;
-                case 5: GuiLoadStyleTerminal(); break;
-                case 6: GuiLoadStyleAshes(); break;
-                case 7: GuiLoadStyleBluish(); break;
-                case 8: GuiLoadStyleDark(); break;
-                case 9: GuiLoadStyleCherry(); break;
-                case 10: GuiLoadStyleSunny(); break;
-                case 11: GuiLoadStyleEnefete(); break;
-                case 12: GuiLoadStyleAmber(); break;
-                case 13: GuiLoadStyleGenesis(); break;
+                //case 2: GuiLoadStyleCandy(); break;
+                case 2: GuiLoadStyleLavanda(); break;
+                case 3: GuiLoadStyleCyber(); break;
+                case 4: GuiLoadStyleTerminal(); break;
+                //case 6: GuiLoadStyleAshes(); break;
+                //case 7: GuiLoadStyleBluish(); break;
+                case 5: GuiLoadStyleDark(); break;
+                //case 9: GuiLoadStyleCherry(); break;
+                //case 10: GuiLoadStyleSunny(); break;
+                //case 11: GuiLoadStyleEnefete(); break;
+                case 6: GuiLoadStyleAmber(); break;
+                case 7: GuiLoadStyleGenesis(); break;
                 default: break;
             }
 
@@ -1039,7 +1118,7 @@ int main(int argc, char *argv[])
             if (iconEditScale < 2) iconEditScale = 2;
             else if (iconEditScale > 16) iconEditScale = 16;
 
-            mouseHoverCells = CheckCollisionPointRec(GetMousePosition(), 
+            mouseHoverCells = CheckCollisionPointRec(GetMousePosition(),
                 (Rectangle){ anchor01.x + 672 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale });
 
             if (mouseHoverCells)
@@ -1114,14 +1193,15 @@ int main(int argc, char *argv[])
 
             // Draw icon name ID text box
             GuiLabel((Rectangle){ anchor01.x + 672, anchor01.y + 45, 126, 25 }, "Icon name ID:");
-            if (GuiTextBox((Rectangle){ anchor01.x + 672, anchor01.y + 70, 258, 25 }, guiIconsName[selectedIcon], 32, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
+            if (GuiTextBox((Rectangle){ anchor01.x + 672, anchor01.y + 70, 258, 25 }, guiIconsName[selectedIcon],
+                RAYGUI_ICON_MAX_NAME_LENGTH, iconNameIdEditMode)) iconNameIdEditMode = !iconNameIdEditMode;
 
             // Draw selected icon at selected scale
             DrawRectangle(anchor01.x + 672, anchor01.y + 108, 256, 256, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_NORMAL)), 0.3f));
             DrawIcon(currentIcons, selectedIcon, (int)anchor01.x + 672 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, (int)anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, iconEditScale, GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)));
 
             // Draw grid
-            GuiGrid((Rectangle){ anchor01.x + 672 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, 
+            GuiGrid((Rectangle){ anchor01.x + 672 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2, anchor01.y + 108 + 128 - RAYGUI_ICON_SIZE*iconEditScale/2,
                 RAYGUI_ICON_SIZE*iconEditScale, RAYGUI_ICON_SIZE*iconEditScale }, NULL, iconEditScale, 1, &cell);
 
             if (mouseHoverCells)
@@ -1365,7 +1445,7 @@ int main(int argc, char *argv[])
                             if (nameIdsChunkChecked)
                             {
                                 // Concatenate all icons names into one string
-                                char *iconsNames = (char *)RL_CALLOC(RAYGUI_ICON_MAX_ICONS*32, 1);
+                                char *iconsNames = (char *)RL_CALLOC(RAYGUI_ICON_MAX_ICONS*(RAYGUI_ICON_MAX_NAME_LENGTH + 1), 1);
                                 char *iconsNamesPtr = iconsNames;
                                 for (int i = 0, size = 0; i < RAYGUI_ICON_MAX_ICONS; i++)
                                 {
@@ -1651,12 +1731,12 @@ static int SaveIcons(const char *fileName)
     // 6       | 2       | short      | reserved
 
     // 8       | 2       | short      | Num icons (N)
-    // 10      | 2       | short      | Icons size (Options: 16, 32, 64) (S)
+    // 10      | 2       | short      | Icons size (Options: 16, 32, 64)
 
     // Icons name id (32 bytes per name id)
     // foreach (icon)
     // {
-    //   12+32*i  | 32   | char       | Icon NameId
+    //   12+32*i  | 32   | char       | Icon NameId (RAYGUI_ICON_MAX_NAME_LENGTH)
     // }
 
     // Icons data: One bit per pixel, stored as unsigned int array (depends on icon size)
@@ -1671,10 +1751,10 @@ static int SaveIcons(const char *fileName)
 
     if (rgiFile != NULL)
     {
-        // WARNING: Version 500 is aligned with raygui 5.0, 
+        // WARNING: Version 500 is aligned with raygui 5.0,
         // up to 512 icons vs 256 on previous versions
         char signature[5] = "rGI ";
-        short version = 500;            
+        short version = 500;
         short reserved = 0;
         short iconCount = RAYGUI_ICON_MAX_ICONS;
         short iconSize = RAYGUI_ICON_SIZE;

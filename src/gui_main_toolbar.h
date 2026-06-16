@@ -67,6 +67,11 @@ typedef struct {
     bool btnFlipVPressed;
     bool btnRotatePressed;
 
+    bool btnMoveUpPressed;
+    bool btnMoveDownPressed;
+    bool btnMoveLeftPressed;
+    bool btnMoveRightPressed;
+
     // Visual options
     int visualStyleActive;
     int prevVisualStyleActive;
@@ -159,6 +164,11 @@ GuiMainToolbarState InitGuiMainToolbar(void)
     state.btnFlipVPressed = false;
     state.btnRotatePressed = false;
 
+    state.btnMoveUpPressed = false;
+    state.btnMoveDownPressed = false;
+    state.btnMoveLeftPressed = false;
+    state.btnMoveRightPressed = false;
+
     // Visuals options
     state.visualStyleActive = 0;
     state.prevVisualStyleActive = 0;
@@ -194,11 +204,11 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     GuiSetTooltip("Create new icons project (LCTRL+N)");
     state->btnNewFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12, state->anchorFile.y + 8, 24, 24 }, "#8#");
     GuiSetTooltip("Load icons .rgi file (LCTRL+O)");
-    state->btnLoadFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 24 + 4, state->anchorFile.y + 8, 24, 24 }, "#5#");
+    state->btnLoadFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 24 + 2, state->anchorFile.y + 8, 24, 24 }, "#5#");
     GuiSetTooltip("Save icons .rgi file (LCTRL+S)");
-    state->btnSaveFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 48 + 8, state->anchorFile.y + 8, 24, 24 }, "#6#");
+    state->btnSaveFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 48 + 4, state->anchorFile.y + 8, 24, 24 }, "#6#");
     GuiSetTooltip("Export icons file (LCTRL+E)");
-    state->btnExportFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 72 + 12, state->anchorFile.y + 8, 24, 24 }, "#7#");
+    state->btnExportFilePressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 72 + 6, state->anchorFile.y + 8, 24, 24 }, "#7#");
     GuiSetTooltip("Reload default raygui icon set");
     state->btnReloadSetPressed = GuiButton((Rectangle){ state->anchorFile.x + 12 + 96 + 24, state->anchorFile.y + 8, 24, 24 }, "#61#");
 
@@ -206,10 +216,10 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     GuiSetTooltip("Cut selected icon (LCTRL+X)");
     state->btnCutPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12, state->anchorEdit.y + 8, 24, 24 }, "#17#"); // Cut
     GuiSetTooltip("Copy selected icon (LCTRL+C)");
-    state->btnCopyPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 24 + 4, state->anchorEdit.y + 8, 24, 24 }, "#16#"); // Copy
+    state->btnCopyPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 24 + 2, state->anchorEdit.y + 8, 24, 24 }, "#16#"); // Copy
     GuiSetTooltip("Paste icon previously cut/copied (LCTRL+V)");
-    state->btnPastePressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 48 + 8, state->anchorEdit.y + 8, 24, 24 }, "#18#"); // Paste
-    GuiGroupBox((Rectangle){ state->anchorEdit.x + 12 + 72 + 16, state->anchorEdit.y + 8, 24, 24 }, NULL);
+    state->btnPastePressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 48 + 4, state->anchorEdit.y + 8, 24, 24 }, "#18#"); // Paste
+    GuiGroupBox((Rectangle){ state->anchorEdit.x + 12 + 72 + 14, state->anchorEdit.y + 8, 24, 24 }, NULL);
     GuiSetTooltip("Clear previously cut/copied icon");
     state->btnCleanPressed = GuiButton((Rectangle){ state->anchorEdit.x + 12 + 96 + 24, state->anchorEdit.y + 8, 24, 24 }, "#079#"); // Clean
 
@@ -217,13 +227,23 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     GuiSetTooltip("Undo icon edit (LCTRL+Z)");
     state->btnUndoPressed = GuiButton((Rectangle){ state->anchorTools.x + 12, state->anchorTools.y + 8, 24, 24 }, "#72#"); // Undo
     GuiSetTooltip("Redo icon edit (LCTRL+Y)");
-    state->btnRedoPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 24 + 4, state->anchorTools.y + 8, 24, 24 }, "#73#"); // Redo
+    state->btnRedoPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 24 + 2, state->anchorTools.y + 8, 24, 24 }, "#73#"); // Redo
+
+    GuiSetTooltip("Move icon up (LCTRL+UP)");
+    state->btnMoveUpPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 48 + 24, state->anchorTools.y + 8, 24, 24 }, "#121#"); // Move up
+    GuiSetTooltip("Move icon down (LCTRL+DOWN)");
+    state->btnMoveDownPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 72 + 26, state->anchorTools.y + 8, 24, 24 }, "#120#"); // Move down
+    GuiSetTooltip("Move icon left (LCTRL+LEFT)");
+    state->btnMoveLeftPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 96 + 28, state->anchorTools.y + 8, 24, 24 }, "#118#"); // Move left
+    GuiSetTooltip("Move icon right (LCTRL+RIGHT)");
+    state->btnMoveRightPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 120 + 30, state->anchorTools.y + 8, 24, 24 }, "#119#"); // Move right
+
     GuiSetTooltip("Flip icon horizontally");
-    state->btnFlipHPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 48 + 20, state->anchorTools.y + 8, 24, 24 }, "#40#"); // FlipH
+    state->btnFlipHPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 148 + 50, state->anchorTools.y + 8, 24, 24 }, "#40#"); // FlipH
     GuiSetTooltip("Flip icon vertically");
-    state->btnFlipVPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 72 + 24, state->anchorTools.y + 8, 24, 24 }, "#41#"); // FlipV
+    state->btnFlipVPressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 172 + 52, state->anchorTools.y + 8, 24, 24 }, "#41#"); // FlipV
     GuiSetTooltip("Rotate icon clockwise 90");
-    state->btnRotatePressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 96 + 28, state->anchorTools.y + 8, 24, 24 }, "#60#"); // Rotate
+    state->btnRotatePressed = GuiButton((Rectangle){ state->anchorTools.x + 12 + 196 + 54, state->anchorTools.y + 8, 24, 24 }, "#60#"); // Rotate
 
     // Visuals options
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_RIGHT);
@@ -232,7 +252,8 @@ void GuiMainToolbar(GuiMainToolbarState *state)
     GuiSetStyle(COMBOBOX, COMBO_BUTTON_WIDTH, 40);
     GuiSetTooltip("Select visual UI style");
     GuiComboBox((Rectangle){ state->anchorVisuals.x + 10 + 44, state->anchorVisuals.y + 8, 140, 24 }, 
-        "Light;Jungle;Candy;Lavanda;Cyber;Terminal;Ashes;Bluish;Dark;Cherry;Sunny;Enefete;Amber;Genesis", &state->visualStyleActive);
+        //"Light;Jungle;Candy;Lavanda;Cyber;Terminal;Ashes;Bluish;Dark;Cherry;Sunny;Enefete;Amber;Genesis", &state->visualStyleActive);
+        "Light;Jungle;Lavanda;Cyber;Terminal;Dark;Amber;Genesis", &state->visualStyleActive);
     GuiSetStyle(COMBOBOX, COMBO_BUTTON_WIDTH, 32);
 
     // Info options
