@@ -168,6 +168,7 @@
 #include "styles/style_genesis.h"           // raygui style: genesis
 
 #define RPNG_IMPLEMENTATION
+#define RPNG_DEFLATE_IMPLEMENTATION
 #include "external/rpng.h"                  // PNG chunks management
 
 #include <stdio.h>                          // Required for: fopen(), fclose(), fread()...
