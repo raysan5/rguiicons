@@ -1309,7 +1309,7 @@ int main(int argc, char *argv[])
                 Rectangle messageBox = { (float)screenWidth/2 - 300/2, (float)screenHeight/2 - 190/2 - 20, 300, 190 };
                 int btnActive = -1;
                 GuiMessageBox(messageBox, "#220#Report Issue",
-                    "Do you want to report any issue or\nfeature request for this program?\n\ngithub.com/raysan5/raylib-project-creator", "#186#Report on GitHub", &btnActive);
+                    "Do you want to report any issue or\nfeature request for this program?\n\ngithub.com/raysan5/rguiicons", "#186#Report on GitHub", &btnActive);
 
                 if (btnActive == 1)    // Report issue pressed
                 {
