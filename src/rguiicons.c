@@ -1516,9 +1516,9 @@ int main(int argc, char *argv[])
                     // Export file: outFileName
                     // Check for valid extension and make sure it is
                     if ((GetFileExtension(outFileName) == NULL) || !IsFileExtension(outFileName, ".png")) strcat(outFileName, ".png\0");
-                    Image icon = GenImageFromIconData(GuiGetIconData(selectedIcon), 1, 1, 0);
-                    ExportImage(icon, outFileName);
-                    UnloadImage(icon);
+                    Image imIcon = GenImageFromIconData(GuiGetIconData(selectedIcon), 1, 1, 0);
+                    ExportImage(imIcon, outFileName);
+                    UnloadImage(imIcon);
 
                     // Save icon name id into PNG tEXt chunk
                     rpng_chunk_write_text(outFileName, "Description", guiIconsName[selectedIcon]);
